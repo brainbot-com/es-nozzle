@@ -4,7 +4,7 @@
   (:require [langohr.queue :as lq])
   (:require [langohr.channel :as lch])
   (:require [langohr.consumers :as lcons])
-  (:require [me.raynes.fs :as fs])
+  ;; (:require [me.raynes.fs :as fs])
   (:require [clojure.tools.cli :as cli])
   (:require [clojure.data.json :as json])
   (:require [clojure.string :as string])
