@@ -20,10 +20,17 @@
         directory (:directory body)
         relpath (:relpath (:entry body))
         fp (string/join File/separator [directory relpath])
-        converted (tika/parse fp)
+        ;; converted (tika/parse fp)
         ]
         ;;
-    (println "dir" fp " ****" (:content-type converted))))
+    (future (let [converted (tika/parse fp)]
+              (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
+              (lb/ack ch (:delivery-tag metadata))
+              (println "done" fp " ****" )))
+
+    (println "scheduled" fp " ****" )))
+
+    ;; (println "dir" fp " ****" (:content-type converted))))
 
 ;; (println "got message" metadata (String. payload "UTF-8")))
 
@@ -40,7 +47,9 @@
                      (lb/ack ch delivery-tag))]
     ;; (lq/declare ch queue-name :exclusive false :auto-delete true)
     ;; (lq/bind    ch queue-name "nextbot")
-    (lcons/subscribe ch queue-name handle-message :auto-ack false)))
+    (lb/qos ch 10)
+    (lcons/subscribe ch queue-name handle-message :auto-ack false)
+    (println "done with subscribing")))
 
 
 (defn -main [& args]
@@ -55,5 +64,4 @@
                  ["--root" "Root directory of web server" :default "public"])]
     (println "port:" (:port options))
     (println "root:" (:root options)))
-  (run-with-connection)
-)
+  (run-with-connection))
