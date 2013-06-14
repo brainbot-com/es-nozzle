@@ -13,9 +13,23 @@
   (:gen-class))
 
 
+(defn wash
+  "remove unicode 0xfffd character from string
+  this is the unicode 'replacement character', which tika uses for
+  unknown characters"
+  [str]
+  (string/trim (string/replace (or str "") (char 0xfffd) \space)))
+
+
+(defn convert
+  "convert file and call wash on text property"
+  [filename]
+  (update-in (convert filename) [:text] wash))
+
+
 (defn handle-message
   [ch metadata ^bytes payload]
-  (let [body (json/read-json (String. payload "UTF-8"))
+  (let [body (json/read-str (String. payload "UTF-8"))
         ;; {:keys [directory relpath] body}
         directory (:directory body)
         relpath (:relpath (:entry body))
@@ -23,7 +37,7 @@
         ;; converted (tika/parse fp)
         ]
         ;;
-    (future (let [converted (tika/parse fp)]
+    (future (let [converted (convert fp)]
               (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
               (lb/ack ch (:delivery-tag metadata))
               (println "done" fp " ****" )))
