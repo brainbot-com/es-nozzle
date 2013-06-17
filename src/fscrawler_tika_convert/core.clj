@@ -12,6 +12,8 @@
   (:import java.io.File)
   (:gen-class))
 
+(def number-of-cores
+  (.availableProcessors (Runtime/getRuntime)))
 
 (defn wash
   "remove unicode 0xfffd character from string
@@ -61,7 +63,7 @@
                      (lb/ack ch delivery-tag))]
     ;; (lq/declare ch queue-name :exclusive false :auto-delete true)
     ;; (lq/bind    ch queue-name "nextbot")
-    (lb/qos ch 10)
+    (lb/qos ch (+ number-of-cores 4))
     (lcons/subscribe ch queue-name handle-message :auto-ack false)
     (println "done with subscribing")))
 
