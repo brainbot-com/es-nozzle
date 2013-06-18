@@ -1,4 +1,5 @@
 (defproject fscrawler-tika-convert "0.1.0-SNAPSHOT"
+  :source-paths ["src" "src/fscrawler_tika_convert" "src/com/brainbot"]
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"

@@ -8,6 +8,7 @@
   (:require [clojure.tools.cli :as cli])
   (:require [clojure.data.json :as json])
   (:require [clojure.string :as string])
+  (:require [com.brainbot.stat :as stat])
   (:require [tika])
   (:import java.io.File)
   (:gen-class))
