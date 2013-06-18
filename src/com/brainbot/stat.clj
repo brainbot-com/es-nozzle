@@ -1,10 +1,39 @@
 (ns com.brainbot.stat
   (:import [java.io File IOException FileNotFoundException]
            [java.nio.file Files Path LinkOption]
-           [java.nio.file.attribute PosixFilePermissions BasicFileAttributes PosixFileAttributes]))
+           [java.nio.file.attribute PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes]))
+
 
 (def no-follow-links
   (into-array [LinkOption/NOFOLLOW_LINKS]))
+
+
+(def posix-file-permission->st-mode
+  {PosixFilePermission/OWNER_READ       00400
+   PosixFilePermission/OWNER_WRITE      00200
+   PosixFilePermission/OWNER_EXECUTE    00100
+
+   PosixFilePermission/GROUP_READ       00040
+   PosixFilePermission/GROUP_WRITE      00020
+   PosixFilePermission/GROUP_EXECUTE    00010
+
+   PosixFilePermission/OTHERS_READ      00004
+   PosixFilePermission/OTHERS_WRITE     00002
+   PosixFilePermission/OTHERS_EXECUTE   00001})
+
+
+(def type->st-mode
+  {:directory           0040000
+   :file                0100000
+   :symbolic-link       0120000
+   :other               0060000})   ;; that's a S_IFBLK, i.e. a block device
+
+(defn st-mode-from-type-and-permissions
+  [type permissions]
+  (apply bit-or
+         (concat
+          [0 (type->st-mode type)]
+          (map posix-file-permission->st-mode permissions))))
 
 
 (defn- get-path
