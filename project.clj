@@ -10,5 +10,5 @@
                  ;; [me.raynes/fs "1.4.4"]
                  [org.clojure/data.json "0.2.2"]
                  [org.clojars.floriano.clj-tika "1.2.0"]
-                 [com.novemberain/langohr "1.0.0-beta13"]]
+                 [com.novemberain/langohr "1.0.0-beta14"]]
   :main fscrawler-tika-convert.core)
