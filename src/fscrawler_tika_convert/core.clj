@@ -65,8 +65,13 @@
     ;; (lq/declare ch queue-name :exclusive false :auto-delete true)
     ;; (lq/bind    ch queue-name "nextbot")
     (lb/qos ch (+ number-of-cores 4))
-    (lcons/subscribe ch queue-name handle-message :auto-ack false)
-    (println "done with subscribing")))
+    ;; (lcons/subscribe ch queue-name handle-message
+    ;;                  :auto-ack false))
+    ;;                  :handle-shutdown-signal-fn
+    ;;                  (fn [consumer_tag reason]
+    ;;                    (println "shutdown" consumer_tag reason))
+
+    (lcons/blocking-subscribe ch queue-name handle-message :auto-ack false)))
 
 
 (defn -main [& args]
@@ -81,4 +86,10 @@
                  ["--root" "Root directory of web server" :default "public"])]
     (println "port:" (:port options))
     (println "root:" (:root options)))
-  (run-with-connection))
+  (while true
+    (try
+      (run-with-connection)
+      (catch Exception err
+        (println "got exception" err)
+        (Thread/sleep 5000)
+        (println "restarting connection to rabbitmq")))))
