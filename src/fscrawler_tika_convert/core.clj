@@ -27,7 +27,13 @@
 (defn convert
   "convert file and call wash on text property"
   [filename]
-  (update-in (convert filename) [:text] wash))
+  (update-in (tika/parse filename) [:text] wash))
+
+(defn break-channel
+  [ch delay]
+  (future
+    (Thread/sleep delay)
+    (lq/bind ch "no-such-queu-453456546345", "amq.fanout")))
 
 
 (defn handle-message
@@ -40,10 +46,12 @@
         ;; converted (tika/parse fp)
         ]
         ;;
-    (future (let [converted (convert fp)]
+    (future (
+             (println "starting...")
+             (let [converted (convert fp)]
               (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
               (lb/ack ch (:delivery-tag metadata))
-              (println "done" fp " ****" )))
+              (println "done" fp " ****" ))))
 
     (println "scheduled" fp " ****" )))
 
@@ -61,7 +69,8 @@
                      (println "hello")
                      (println "headers" headers)
                      ;; (println (format "[consumer] Received %s" (String. payload "UTF-8")))
-                     (lb/ack ch delivery-tag))]
+                     (lb/ack ch delivery-tag)
+                     )]
     ;; (lq/declare ch queue-name :exclusive false :auto-delete true)
     ;; (lq/bind    ch queue-name "nextbot")
     (lb/qos ch (+ number-of-cores 4))
@@ -71,6 +80,7 @@
     ;;                  (fn [consumer_tag reason]
     ;;                    (println "shutdown" consumer_tag reason))
 
+    ;; (break-channel ch 2000)
     (lcons/blocking-subscribe ch queue-name handle-message :auto-ack false)))
 
 
