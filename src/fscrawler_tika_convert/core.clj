@@ -32,7 +32,7 @@
 
 (defn handle-message
   [ch metadata ^bytes payload]
-  (let [body (json/read-str (String. payload "UTF-8"))
+  (let [body (json/read-json (String. payload "UTF-8"))
         ;; {:keys [directory relpath] body}
         directory (:directory body)
         relpath (:relpath (:entry body))
