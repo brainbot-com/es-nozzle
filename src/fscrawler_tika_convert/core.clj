@@ -9,6 +9,7 @@
   (:require [clojure.data.json :as json])
   (:require [clojure.string :as string])
   (:require [com.brainbot.stat :as stat])
+  (:require [clojure.stacktrace :as trace])
   (:require [tika])
   (:import java.io.File)
   (:gen-class))
@@ -101,5 +102,6 @@
       (run-with-connection)
       (catch Exception err
         (println "got exception" err)
+        (trace/print-stack-trace err)
         (Thread/sleep 5000)
         (println "restarting connection to rabbitmq")))))
