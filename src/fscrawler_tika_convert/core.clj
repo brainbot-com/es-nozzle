@@ -14,8 +14,28 @@
   (:import java.io.File)
   (:gen-class))
 
+
+(defn map-from-routing-key-string
+  "build map from routing key"
+  [rk-string]
+  (zipmap [:id :command :filesystem] (string/split rk-string #"\.")))
+
+
+(defn routing-key-string-from-map
+  "build routing key string from map"
+  [m]
+  (string/join "." [(:id m) (:command m) (:filesystem m)]))
+
+
+(defn routing-key-string-with-command
+  "replace command part of routing key string with command"
+  [rk-string command]
+  (routing-key-string-from-map (assoc (map-from-routing-key-string rk-string) :command command)))
+
+
 (def number-of-cores
   (.availableProcessors (Runtime/getRuntime)))
+
 
 (defn wash
   "remove unicode 0xfffd character from string
@@ -41,25 +61,37 @@
   [ch metadata ^bytes payload]
   (let [body (json/read-json (String. payload "UTF-8"))
         ;; {:keys [directory relpath] body}
+        routing-key (:routing-key metadata)
+        exchange (:exchange metadata)
         directory (:directory body)
         relpath (:relpath (:entry body))
+        delivery-tag (:delivery-tag metadata)
         fp (string/join File/separator [directory relpath])
         ;; converted (tika/parse fp)
         ]
         ;;
-    (future (
-             (println "starting...")
-             (let [converted (convert fp)]
-              (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
-              (lb/ack ch (:delivery-tag metadata))
-              (println "done" fp " ****" ))))
+    (future
+      (try
+        (let [converted (convert fp)]
+          ;; (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
+
+          (lb/publish ch
+                      exchange
+                      (routing-key-string-with-command routing-key "import_file")
+                      (json/write-str (assoc body "tika-content" converted)))
+          (lb/ack ch delivery-tag)
+          (println "done" fp " ****" ))
+        (catch Throwable err
+
+          (println "got exception while handling" fp err)
+          (trace/print-stack-trace err)
+          (lb/nack ch delivery-tag false false))))
 
     (println "scheduled" fp " ****" )))
 
     ;; (println "dir" fp " ****" (:content-type converted))))
 
 ;; (println "got message" metadata (String. payload "UTF-8")))
-
 
 (defn run-with-connection
   []
