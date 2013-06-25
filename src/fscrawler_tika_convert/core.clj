@@ -12,7 +12,52 @@
   (:require [clojure.stacktrace :as trace])
   (:require [tika])
   (:import java.io.File)
+  (:import [java.util.concurrent TimeUnit ScheduledThreadPoolExecutor Callable])
   (:gen-class))
+
+
+(def es (ScheduledThreadPoolExecutor. 4))
+
+
+(defn periodically
+  "periodically run function f with a fixed delay of n milliseconds"
+
+  [n f]
+  (.scheduleWithFixedDelay es ^Runnable f 0 n TimeUnit/MILLISECONDS))
+
+
+(def future-map (atom {}))
+
+(defn register-future
+  [a-future nackfn]
+  (swap! future-map assoc a-future nackfn))
+
+(defn unregister-future
+  [a-future]
+  (swap! future-map dissoc a-future))
+
+
+(defn deref-exception
+  [a-future]
+  (try
+    (do (deref a-future)
+        nil)
+    (catch Throwable err
+      err)))
+
+
+(defn reap-futures
+  []
+  (try
+    (doseq [[a-future val] @future-map]
+      (when (realized? a-future)
+        (if-let [error (deref-exception a-future)]
+          (do
+            (println "************* error in future" (str a-future) error val)
+            ((:cleanup-on-error val))))
+        (swap! future-map dissoc a-future)))
+    (catch Throwable err
+      (println "error" err))))
 
 
 (defn map-from-routing-key-string
@@ -67,27 +112,31 @@
         relpath (:relpath (:entry body))
         delivery-tag (:delivery-tag metadata)
         fp (string/join File/separator [directory relpath])
+        nack-this-message #(lb/nack ch delivery-tag false false)
         ;; converted (tika/parse fp)
         ]
         ;;
-    (future
-      (try
-        (let [converted (convert fp)]
-          ;; (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
+    (register-future
+     (future
+       (try
+         (let [converted (convert fp)]
+           ;; (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
 
-          (lb/publish ch
-                      exchange
-                      (routing-key-string-with-command routing-key "import_file")
-                      (json/write-str (assoc body "tika-content" converted)))
-          (lb/ack ch delivery-tag)
-          (println "done" fp " ****" ))
-        (catch Throwable err
+           (lb/publish ch
+                       exchange
+                       (routing-key-string-with-command routing-key "import_file")
+                       (json/write-str (assoc body "tika-content" converted)))
+           (lb/ack ch delivery-tag))
+         (catch Exception err
+           (println "got exception while handling" fp err)
+           (trace/print-stack-trace err)
+           (lb/nack ch delivery-tag false false))))
+     {:cleanup-on-error nack-this-message
+      :fp fp})
 
-          (println "got exception while handling" fp err)
-          (trace/print-stack-trace err)
-          (lb/nack ch delivery-tag false false))))
 
-    (println "scheduled" fp " ****" )))
+    ;; (println "scheduled" fp " ****" )
+    ))
 
     ;; (println "dir" fp " ****" (:content-type converted))))
 
@@ -122,6 +171,7 @@
   (alter-var-root #'*read-eval* (constantly false))
 
 
+
   (let [[options args banner]
         (cli/cli args
                  ["--ampqp-url" "amqp url to connect to"]
@@ -129,6 +179,9 @@
                  ["--root" "Root directory of web server" :default "public"])]
     (println "port:" (:port options))
     (println "root:" (:root options)))
+
+  (periodically 250 reap-futures)
+
   (while true
     (try
       (run-with-connection)
