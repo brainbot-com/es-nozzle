@@ -1,4 +1,6 @@
 (ns fscrawler-tika-convert.core
+  (:require [clojure.tools.logging :as logging]
+            [clj-logging-config.log4j :as log-config])
   (:require [langohr.basic :as lb]
             [langohr.exchange  :as le]
             [langohr.core :as rmq]
@@ -146,7 +148,8 @@
   [ch command exchange-name filesystem]
   (le/declare ch exchange-name "topic")
   (let [queue-name (format "%s.%s.%s" exchange-name command filesystem)]
-    (lq/declare ch queue-name :auto-delete false)
+    (let [queue-state (lq/declare ch queue-name :auto-delete false)]
+      (logging/info "declared queue" (select-keys queue-state [:queue :consumer-count :message-count])))
     (lq/bind ch queue-name exchange-name :routing-key queue-name)
     queue-name))
 
@@ -171,9 +174,9 @@
 
 (defn -main [& args]
   ;; work around dangerous default behaviour in Clojure
-  (alter-var-root #'*read-eval* (constantly false))
+  ;; (alter-var-root #'*read-eval* (constantly false))
 
-
+  (log-config/set-logger!)
 
   (let [[options args banner]
         (cli/cli args
