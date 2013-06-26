@@ -1,9 +1,10 @@
 (ns fscrawler-tika-convert.core
-  (:require [langohr.basic :as lb])
-  (:require [langohr.core :as rmq])
-  (:require [langohr.queue :as lq])
-  (:require [langohr.channel :as lch])
-  (:require [langohr.consumers :as lcons])
+  (:require [langohr.basic :as lb]
+            [langohr.exchange  :as le]
+            [langohr.core :as rmq]
+            [langohr.queue :as lq]
+            [langohr.channel :as lch]
+            [langohr.consumers :as lcons])
   ;; (:require [me.raynes.fs :as fs])
   (:require [clojure.tools.cli :as cli])
   (:require [clojure.data.json :as json])
@@ -133,26 +134,28 @@
            (lb/nack ch delivery-tag false false))))
      {:cleanup-on-error nack-this-message
       :fp fp})
-
-
-    ;; (println "scheduled" fp " ****" )
-    ))
+    #_(println "scheduled" fp " ****" )))
 
     ;; (println "dir" fp " ****" (:content-type converted))))
 
 ;; (println "got message" metadata (String. payload "UTF-8")))
 
+(defn initialize-rabbitmq-structures
+  "initialize rabbitmq queue and exchange for handling 'command' on
+  'filesystem' submitted on 'exchange-name"
+  [ch command exchange-name filesystem]
+  (le/declare ch exchange-name "topic")
+  (let [queue-name (format "%s.%s.%s" exchange-name command filesystem)]
+    (lq/declare ch queue-name :auto-delete false)
+    (lq/bind ch queue-name exchange-name :routing-key queue-name)
+    queue-name))
+
 (defn run-with-connection
-  []
+  [filesystem]
   (let [conn       (rmq/connect)
         ch         (lch/open conn)
-        queue-name "nextbot.extract_content.fscrawler:test"
-        handler    (fn [ch {:keys [headers delivery-tag redelivery?]} ^bytes payload]
-                     (println "hello")
-                     (println "headers" headers)
-                     ;; (println (format "[consumer] Received %s" (String. payload "UTF-8")))
-                     (lb/ack ch delivery-tag)
-                     )]
+        queue-name (initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
+
     ;; (lq/declare ch queue-name :exclusive false :auto-delete true)
     ;; (lq/bind    ch queue-name "nextbot")
     (lb/qos ch (+ number-of-cores 4))
@@ -184,7 +187,7 @@
 
   (while true
     (try
-      (run-with-connection)
+      (run-with-connection "fscrawler:test")
       (catch Exception err
         (println "got exception" err)
         (trace/print-stack-trace err)
