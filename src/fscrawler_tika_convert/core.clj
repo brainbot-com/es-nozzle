@@ -19,19 +19,20 @@
   (:gen-class))
 
 
-(def es (ScheduledThreadPoolExecutor. 4))
+(def ^:private scheduled-executor (ScheduledThreadPoolExecutor. 4))
 
 
 (defn periodically
   "periodically run function f with a fixed delay of n milliseconds"
 
   [n f]
-  (.scheduleWithFixedDelay es ^Runnable f 0 n TimeUnit/MILLISECONDS))
+  (.scheduleWithFixedDelay scheduled-executor ^Runnable f 0 n TimeUnit/MILLISECONDS))
 
 
 (def future-map (atom {}))
 
 (defn register-future
+
   [a-future nackfn]
   (swap! future-map assoc a-future nackfn))
 
