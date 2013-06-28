@@ -176,8 +176,13 @@
 (defn -main [& args]
   ;; work around dangerous default behaviour in Clojure
   ;; (alter-var-root #'*read-eval* (constantly false))
+  ;; (log-config/set-logger! "org.apache.pdfbox" :pattern "%c %d %p %m%n")
+  (log-config/set-logger! "org" :pattern "%c %d %p %m%n")
+  (log-config/set-logger! "fscrawler-tika-convert.core" :pattern "%c %d %p %m%n")
 
-  (log-config/set-logger!)
+  (log-config/set-logger! "org.apache.pdfbox" :level :off)
+  (convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf")
+
 
   (let [[options args banner]
         (cli/cli args
