@@ -181,7 +181,9 @@
   (doseq [name ["org" "com" "fscrawler-tika-convert.core" ""]]
     (log-config/set-logger! name :pattern "%c %d %p %m%n"))
 
-  (doseq [name ["org.apache.pdfbox"]]
+  ;; Jul 01, 2013 4:38:09 PM com.coremedia.iso.boxes.AbstractContainerBox parseChildBoxes
+
+  (doseq [name ["org.apache.pdfbox" "com.coremedia"]]
     (log-config/set-logger! name :level :off))
 
   ;; (convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf")
