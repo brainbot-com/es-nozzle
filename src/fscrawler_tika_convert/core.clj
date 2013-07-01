@@ -53,6 +53,7 @@
 (defn reap-futures
   []
   (try
+    (logging/info "reaping futures")
     (doseq [[a-future val] @future-map]
       (when (realized? a-future)
         (if-let [error (deref-exception a-future)]
@@ -177,11 +178,13 @@
   ;; work around dangerous default behaviour in Clojure
   ;; (alter-var-root #'*read-eval* (constantly false))
   ;; (log-config/set-logger! "org.apache.pdfbox" :pattern "%c %d %p %m%n")
-  (log-config/set-logger! "org" :pattern "%c %d %p %m%n")
-  (log-config/set-logger! "fscrawler-tika-convert.core" :pattern "%c %d %p %m%n")
+  (doseq [name ["org" "com" "fscrawler-tika-convert.core" ""]]
+    (log-config/set-logger! name :pattern "%c %d %p %m%n"))
 
-  (log-config/set-logger! "org.apache.pdfbox" :level :off)
-  (convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf")
+  (doseq [name ["org.apache.pdfbox"]]
+    (log-config/set-logger! name :level :off))
+
+  ;; (convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf")
 
 
   (let [[options args banner]
