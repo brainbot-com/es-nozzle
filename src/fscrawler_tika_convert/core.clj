@@ -49,20 +49,22 @@
     (catch Throwable err
       err)))
 
-
-(defn reap-futures
-  []
-  (try
-    (logging/info "reaping futures")
-    (doseq [[a-future val] @future-map]
-      (when (realized? a-future)
-        (if-let [error (deref-exception a-future)]
-          (do
-            (println "************* error in future" (str a-future) error val)
-            ((:cleanup-on-error val))))
-        (swap! future-map dissoc a-future)))
-    (catch Throwable err
-      (println "error" err))))
+(let [call-counter (atom 0)]
+  (defn reap-futures
+    []
+    (swap! call-counter inc)
+    (when (zero? (rem @call-counter 240))
+      (logging/info "reaping futures" @call-counter))
+    (try
+      (doseq [[a-future val] @future-map]
+        (when (realized? a-future)
+          (if-let [error (deref-exception a-future)]
+            (do
+              (logging/error "************* error in future" (str a-future) error val)
+              ((:cleanup-on-error val))))
+          (swap! future-map dissoc a-future)))
+      (catch Throwable err
+        (logging/error "error occured in reap-futures" err)))))
 
 
 (defn map-from-routing-key-string
@@ -118,31 +120,25 @@
         delivery-tag (:delivery-tag metadata)
         fp (string/join File/separator [directory relpath])
         nack-this-message #(lb/nack ch delivery-tag false false)
-        ;; converted (tika/parse fp)
         ]
         ;;
     (register-future
      (future
        (try
          (let [converted (convert fp)]
-           ;; (println "before ack" (Thread/currentThread) (:delivery-tag metadata))
-
            (lb/publish ch
                        exchange
                        (routing-key-string-with-command routing-key "import_file")
                        (json/write-str (assoc body "tika-content" converted)))
            (lb/ack ch delivery-tag))
          (catch Exception err
-           (println "got exception while handling" fp err)
+           (logging/info "got exception while handling" fp err)
            (trace/print-stack-trace err)
            (lb/nack ch delivery-tag false false))))
      {:cleanup-on-error nack-this-message
       :fp fp})
-    #_(println "scheduled" fp " ****" )))
+    (logging/debug "scheduled" fp " ****" )))
 
-    ;; (println "dir" fp " ****" (:content-type converted))))
-
-;; (println "got message" metadata (String. payload "UTF-8")))
 
 (defn initialize-rabbitmq-structures
   "initialize rabbitmq queue and exchange for handling 'command' on
@@ -189,13 +185,13 @@
   ;; (convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf")
 
 
-  (let [[options args banner]
-        (cli/cli args
-                 ["--ampqp-url" "amqp url to connect to"]
-                 ["--port" "Port to listen on" :default 5000]
-                 ["--root" "Root directory of web server" :default "public"])]
-    (println "port:" (:port options))
-    (println "root:" (:root options)))
+  ;; (let [[options args banner]
+  ;;       (cli/cli args
+  ;;                ["--ampqp-url" "amqp url to connect to"]
+  ;;                ["--port" "Port to listen on" :default 5000]
+  ;;                ["--root" "Root directory of web server" :default "public"])]
+  ;;   (println "port:" (:port options))
+  ;;   (println "root:" (:root options)))
 
   (periodically 250 reap-futures)
 
@@ -203,7 +199,7 @@
     (try
       (run-with-connection "fscrawler:test")
       (catch Exception err
-        (println "got exception" err)
+        (logging/error "got exception" err)
         (trace/print-stack-trace err)
         (Thread/sleep 5000)
-        (println "restarting connection to rabbitmq")))))
+        (logging/info "restarting connection to rabbitmq")))))
