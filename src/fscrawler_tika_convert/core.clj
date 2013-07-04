@@ -13,6 +13,7 @@
   (:require [clojure.string :as string])
   (:require [com.brainbot.stat :as stat])
   (:require [clojure.stacktrace :as trace])
+  (:require [com.brainbot.iniconfig :as ini])
   (:require [tika])
   (:import java.io.File)
   (:import [java.util.concurrent TimeUnit ScheduledThreadPoolExecutor Callable])
@@ -169,10 +170,14 @@
     ;; (break-channel ch 2000)
     (lcons/blocking-subscribe ch queue-name handle-message :auto-ack false)))
 
+(defn die
+  [msg exitcode]
+  (println "Error:" msg)
+  (System/exit exitcode))
 
-(defn -main [& args]
-  ;; work around dangerous default behaviour in Clojure
-  ;; (alter-var-root #'*read-eval* (constantly false))
+
+(defn setup-logging!
+  []
   ;; (log-config/set-logger! "org.apache.pdfbox" :pattern "%c %d %p %m%n")
   (doseq [name ["org" "com" "fscrawler-tika-convert.core" ""]]
     (log-config/set-logger! name :pattern "%c %d %p %m%n"))
@@ -182,24 +187,54 @@
   (doseq [name ["org.apache.pdfbox" "com.coremedia"]]
     (log-config/set-logger! name :level :off))
 
-  ;; (convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf")
+  #_(convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf"))
 
 
-  ;; (let [[options args banner]
-  ;;       (cli/cli args
-  ;;                ["--ampqp-url" "amqp url to connect to"]
-  ;;                ["--port" "Port to listen on" :default 5000]
-  ;;                ["--root" "Root directory of web server" :default "public"])]
-  ;;   (println "port:" (:port options))
-  ;;   (println "root:" (:root options)))
+(defn parse-command-line-options
+  [args]
+  (let [[options args banner]
+        (cli/cli args
+                 ["-h" "--help" "Show help" :flag true :default false]
+                 ;; ["--ampqp-url" "amqp url to connect to"]
+                 ;; ["--port" "Port to listen on" :default 5000]
+                 ;; ["--root" "Root directory of web server" :default "public"])
+                 ["--inisection" "(required) section to use from configuration file"]
+                 ["--iniconfig" "(required) ini configuration filename"])]
+    (when (:help options)
+      (die banner 0))
+    (when-not (:iniconfig options)
+      (die "--iniconfig option missing" 1))
+    (when-not (:inisection options)
+      (die "--inisection option missing" 1))
+    options))
 
-  (periodically 250 reap-futures)
 
+(defn handle-command-for-filesystem
+  [filesystem]
   (while true
     (try
-      (run-with-connection "fscrawler:test")
+      (run-with-connection filesystem)
       (catch Exception err
         (logging/error "got exception" err)
         (trace/print-stack-trace err)
         (Thread/sleep 5000)
         (logging/info "restarting connection to rabbitmq")))))
+
+
+(defn -main [& args]
+  ;; work around dangerous default behaviour in Clojure
+  ;; (alter-var-root #'*read-eval* (constantly false))
+
+  (setup-logging!)
+
+  (let [{:keys [iniconfig inisection]} (parse-command-line-options args)
+        config (do
+                 (logging/info "using section" inisection
+                               "from ini file" iniconfig)
+                 (ini/read-ini iniconfig))
+        section (or (config inisection)
+                    (die (str "section " inisection " missing in " iniconfig) 1))]
+    (println "config: " config "\nsection" section))
+
+  (periodically 250 reap-futures)
+  (handle-command-for-filesystem "fscrawler:test"))
