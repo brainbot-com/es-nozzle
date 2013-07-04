@@ -12,7 +12,7 @@
                  [org.clojure/tools.cli "0.2.2"]
                  ;; [me.raynes/fs "1.4.4"]
                  [org.clojure/data.json "0.2.2"]
-                 [org.clojars.floriano.clj-tika "1.2.0"]
+                 [org.clojars.floriano.clj-tika "1.2.4"]
                  [com.novemberain/langohr "1.0.0-beta14"]]
   ;; :jvm-opts ["-Xmx64m" "-server"]
   :main fscrawler-tika-convert.core)
