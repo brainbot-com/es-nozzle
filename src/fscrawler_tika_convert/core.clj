@@ -1,6 +1,7 @@
 (ns fscrawler-tika-convert.core
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
+  (:require [fscrawler-tika-convert.reap :as reap])
   (:require [langohr.basic :as lb]
             [langohr.exchange  :as le]
             [langohr.core :as rmq]
@@ -18,70 +19,6 @@
   (:import java.io.File)
   (:import [java.util.concurrent TimeUnit ScheduledThreadPoolExecutor Callable])
   (:gen-class))
-
-
-(def ^:private scheduled-executor (ScheduledThreadPoolExecutor. 4))
-
-
-(defn periodically
-  "periodically run function f with a fixed delay of n milliseconds"
-
-  [n f]
-  (.scheduleWithFixedDelay scheduled-executor ^Runnable f 0 n TimeUnit/MILLISECONDS))
-
-
-(def future-map (atom {}))
-
-(defn register-future
-
-  [a-future nackfn]
-  (swap! future-map assoc a-future nackfn))
-
-(defn unregister-future
-  [a-future]
-  (swap! future-map dissoc a-future))
-
-
-(defn deref-exception
-  [a-future]
-  (try
-    (do (deref a-future)
-        nil)
-    (catch Throwable err
-      err)))
-
-
-(defn watch-futures
-  "watch a sequence of futures, call on-error if a future exited with an exception,
-   call on-exit if it exited normally"
-  [get-futures on-error on-exit]
-  (try
-    ;; (println 'watch-futures get-futures on-error on-exit)
-    (doseq [a-future (get-futures)]
-      (when (realized? a-future)
-        (if-let [error (deref-exception a-future)]
-          (on-error a-future error)
-          (on-exit a-future nil))))
-    (catch Throwable err
-      (trace/print-stack-trace err)
-      (logging/error "an error occured in watch-futures" err))))
-
-
-(let [call-counter (atom 0)
-      on-error (fn [a-future error]
-                 (logging/error "************* error in future" (str a-future) error)
-                 ((:cleanup-on-error (@future-map a-future)))
-                 (swap! future-map dissoc a-future))
-      on-exit (fn [a-future _]
-                (swap! future-map dissoc a-future))
-      get-futures #(do (swap! call-counter inc)
-                       (when (zero? (rem @call-counter 240))
-                         (logging/info "reaping futures" @call-counter))
-                       (keys @future-map))]
-  (defn reap-futures
-    []
-    (watch-futures get-futures on-error on-exit)))
-
 
 
 (defn map-from-routing-key-string
@@ -136,10 +73,10 @@
         relpath (:relpath (:entry body))
         delivery-tag (:delivery-tag metadata)
         fp (string/join File/separator [directory relpath])
-        nack-this-message #(lb/nack ch delivery-tag false false)
-        ]
-        ;;
-    (register-future
+        on-error (fn [a-future err]
+                   (lb/nack ch delivery-tag false false)
+                   (trace/print-stack-trace err))]
+    (reap/register-future!
      (future
        (try
          (let [converted (convert fp)]
@@ -152,8 +89,7 @@
            (logging/info "got exception while handling" fp err)
            (trace/print-stack-trace err)
            (lb/nack ch delivery-tag false false))))
-     {:cleanup-on-error nack-this-message
-      :fp fp})
+     on-error nil)
     (logging/debug "scheduled" fp " ****" )))
 
 
@@ -195,7 +131,7 @@
 (defn setup-logging!
   []
   ;; (log-config/set-logger! "org.apache.pdfbox" :pattern "%c %d %p %m%n")
-  (doseq [name ["org" "com" "fscrawler-tika-convert.core" ""]]
+  (doseq [name ["org" "com" "fscrawler-tika-convert" ""]]
     (log-config/set-logger! name :pattern "%c %d %p %m%n"))
 
   ;; Jul 01, 2013 4:38:09 PM com.coremedia.iso.boxes.AbstractContainerBox parseChildBoxes
@@ -272,11 +208,11 @@
     (when (zero? (count filesystems))
       (die (str "no filesystems defined in section " inisection " in " iniconfig)))
 
-    (periodically 250 reap-futures)
+    (reap/start-watching-futures!)
 
-    (let [futures (doall (for [filesystem filesystems]
-                           (future (handle-command-for-filesystem filesystem))))
-          wait-for-ever (promise)]
-      (periodically 1000 #(watch-futures (constantly futures)
-                                         die-on-exit-or-error die-on-exit-or-error))
-      @wait-for-ever)))
+    (doseq [filesystem filesystems]
+      (reap/register-future! (future (handle-command-for-filesystem filesystem))
+                             die-on-exit-or-error die-on-exit-or-error)))
+
+
+  @(promise))
