@@ -171,9 +171,9 @@
     (lcons/blocking-subscribe ch queue-name handle-message :auto-ack false)))
 
 (defn die
-  [msg exitcode]
+  [msg & {:keys [exit-code] :or {exit-code 1}}]
   (println "Error:" msg)
-  (System/exit exitcode))
+  (System/exit exit-code))
 
 
 (defn setup-logging!
@@ -201,11 +201,11 @@
                  ["--inisection" "(required) section to use from configuration file"]
                  ["--iniconfig" "(required) ini configuration filename"])]
     (when (:help options)
-      (die banner 0))
+      (die banner :exit-code 0))
     (when-not (:iniconfig options)
-      (die "--iniconfig option missing" 1))
+      (die "--iniconfig option missing"))
     (when-not (:inisection options)
-      (die "--inisection option missing" 1))
+      (die "--inisection option missing"))
     options))
 
 
@@ -242,11 +242,14 @@
                                "from ini file" iniconfig)
                  (ini/read-ini iniconfig))
         section (or (config inisection)
-                    (die (str "section " inisection " missing in " iniconfig) 1))
+                    (die (str "section " inisection " missing in " iniconfig)))
+        fscrawler-section (or (config "fscrawler") {})
+        max-size (Integer. (fscrawler-section "max_size"))
         filesystems (trimmed-lines-from-string (section "filesystems"))]
     (when (zero? (count filesystems))
-      (die (str "no filesystems defined in section " inisection " in " iniconfig) 1))
+      (die (str "no filesystems defined in section " inisection " in " iniconfig)))
 
+    (println "max-size is" max-size)
     (periodically 250 reap-futures)
 
     (let [futures (doall (for [filesystem filesystems]
@@ -256,4 +259,4 @@
           @f
           (catch Throwable err
             (trace/print-stack-trace err)
-            (die (str "thread unexpectedly died with error " err) 1)))))))
+            (die (str "thread unexpectedly died with error " err))))))))
