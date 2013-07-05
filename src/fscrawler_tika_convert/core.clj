@@ -50,22 +50,38 @@
     (catch Throwable err
       err)))
 
-(let [call-counter (atom 0)]
+
+(defn watch-futures
+  "watch a sequence of futures, call on-error if a future exited with an exception,
+   call on-exit if it exited normally"
+  [get-futures on-error on-exit]
+  (try
+    ;; (println 'watch-futures get-futures on-error on-exit)
+    (doseq [a-future (get-futures)]
+      (when (realized? a-future)
+        (if-let [error (deref-exception a-future)]
+          (on-error a-future error)
+          (on-exit a-future nil))))
+    (catch Throwable err
+      (trace/print-stack-trace err)
+      (logging/error "an error occured in watch-futures" err))))
+
+
+(let [call-counter (atom 0)
+      on-error (fn [a-future error]
+                 (logging/error "************* error in future" (str a-future) error)
+                 ((:cleanup-on-error (@future-map a-future)))
+                 (swap! future-map dissoc a-future))
+      on-exit (fn [a-future _]
+                (swap! future-map dissoc a-future))
+      get-futures #(do (swap! call-counter inc)
+                       (when (zero? (rem @call-counter 240))
+                         (logging/info "reaping futures" @call-counter))
+                       (keys @future-map))]
   (defn reap-futures
     []
-    (swap! call-counter inc)
-    (when (zero? (rem @call-counter 240))
-      (logging/info "reaping futures" @call-counter))
-    (try
-      (doseq [[a-future val] @future-map]
-        (when (realized? a-future)
-          (if-let [error (deref-exception a-future)]
-            (do
-              (logging/error "************* error in future" (str a-future) error val)
-              ((:cleanup-on-error val))))
-          (swap! future-map dissoc a-future)))
-      (catch Throwable err
-        (logging/error "error occured in reap-futures" err)))))
+    (watch-futures get-futures on-error on-exit)))
+
 
 
 (defn map-from-routing-key-string
@@ -230,6 +246,13 @@
             (map string/trim (string/split-lines s)))))
 
 
+(defn die-on-exit-or-error
+  [a-future error]
+  (when error
+    (trace/print-stack-trace error))
+  (die "thread died unexpectedly"))
+
+
 (defn -main [& args]
   ;; work around dangerous default behaviour in Clojure
   ;; (alter-var-root #'*read-eval* (constantly false))
@@ -249,14 +272,11 @@
     (when (zero? (count filesystems))
       (die (str "no filesystems defined in section " inisection " in " iniconfig)))
 
-    (println "max-size is" max-size)
     (periodically 250 reap-futures)
 
     (let [futures (doall (for [filesystem filesystems]
-                           (future (handle-command-for-filesystem filesystem))))]
-      (doseq [f futures]
-        (try
-          @f
-          (catch Throwable err
-            (trace/print-stack-trace err)
-            (die (str "thread unexpectedly died with error " err))))))))
+                           (future (handle-command-for-filesystem filesystem))))
+          wait-for-ever (promise)]
+      (periodically 1000 #(watch-futures (constantly futures)
+                                         die-on-exit-or-error die-on-exit-or-error))
+      @wait-for-ever)))
