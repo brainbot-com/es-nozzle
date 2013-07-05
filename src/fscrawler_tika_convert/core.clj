@@ -221,6 +221,15 @@
         (logging/info "restarting connection to rabbitmq")))))
 
 
+(defn trimmed-lines-from-string
+  "split string at newline and return trimmed lines"
+  [s]
+  (if (nil? s)
+    nil
+    (filter #(not (string/blank? %))
+            (map string/trim (string/split-lines s)))))
+
+
 (defn -main [& args]
   ;; work around dangerous default behaviour in Clojure
   ;; (alter-var-root #'*read-eval* (constantly false))
@@ -233,8 +242,18 @@
                                "from ini file" iniconfig)
                  (ini/read-ini iniconfig))
         section (or (config inisection)
-                    (die (str "section " inisection " missing in " iniconfig) 1))]
-    (println "config: " config "\nsection" section))
+                    (die (str "section " inisection " missing in " iniconfig) 1))
+        filesystems (trimmed-lines-from-string (section "filesystems"))]
+    (when (zero? (count filesystems))
+      (die (str "no filesystems defined in section " inisection " in " iniconfig) 1))
 
-  (periodically 250 reap-futures)
-  (handle-command-for-filesystem "fscrawler:test"))
+    (periodically 250 reap-futures)
+
+    (let [futures (doall (for [filesystem filesystems]
+                           (future (handle-command-for-filesystem filesystem))))]
+      (doseq [f futures]
+        (try
+          @f
+          (catch Throwable err
+            (trace/print-stack-trace err)
+            (die (str "thread unexpectedly died with error " err) 1)))))))
