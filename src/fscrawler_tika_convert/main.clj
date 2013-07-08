@@ -11,12 +11,15 @@
 
 
 (defn die
+  "print error message msg and exit the program with named argument
+ :exit-code or 1"
   [msg & {:keys [exit-code] :or {exit-code 1}}]
   (println "Error:" msg)
   (System/exit exit-code))
 
 
 (defn setup-logging!
+  "configure logging"
   []
   ;; (log-config/set-logger! "org.apache.pdfbox" :pattern "%c %d %p %m%n")
   (doseq [name ["org" "com" "fscrawler-tika-convert" ""]]
@@ -31,6 +34,9 @@
 
 
 (defn parse-command-line-options
+  "parse command line options with clojure.tools.cli
+   returns a map of options"
+
   [args]
   (let [[options args banner]
         (cli/cli args
@@ -58,6 +64,7 @@
 
 
 (defn die-on-exit-or-error
+  "print stack trace and die, used as callback to register-future!"
   [a-future error]
   (when error
     (trace/print-stack-trace error))
