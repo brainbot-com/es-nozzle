@@ -105,10 +105,13 @@
     queue-name))
 
 (defn run-with-connection
-  [filesystem]
-  (let [conn       (rmq/connect)
-        ch         (lch/open conn)
-        queue-name (initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
+  [filesystem options]
+  (let [rmq-settings (rmq/settings-from (:amqp-url options))
+        conn         (do
+                       (logging/info "connecting to rabbitmq" (:amqp-url options) rmq-settings)
+                       (rmq/connect rmq-settings))
+        ch           (lch/open conn)
+        queue-name   (initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
 
     ;; (lq/declare ch queue-name :exclusive false :auto-delete true)
     ;; (lq/bind    ch queue-name "nextbot")
@@ -162,10 +165,10 @@
 
 
 (defn handle-command-for-filesystem
-  [filesystem]
+  [filesystem options]
   (while true
     (try
-      (run-with-connection filesystem)
+      (run-with-connection filesystem options)
       (catch Exception err
         (logging/error "got exception" err)
         (trace/print-stack-trace err)
@@ -203,7 +206,8 @@
         section (or (config inisection)
                     (die (str "section " inisection " missing in " iniconfig)))
         fscrawler-section (or (config "fscrawler") {})
-        max-size (Integer. (fscrawler-section "max_size"))
+        options {:max-size (Integer. (fscrawler-section "max_size")),
+                 :amqp-url (get fscrawler-section "amqp_url" "amqp://localhost/%2f")}
         filesystems (trimmed-lines-from-string (section "filesystems"))]
     (when (zero? (count filesystems))
       (die (str "no filesystems defined in section " inisection " in " iniconfig)))
@@ -211,7 +215,7 @@
     (reap/start-watching-futures!)
 
     (doseq [filesystem filesystems]
-      (reap/register-future! (future (handle-command-for-filesystem filesystem))
+      (reap/register-future! (future (handle-command-for-filesystem filesystem options))
                              die-on-exit-or-error die-on-exit-or-error)))
 
 
