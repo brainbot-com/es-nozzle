@@ -14,10 +14,12 @@
   (.scheduleWithFixedDelay scheduled-executor ^Runnable f 0 n TimeUnit/MILLISECONDS))
 
 
-(def future-map (atom {}))
+(def ^:private future-map (atom {}))
 
 
 (defn register-future!
+  "register future, on-error will be called if the future exits with an exception, otherwise
+  on exit will be called"
   [a-future on-error on-exit]
   (swap! future-map assoc a-future {:on-error on-error :on-exit on-exit}))
 
@@ -40,6 +42,8 @@
 
 
 (defn- mark-watcher-alive
+  "print a log message each minute, so we know the reaper is still
+ alive"
   []
   (swap! call-counter inc)
   (when (zero? (rem @call-counter 240))
@@ -69,5 +73,6 @@
 
 
 (defn start-watching-futures!
+  "start watching futures registered with register-future!"
   []
   (periodically 250 watch-futures))
