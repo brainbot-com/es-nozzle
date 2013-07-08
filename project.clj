@@ -13,5 +13,6 @@
                  [org.clojure/data.json "0.2.2"]
                  [org.clojars.floriano.clj-tika "1.2.4"]
                  [com.novemberain/langohr "1.0.0-beta14"]]
+  :omit-source true
   ;; :jvm-opts ["-Xmx64m" "-server"]
   :main fscrawler-tika-convert.main)
