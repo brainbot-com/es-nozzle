@@ -14,4 +14,4 @@
                  [org.clojars.floriano.clj-tika "1.2.4"]
                  [com.novemberain/langohr "1.0.0-beta14"]]
   ;; :jvm-opts ["-Xmx64m" "-server"]
-  :main fscrawler-tika-convert.core)
+  :main fscrawler-tika-convert.main)
