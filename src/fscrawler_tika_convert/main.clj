@@ -52,7 +52,7 @@
       (die "--iniconfig option missing"))
     (when-not (:inisection options)
       (die "--inisection option missing"))
-    options))
+    (dissoc options :help)))
 
 (defn trimmed-lines-from-string
   "split string at newline and return trimmed lines"
