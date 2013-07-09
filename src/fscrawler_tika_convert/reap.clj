@@ -61,8 +61,8 @@
       (when (realized? a-future)
         (unregister-future! a-future)
         (let [do-nothing (constantly nil)
-              on-error (get callbacks :on-error do-nothing)
-              on-exit (get callbacks :on-exit do-nothing)
+              on-error (or (:on-error callbacks) do-nothing)
+              on-exit (or (:on-exit callbacks) do-nothing)
               error (deref-exception a-future)]
           (if error
             (on-error a-future error)
