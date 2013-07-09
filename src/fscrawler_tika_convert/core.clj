@@ -57,12 +57,13 @@
 
 
 (defn handle-message
-  [ch metadata ^bytes payload]
+  [options ch metadata ^bytes payload]
   (let [body (json/read-json (String. payload "UTF-8"))
         ;; {:keys [directory relpath] body}
         routing-key (:routing-key metadata)
         exchange (:exchange metadata)
         directory (:directory body)
+        size (get-in body [:entry :stat :st_size])
         relpath (:relpath (:entry body))
         delivery-tag (:delivery-tag metadata)
         fp (string/join File/separator [directory relpath])
@@ -72,11 +73,18 @@
     (reap/register-future!
      (future
        (try
-         (let [converted (convert fp)]
+         (let [converted (if (< size (:max-size options))
+                           (convert fp)
+                           (do
+                             (logging/info "skipping content-extraction, file too large" fp)
+                             nil))
+               new-body (if converted
+                          (assoc body "tika-content" converted)
+                          body)]
            (lb/publish ch
                        exchange
                        (routing-key-string-with-command routing-key "import_file")
-                       (json/write-str (assoc body "tika-content" converted)))
+                       (json/write-str new-body))
            (lb/ack ch delivery-tag))
          (catch Exception err
            (logging/info "got exception while handling" fp err)
@@ -107,7 +115,7 @@
         ch           (lch/open conn)
         queue-name   (initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
     (lb/qos ch (+ number-of-cores 4))
-    (lcons/blocking-subscribe ch queue-name handle-message :auto-ack false)))
+    (lcons/blocking-subscribe ch queue-name (partial handle-message options) :auto-ack false)))
 
 
 (defn run-forever
