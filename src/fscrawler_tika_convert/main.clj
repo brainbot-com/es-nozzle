@@ -102,7 +102,7 @@
     (reap/start-watching-futures!)
 
     (doseq [filesystem filesystems]
-      (reap/register-future! (future (core/handle-command-for-filesystem filesystem options))
+      (reap/register-future! (future (core/handle-command-for-filesystem-forever filesystem options))
                              die-on-exit-or-error die-on-exit-or-error)))
 
 

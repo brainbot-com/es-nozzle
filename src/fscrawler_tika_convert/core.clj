@@ -55,12 +55,6 @@
   [filename]
   (update-in (tika/parse filename) [:text] wash))
 
-(defn break-channel
-  [ch delay]
-  (future
-    (Thread/sleep delay)
-    (lq/bind ch "no-such-queu-453456546345", "amq.fanout")))
-
 
 (defn handle-message
   [ch metadata ^bytes payload]
@@ -103,7 +97,8 @@
     (lq/bind ch queue-name exchange-name :routing-key queue-name)
     queue-name))
 
-(defn run-with-connection
+
+(defn handle-command-for-filesystem
   [filesystem options]
   (let [rmq-settings (rmq/settings-from (:amqp-url options))
         conn         (do
@@ -111,29 +106,23 @@
                        (rmq/connect rmq-settings))
         ch           (lch/open conn)
         queue-name   (initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
-
-    ;; (lq/declare ch queue-name :exclusive false :auto-delete true)
-    ;; (lq/bind    ch queue-name "nextbot")
     (lb/qos ch (+ number-of-cores 4))
-    ;; (lcons/subscribe ch queue-name handle-message
-    ;;                  :auto-ack false))
-    ;;                  :handle-shutdown-signal-fn
-    ;;                  (fn [consumer_tag reason]
-    ;;                    (println "shutdown" consumer_tag reason))
-
-    ;; (break-channel ch 2000)
     (lcons/blocking-subscribe ch queue-name handle-message :auto-ack false)))
 
 
-
-(defn handle-command-for-filesystem
-  [filesystem options]
+(defn run-forever
+  "run function forever, i.e. run function, catch exception, wait a
+ bit and restart it"
+  [sleeptime function & args]
   (while true
     (try
-      (run-with-connection filesystem options)
-      (catch Exception err
-        (logging/error "got exception" err)
+      (apply function args)
+      (catch Throwable err
+        (logging/error "got exception" err "while running" function "with" args)
         (trace/print-stack-trace err)
-        (Thread/sleep 5000)
-        (logging/info "restarting connection to rabbitmq")))))
+        (Thread/sleep sleeptime)))))
 
+
+(defn handle-command-for-filesystem-forever
+  [filesystem options]
+  (run-forever 5000 handle-command-for-filesystem filesystem options))
