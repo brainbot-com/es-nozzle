@@ -1,6 +1,22 @@
 (ns fscrawler-tika-convert.main-test
+  (:require [com.brainbot.iniconfig :as ini])
   (:require [clojure.test :refer :all]
             [fscrawler-tika-convert.main :refer :all]))
+
+(def config-1
+  (ini/read-ini-string
+"[fscrawler]
+amqp_url = amqp://localhost
+max_size = 10000000
+[bar]
+filesystems =
+[baz]
+[foo]
+filesystems =
+   fs1
+   fs2
+   fs3
+"))
 
 
 (defn mock-die
@@ -53,3 +69,25 @@
            Exception
            #"1 thread died unexpectedly"
            (die-on-exit-or-error a-future error)))))))
+
+(deftest test-extract-options-from-iniconfig
+  (testing "simple example"
+    (is (= (extract-options-from-iniconfig config-1 "config.ini" "foo")
+           {:amqp-url "amqp://localhost"
+            :filesystems ["fs1" "fs2" "fs3"]
+            :max-size 10000000})))
+
+
+  (with-redefs [die mock-die]
+    (testing "should die when filesystems is empty"
+      (is (thrown-with-msg?
+           Exception
+           #"no filesystems defined"
+           (extract-options-from-iniconfig config-1 "config.ini" "bar"))))
+    (testing "should die when inisection is missing"
+      (is (thrown-with-msg?
+           Exception
+           #"missing in"
+           (extract-options-from-iniconfig config-1 "config.ini" "no-such-section"))))))
+
+

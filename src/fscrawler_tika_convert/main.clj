@@ -71,6 +71,21 @@
   (die "thread died unexpectedly"))
 
 
+(defn extract-options-from-iniconfig
+  [config iniconfig inisection]
+  (let [section (or (config inisection)
+                    (die (str "section " inisection " missing in " iniconfig)))
+        fscrawler-section (or (config "fscrawler") {})
+        max-size (Integer. (fscrawler-section "max_size")),
+        amqp-url (get fscrawler-section "amqp_url" "amqp://localhost/%2f")
+        filesystems (trimmed-lines-from-string (section "filesystems"))]
+    (when (zero? (count filesystems))
+      (die (str "no filesystems defined in section " inisection " in " iniconfig)))
+    {:max-size max-size
+     :amqp-url amqp-url
+     :filesystems filesystems}))
+
+
 (defn -main [& args]
   ;; work around dangerous default behaviour in Clojure
   ;; (alter-var-root #'*read-eval* (constantly false))
@@ -82,15 +97,8 @@
                  (logging/info "using section" inisection
                                "from ini file" iniconfig)
                  (ini/read-ini iniconfig))
-        section (or (config inisection)
-                    (die (str "section " inisection " missing in " iniconfig)))
-        fscrawler-section (or (config "fscrawler") {})
-        options {:max-size (Integer. (fscrawler-section "max_size")),
-                 :amqp-url (get fscrawler-section "amqp_url" "amqp://localhost/%2f")}
-        filesystems (trimmed-lines-from-string (section "filesystems"))]
-    (when (zero? (count filesystems))
-      (die (str "no filesystems defined in section " inisection " in " iniconfig)))
-
+        {:keys [filesystems] :as options} (extract-options-from-iniconfig
+                                           config iniconfig inisection)]
     (reap/start-watching-futures!)
 
     (doseq [filesystem filesystems]
