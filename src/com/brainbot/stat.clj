@@ -1,7 +1,7 @@
 (ns com.brainbot.stat
   (:import [java.io File IOException FileNotFoundException]
-           [java.nio.file Files Path LinkOption]
-           [java.nio.file.attribute PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes]))
+           [java.nio.file Files Path LinkOption Paths]
+           [java.nio.file.attribute AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes]))
 
 
 (def no-follow-links
@@ -37,9 +37,8 @@
 
 
 (defn- get-path
-  [path]
-  (.toPath (File. path)))
-
+  [path & args]
+  (Paths/get path (into-array String args)))
 
 (defn stat
   [path]
@@ -61,3 +60,12 @@
      :creation-time (ct (.creationTime attr))
      :last-access-time (ct (.lastAccessTime attr))
      :last-modified-time (ct (.lastModifiedTime attr))}))
+
+
+(defn read-windows-acls
+  [path]
+  (-> path
+      get-path
+      (Files/getFileAttributeView AclFileAttributeView (into-array LinkOption []))
+      .getAcl
+      seq))
