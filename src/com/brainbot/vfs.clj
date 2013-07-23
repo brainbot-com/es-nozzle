@@ -94,11 +94,3 @@
          {:relpath entry
           :stat (stat fs (join fs [path entry]))}) ;; XXX error handling
          (listdir fs path)))
-
-
-(defrecord RealFilesystem [root]
-  Filesystem
-  (join [fs parts]
-    (string/join "/" parts))
-  (listdir [fs dir]
-    (seq (.list (clojure.java.io/file (string/join [(:root fs) dir]))))))
