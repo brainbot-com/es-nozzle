@@ -34,18 +34,26 @@
       :other))
 
 
+(defn- acl-from-posix-perm
+  [owner-name group-name others-name perm]
+  (reverse
+   (drop-while  ;; drop deny rules from the end of the acl
+    (complement :allow)
+    (map (fn [name rperm]
+           {:allow (contains? perm rperm)
+            :sid name})
+         [others-name group-name owner-name]
+         [PosixFilePermission/OTHERS_READ
+          PosixFilePermission/GROUP_READ
+          PosixFilePermission/OWNER_READ]))))
+
+
 (defn- acl-from-attribute
   [attr]
   (let [perm (.permissions attr)
         owner-name (str "USER:" (.getName (.owner attr)))
         group-name (str "GROUP:" (.getName (.group attr)))]
-    (list
-     {:allow (contains? perm PosixFilePermission/OWNER_READ)
-      :sid owner-name}
-     {:allow (contains? perm PosixFilePermission/GROUP_READ)
-      :sid group-name}
-     {:allow (contains? perm PosixFilePermission/OTHERS_READ)
-      :sid "GROUP:AUTHENTICATED_USERS"})))
+    (acl-from-posix-perm owner-name group-name "GROUP:AUTHENTICATED_USERS")))
 
 
 (defrecord RealFilesystem [root]
