@@ -3,10 +3,14 @@
    [clojure.string :as string])
   (:import [java.io File IOException FileNotFoundException]
            [java.nio.file Files Path LinkOption Paths]
-           [java.nio.file.attribute AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
+
+           [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
 
   (:require [com.brainbot.vfs :as vfs]))
 
+
+(def ^:private is-windows
+  (= "\\" File/separator))
 
 (def ^:private no-follow-links
   (into-array [LinkOption/NOFOLLOW_LINKS]))
@@ -15,11 +19,9 @@
   [path & args]
   (Paths/get path (into-array String args)))
 
-
 (defn- read-attributes
   [path]
   (Files/readAttributes (get-path path) PosixFileAttributes no-follow-links))
-
 
 (defn- type-from-attribute
   [attr]
@@ -32,7 +34,6 @@
       :symbolic-link
     :else
       :other))
-
 
 (defn- acl-from-posix-perm
   [owner-name group-name others-name perm]
@@ -56,12 +57,46 @@
     (acl-from-posix-perm owner-name group-name "GROUP:AUTHENTICATED_USERS" perm)))
 
 
+
+(defn- raw-windows-acls
+  [path]
+  (-> path
+      get-path
+      (Files/getFileAttributeView AclFileAttributeView (into-array LinkOption []))
+      .getAcl
+      seq))
+
+(defn- convert-raw-windows-sid
+  [sid]
+  (let [name (.getName sid)]
+    (cond
+      (instance? UserPrincipal sid)
+        (str "USER:" name)
+      (instance? GroupPrincipal sid)
+        (str "GROUP:" name))))
+
+
+(defn- convert-raw-windows-ace
+  [ace]
+  (if (contains? (.permissions ace) AclEntryPermission/READ_DATA)
+    {:allow (= AclEntryType/ALLOW (.type ace))
+     :sid (convert-raw-windows-sid (.principal ace))}))
+
+(defn- windows-acl-from-path
+  [path]
+  (remove nil? (map convert-raw-windows-ace (raw-windows-acls path))))
+
+(defn- posix-acl-from-path
+  [path]
+  (acl-from-attribute (read-attributes path)))
+
 (defrecord RealFilesystem [root]
   vfs/Filesystem
   (get-permissions [fs entry]
-    (let [fp (string/join "/" [(:root fs) entry])
-          attr (read-attributes fp)]
-      (acl-from-attribute attr)))
+    (let [fp (string/join "/" [(:root fs) entry])]
+      (if is-windows
+        (windows-acl-from-path fp)
+        (posix-acl-from-path fp))))
 
   (stat [fs entry]
     (let [fp (string/join "/" [(:root fs) entry])
