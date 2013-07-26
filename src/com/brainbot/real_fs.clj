@@ -53,12 +53,15 @@
   (let [perm (.permissions attr)
         owner-name (str "USER:" (.getName (.owner attr)))
         group-name (str "GROUP:" (.getName (.group attr)))]
-    (acl-from-posix-perm owner-name group-name "GROUP:AUTHENTICATED_USERS")))
+    (acl-from-posix-perm owner-name group-name "GROUP:AUTHENTICATED_USERS" perm)))
 
 
 (defrecord RealFilesystem [root]
   vfs/Filesystem
-  ;; (get-permissions [fs entry] ...)
+  (get-permissions [fs entry]
+    (let [fp (string/join "/" [(:root fs) entry])
+          attr (read-attributes fp)]
+      (acl-from-attribute attr)))
 
   (stat [fs entry]
     (let [fp (string/join "/" [(:root fs) entry])
