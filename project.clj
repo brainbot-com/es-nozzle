@@ -9,6 +9,7 @@
                  [org.slf4j/slf4j-log4j12 "1.6.6"]
                  [com.brainbot/iniconfig "0.1.1"]
                  [org.clojure/tools.cli "0.2.2"]
+                 [info.hoetzel/clj-nio2 "0.1.1"]
                  ;; [me.raynes/fs "1.4.4"]
                  [org.clojure/data.json "0.2.2"]
                  [org.clojars.floriano.clj-tika "1.2.4"]

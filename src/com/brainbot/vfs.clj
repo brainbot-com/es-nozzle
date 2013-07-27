@@ -19,4 +19,4 @@
   (map (fn [entry]
          {:relpath entry
           :stat (stat fs (join fs [path entry]))}) ;; XXX error handling
-         (listdir fs path)))
+       (listdir fs path)))

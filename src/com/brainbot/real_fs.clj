@@ -1,6 +1,7 @@
 (ns com.brainbot.real-fs
   (:require
    [clojure.string :as string])
+  (:require [nio2.dir-seq])
   (:import [java.io File IOException FileNotFoundException]
            [java.nio.file Files Path LinkOption Paths]
 
@@ -90,6 +91,7 @@
   [path]
   (acl-from-attribute (read-attributes path)))
 
+
 (defrecord RealFilesystem [root]
   vfs/Filesystem
   (get-permissions [fs entry]
@@ -110,4 +112,7 @@
     (string/join "/" parts))
 
   (listdir [fs dir]
-    (seq (.list (clojure.java.io/file (string/join "/" [(:root fs) dir]))))))
+    (let [fp (string/join "/" [(:root fs) dir])
+          up (get-path fp)]
+      (map #(-> % .getFileName str)
+           (nio2.dir-seq/dir-seq up)))))
