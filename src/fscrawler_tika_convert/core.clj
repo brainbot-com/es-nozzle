@@ -18,7 +18,8 @@
   (:require [com.brainbot.iniconfig :as ini])
   (:require [tika])
   (:import java.io.File)
-  (:import [java.util.concurrent TimeUnit ScheduledThreadPoolExecutor Callable]))
+  (:import [com.rabbitmq.client Address ConnectionFactory Connection Channel ShutdownListener])
+  (:import [java.util.concurrent Executors]))
 
 
 (defn map-from-routing-key-string
@@ -143,7 +144,10 @@
                    (String. payload "UTF-8")
                    delivery-tag
                    content-type
-                   type)))
+                   type))
+  (Thread/sleep 1000)
+  (println "done")
+  (lb/ack ch delivery-tag))
 
 
 (defn connect-loop
@@ -151,10 +155,10 @@
   handle-connection with the connection object. if the connection
   fails, wait for 5 seconds and try again"
 
-  [rmq-settings handle-connection]
+  [connect handle-connection]
   (while true
     (try
-      (let [conn (rmq/connect rmq-settings)
+      (let [conn (connect)
             restart-promise (promise)
             sl   (rmq/shutdown-listener
                   (partial deliver restart-promise))]
@@ -170,15 +174,38 @@
 
 
 
+(defn publish-some-message
+  [conn]
+  (let [ch (lch/open conn)
+        queue-name (initialize-rabbitmq-structures ch "extract_content" "nextbot" "fscrawler:test")]
+    (doseq [i (range 100)]
+      (println "[main] Publishing...")
+      (lb/publish ch "nextbot" queue-name "Hello!" :content-type "text/plain" :type "greetings.hi"))
+    (lch/close ch)
+    queue-name))
+
+
+
+(defn connect-with-thread-pool
+  [rmq-settings thread-pool]
+  (let [cf (#'rmq/create-connection-factory rmq-settings)]
+    (.newConnection ^ConnectionFactory cf thread-pool)))
+
+
 (defn doit
   []
-  (connect-loop
-   {}
-   (fn [conn]
-     (let [ch (lch/open conn)
-           queue-name (initialize-rabbitmq-structures ch "extract_content" "nextbot" "fscrawler:test")
-           tag (lcons/subscribe ch queue-name new-handle-msg)]
-       (println "tag is" tag)))))
+  (let [thread-pool (Executors/newFixedThreadPool 500)
+        connect (partial connect-with-thread-pool {} thread-pool)]
+    (connect-loop
+     connect
+     (fn [conn]
+       (let [queue-name (publish-some-message conn)]
+         (doseq [i (range 200)]
+           (let [ch (lch/open conn)]
+             (lb/qos ch 1)
+             (lcons/subscribe ch queue-name new-handle-msg))))
+       (println "fn-done")))))
+
 
 (defn -main [& args]
   (log-config/set-logger!)
