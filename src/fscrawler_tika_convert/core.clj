@@ -1,4 +1,5 @@
 (ns fscrawler-tika-convert.core
+  (:gen-class)
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [fscrawler-tika-convert.reap :as reap])
@@ -134,3 +135,51 @@
 (defn handle-command-for-filesystem-forever
   [filesystem options]
   (run-forever 5000 handle-command-for-filesystem filesystem options))
+
+
+(defn new-handle-msg
+  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (println (format "[consumer] Received a message: %s, delivery tag: %d, content type: %s, type: %s"
+                   (String. payload "UTF-8")
+                   delivery-tag
+                   content-type
+                   type)))
+
+
+(defn connect-loop
+  "connect to rabbitmq with settings rmq-settings and call
+  handle-connection with the connection object. if the connection
+  fails, wait for 5 seconds and try again"
+
+  [rmq-settings handle-connection]
+  (while true
+    (try
+      (let [conn (rmq/connect rmq-settings)
+            restart-promise (promise)
+            sl   (rmq/shutdown-listener
+                  (partial deliver restart-promise))]
+        (.addShutdownListener conn sl)
+        (handle-connection conn)
+        (let [cause @restart-promise]
+          (println "connection closed" cause (class cause) "restarting in 5s")))
+      (catch Exception err
+        (trace/print-stack-trace err)
+        (println "got exception" err)))
+    (Thread/sleep 5000)))
+
+
+
+
+(defn doit
+  []
+  (connect-loop
+   {}
+   (fn [conn]
+     (let [ch (lch/open conn)
+           queue-name (initialize-rabbitmq-structures ch "extract_content" "nextbot" "fscrawler:test")
+           tag (lcons/subscribe ch queue-name new-handle-msg)]
+       (println "tag is" tag)))))
+
+(defn -main [& args]
+  (log-config/set-logger!)
+  (doit))
