@@ -14,7 +14,7 @@
                  [org.clojure/data.json "0.2.2"]
                  [org.clojars.floriano.clj-tika "1.2.4"]
                  [jcifs "1.3.17"]
-                 [com.novemberain/langohr "1.0.0"]]
+                 [com.novemberain/langohr "1.0.1"]]
   :profiles {:doit {:main fscrawler-tika-convert.core}}
   :aliases {"doit" ["with-profile" "doit" "run"]}
   :omit-source true
