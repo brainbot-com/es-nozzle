@@ -12,6 +12,7 @@
 
 (def ^:private filesystem-registry
   (atom {"file" 'com.brainbot.real-fs
+         nil 'com.brainbot.real-fs
          "smbfs" 'com.brainbot.smb-fs}))
 
 
@@ -47,11 +48,10 @@
 (defn filesystem-from-inisection
   "create filesystem from ini config section"
   [section]
-  (if-let [fstype (section "type")]
+  (let [fstype (section "type")]
     (if-let [create-fs (get-create-fs-fn fstype)]
       (create-fs section)
-      (throw (Exception. (str "unknown filesystem type " fstype))))
-    (throw (Exception. (str "no type specified in section")))))
+      (throw (Exception. (str "unknown filesystem type " fstype))))))
 
 
 (defn cmd-listdir
