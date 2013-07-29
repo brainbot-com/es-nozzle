@@ -254,7 +254,7 @@
 
 (defn rmq-settings-from-config
   [iniconfig]
-  (rmq/settings-from (get-in iniconfig [default-section-name "amqp_url"])))
+  (rmq/settings-from (get-in iniconfig [default-section-name "amqp-url"])))
 
 
 (defn doit
