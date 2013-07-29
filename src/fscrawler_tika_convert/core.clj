@@ -151,6 +151,16 @@
   (lb/ack ch delivery-tag))
 
 
+(defn handle-msg-listdir
+  [fs ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (println (format "[consumer] Received a message: %s, delivery tag: %d, content type: %s, type: %s"
+                   (String. payload "UTF-8")
+                   delivery-tag
+                   content-type
+                   type))
+  (lb/ack ch delivery-tag))
+
+
 (defn connect-loop
   "connect to rabbitmq with settings rmq-settings and call
   handle-connection with the connection object. if the connection
@@ -179,7 +189,7 @@
   [conn]
   (let [ch (lch/open conn)
         queue-name (initialize-rabbitmq-structures ch "extract_content" "nextbot" "fscrawler:test")]
-    (doseq [i (range 100)]
+    (doseq [i (range 15)]
       (println "[main] Publishing...")
       (lb/publish ch "nextbot" queue-name "Hello!" :content-type "text/plain" :type "greetings.hi"))
     (lch/close ch)
@@ -217,23 +227,46 @@
     (lq/bind ch "no-such-queu-453456546345", "amq.fanout")))
 
 
-(defn doit
-  []
+(defn connect-loop-with-thread-pool
+  [rmq-settings handle-connection]
   (let [thread-pool (Executors/newFixedThreadPool 500)
-        connect (partial connect-with-thread-pool {} thread-pool)]
+        connect (partial connect-with-thread-pool rmq-settings thread-pool)]
     (connect-loop
      connect
-     (fn [conn]
-       (let [queue-name (publish-some-message conn)]
-         (doseq [i (range 20)]
-           (println "starting channel" i)
-           (channel-loop conn
-                         (fn [ch]
-                           (if (zero? (mod i 4))
-                             (break-channel ch (+ 2000 (* i 500))))
-                           (lb/qos ch 1)
-                           (lcons/subscribe ch queue-name new-handle-msg)))))
-       (println "fn-done")))))
+     handle-connection)))
+
+
+(defn build-handle-connection-from-config
+  [iniconfig section]
+  (fn [conn]
+    (let [queue-name (publish-some-message conn)]
+      (doseq [i (range 20)]
+        (println "starting channel" i)
+        (channel-loop conn
+                      (fn [ch]
+                        (if (zero? (mod i 4))
+                          (break-channel ch (+ 2000 (* i 500))))
+                        (lb/qos ch 1)
+                        (lcons/subscribe ch queue-name new-handle-msg)))))
+    (println "fn-done")))
+
+(def default-section-name "fscrawler")
+
+(defn rmq-settings-from-config
+  [iniconfig]
+  (rmq/settings-from (get-in iniconfig [default-section-name "amqp_url"])))
+
+
+(defn doit
+  []
+  (let [iniconfig (ini/read-ini "config.ini")
+        section "fscrawler"
+        rmq-settings (rmq-settings-from-config iniconfig)]
+    (println "config" iniconfig)
+    (println "rmq-settings" rmq-settings)
+    (connect-loop-with-thread-pool
+     rmq-settings
+     (build-handle-connection-from-config iniconfig section))))
 
 
 (defn -main [& args]
