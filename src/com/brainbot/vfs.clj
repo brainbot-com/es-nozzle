@@ -37,7 +37,7 @@
   (let [create-fs (@filesystem-registry fstype)]
     (cond
       (nil? create-fs)
-        (load-fs-package (symbol (str "com.brainbot." fstype)))
+        (load-fs-package (symbol fstype))
       (symbol? create-fs)
         (load-fs-package create-fs)
       :else
