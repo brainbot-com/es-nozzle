@@ -4,6 +4,7 @@
             [clj-logging-config.log4j :as log-config])
   (:require [fscrawler-tika-convert.reap :as reap])
   (:require [langohr.basic :as lb]
+            [langohr.shutdown :as lshutdown]
             [langohr.exchange  :as le]
             [langohr.core :as rmq]
             [langohr.queue :as lq]
@@ -192,6 +193,30 @@
     (.newConnection ^ConnectionFactory cf thread-pool)))
 
 
+(defn channel-loop
+  "create a new channel and call handle-channel on it
+   do the same again if the channel is shutdown. this function should
+   be used for channel subscribers. handle-channel should not block"
+
+  [conn handle-channel]
+
+  (let [ch (lch/open conn)
+        restart (fn [cause]
+                  (if-not (lshutdown/hard-error? cause)
+                    (future (channel-loop conn handle-channel))))
+        sl (rmq/shutdown-listener restart)]
+    (.addShutdownListener ch sl)
+    (handle-channel ch)))
+
+
+(defn break-channel
+  [ch delay]
+  (println "break channel" ch delay)
+  (future
+    (Thread/sleep delay)
+    (lq/bind ch "no-such-queu-453456546345", "amq.fanout")))
+
+
 (defn doit
   []
   (let [thread-pool (Executors/newFixedThreadPool 500)
@@ -200,10 +225,14 @@
      connect
      (fn [conn]
        (let [queue-name (publish-some-message conn)]
-         (doseq [i (range 200)]
-           (let [ch (lch/open conn)]
-             (lb/qos ch 1)
-             (lcons/subscribe ch queue-name new-handle-msg))))
+         (doseq [i (range 20)]
+           (println "starting channel" i)
+           (channel-loop conn
+                         (fn [ch]
+                           (if (zero? (mod i 4))
+                             (break-channel ch (+ 2000 (* i 500))))
+                           (lb/qos ch 1)
+                           (lcons/subscribe ch queue-name new-handle-msg)))))
        (println "fn-done")))))
 
 
