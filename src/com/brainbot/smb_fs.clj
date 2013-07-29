@@ -71,8 +71,18 @@
     (seq (.list (smb-file-for-entry fs (ensure-endswith-slash dir))))))
 
 
-(defn make-smb-filesystem-from-map
+(defn filesystem-from-inisection
   [section]
-  (let [smb-auth (NtlmPasswordAuthentication. (:domain section) (:username section) (:password section))
-        path (ensure-endswith-slash (:path section))]
-    (->SmbFilesystem path smb-auth)))
+  (let [raise (fn [msg] (throw (Exception. msg)))
+        domain (section "domain")
+        username (section "username")
+        path (section "path")
+        password (section "password")]
+    (when-not path
+      (raise "path missing in section"))
+    (when-not username
+      (raise "username missing in section"))
+    (when-not password
+      (raise "password missing in section"))
+
+    (->SmbFilesystem path (NtlmPasswordAuthentication. domain username password))))

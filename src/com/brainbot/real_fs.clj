@@ -116,3 +116,11 @@
           up (get-path fp)]
       (map #(-> % .getFileName str)
            (nio2.dir-seq/dir-seq up)))))
+
+
+(defn filesystem-from-inisection
+  [section]
+  (let [path (section "path")]
+    (when-not path
+      (throw (Exception. "no path specified in section")))
+    (RealFilesystem. path)))
