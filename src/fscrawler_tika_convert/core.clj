@@ -2,7 +2,8 @@
   (:gen-class)
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
-  (:require [fscrawler-tika-convert.reap :as reap])
+  (:require [fscrawler-tika-convert.reap :as reap]
+            [fscrawler-tika-convert.misc :as misc])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
             [langohr.exchange  :as le]
@@ -14,7 +15,8 @@
   (:require [clojure.tools.cli :as cli])
   (:require [clojure.data.json :as json])
   (:require [clojure.string :as string])
-  (:require [com.brainbot.stat :as stat])
+  (:require [com.brainbot.stat :as stat]
+            [com.brainbot.vfs :as vfs])
   (:require [clojure.stacktrace :as trace])
   (:require [com.brainbot.iniconfig :as ini])
   (:require [tika])
@@ -212,8 +214,10 @@
 
   (let [ch (lch/open conn)
         restart (fn [cause]
-                  (if-not (lshutdown/hard-error? cause)
-                    (future (channel-loop conn handle-channel))))
+                  (if-not (lshutdown/initiated-by-application? cause)
+                    (logging/error "channel closed" cause)
+                    (if-not (lshutdown/hard-error? cause)
+                      (future (channel-loop conn handle-channel)))))
         sl (rmq/shutdown-listener restart)]
     (.addShutdownListener ch sl)
     (handle-channel ch)))
@@ -236,21 +240,28 @@
      handle-connection)))
 
 
-(defn build-handle-connection-from-config
-  [iniconfig section]
+(def command->msg-handler
+  {"listdir" handle-msg-listdir})
+
+
+
+
+(defn build-handle-connection
+  [filesystems]
   (fn [conn]
-    (let [queue-name (publish-some-message conn)]
-      (doseq [i (range 20)]
-        (println "starting channel" i)
-        (channel-loop conn
-                      (fn [ch]
-                        (if (zero? (mod i 4))
-                          (break-channel ch (+ 2000 (* i 500))))
-                        (lb/qos ch 1)
-                        (lcons/subscribe ch queue-name new-handle-msg)))))
-    (println "fn-done")))
+    (logging/info "initializing connection")
+    (doseq [{:keys [fsid] :as fs} filesystems
+            [command handle-msg] (seq command->msg-handler)]
+      (channel-loop
+       conn
+       (fn [ch]
+         (let [qname (initialize-rabbitmq-structures ch command "nextbot" fsid)]
+           (logging/info "starting consumer for" qname)
+           (lb/qos ch 1)
+           (lcons/subscribe ch qname (partial handle-msg fs))))))))
 
 (def default-section-name "fscrawler")
+
 
 (defn rmq-settings-from-config
   [iniconfig]
@@ -260,13 +271,19 @@
 (defn doit
   []
   (let [iniconfig (ini/read-ini "config.ini")
-        section "fscrawler"
-        rmq-settings (rmq-settings-from-config iniconfig)]
+        section "worker-1"
+        rmq-settings (rmq-settings-from-config iniconfig)
+        filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
+
     (println "config" iniconfig)
     (println "rmq-settings" rmq-settings)
+    (println "fs:" filesystems)
+    (when (zero? (count filesystems))
+      (misc/die (str "no filesystems defined in section " section)))
+
     (connect-loop-with-thread-pool
      rmq-settings
-     (build-handle-connection-from-config iniconfig section))))
+     (build-handle-connection filesystems))))
 
 
 (defn -main [& args]

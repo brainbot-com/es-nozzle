@@ -2,20 +2,13 @@
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [fscrawler-tika-convert.reap :as reap]
-            [fscrawler-tika-convert.core :as core])
+            [fscrawler-tika-convert.core :as core]
+            [fscrawler-tika-convert.misc :refer [trimmed-lines-from-string die]])
   (:require [clojure.tools.cli :as cli])
   (:require [clojure.string :as string])
   (:require [clojure.stacktrace :as trace])
   (:require [com.brainbot.iniconfig :as ini])
   (:gen-class))
-
-
-(defn die
-  "print error message msg and exit the program with named argument
- :exit-code or 1"
-  [msg & {:keys [exit-code] :or {exit-code 1}}]
-  (println "Error:" msg)
-  (System/exit exit-code))
 
 
 (defn setup-logging!
@@ -54,13 +47,6 @@
       (die "--inisection option missing"))
     (dissoc options :help)))
 
-
-(defn trimmed-lines-from-string
-  "split string at newline and return non-empty trimmed lines"
-  [s]
-  (if s
-    (remove string/blank?
-            (map string/trim (string/split-lines s)))))
 
 
 (defn die-on-exit-or-error

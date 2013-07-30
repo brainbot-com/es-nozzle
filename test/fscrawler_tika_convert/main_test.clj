@@ -1,6 +1,7 @@
 (ns fscrawler-tika-convert.main-test
   (:require [com.brainbot.iniconfig :as ini])
   (:require [clojure.test :refer :all]
+            [fscrawler-tika-convert.misc :refer [die]
             [fscrawler-tika-convert.main :refer :all]))
 
 (def config-1
@@ -24,12 +25,6 @@ filesystems =
   (throw (Exception. (str exit-code " " msg))))
 
 
-(deftest test-trimmed-lines-from-string
-  (testing "trimmed lines from string should work with nil parameter"
-    (is (nil? (trimmed-lines-from-string nil))))
-  (testing "trimmed lines should skip empty lines"
-    (is (= (trimmed-lines-from-string "  foo  \nbar\n\n  baz   \n")
-           ["foo" "bar" "baz"]))))
 
 
 (deftest test-parse-command-line-options

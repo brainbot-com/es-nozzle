@@ -1,5 +1,6 @@
 (ns com.brainbot.vfs
   (:require
+   [fscrawler-tika-convert.misc :as misc]
    [clojure.string :as string]))
 
 
@@ -45,13 +46,22 @@
         create-fs)))
 
 
-(defn filesystem-from-inisection
+(defn make-single-filesystem-from-iniconfig
   "create filesystem from ini config section"
-  [section]
-  (let [fstype (section "type")]
+  [iniconfig section-name]
+  (let [section (iniconfig section-name)
+        fstype (section "type")]
     (if-let [create-fs (get-create-fs-fn fstype)]
-      (create-fs section)
+      (assoc (create-fs section) :fsid section-name)
       (throw (Exception. (str "unknown filesystem type " fstype))))))
+
+
+(defn make-filesystems-from-iniconfig
+  "create a sequence of the filesystems specified in `section` with
+   the filesystems key"
+  [iniconfig section]
+  (map (partial make-single-filesystem-from-iniconfig iniconfig)
+       (misc/trimmed-lines-from-string (get-in iniconfig [section "filesystems"]))))
 
 
 (defn cmd-listdir
