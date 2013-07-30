@@ -54,12 +54,12 @@
       (die "--inisection option missing"))
     (dissoc options :help)))
 
+
 (defn trimmed-lines-from-string
-  "split string at newline and return trimmed lines"
+  "split string at newline and return non-empty trimmed lines"
   [s]
-  (if (nil? s)
-    nil
-    (filter #(not (string/blank? %))
+  (if s
+    (remove string/blank?
             (map string/trim (string/split-lines s)))))
 
 
