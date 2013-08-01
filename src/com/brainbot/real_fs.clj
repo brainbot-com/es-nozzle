@@ -91,6 +91,24 @@
   [path]
   (acl-from-attribute (read-attributes path)))
 
+(defn- collapse-consecutive-slash
+  [s]
+  (string/replace s #"/+" "/"))
+
+(defn- trim-slash
+  [s]
+  (string/replace s #"^/+|/+$" ""))
+
+
+(defn- normalize-path
+  [path]
+  (let [tmp (-> path
+              collapse-consecutive-slash
+              trim-slash)]
+    (if (= "" tmp)
+      "/"
+      tmp)))
+
 
 (defrecord RealFilesystem [root]
   vfs/Filesystem
@@ -109,7 +127,7 @@
        :mtime (ct (.lastModifiedTime attr))}))
 
   (join [fs parts]
-    (string/join "/" parts))
+    (normalize-path (string/join "/" parts)))
 
   (listdir [fs dir]
     (let [fp (string/join "/" [(:root fs) dir])
