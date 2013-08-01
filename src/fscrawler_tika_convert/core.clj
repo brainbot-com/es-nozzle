@@ -153,13 +153,64 @@
   (lb/ack ch delivery-tag))
 
 
+
+(defn get-permissions-for-entry
+  [fs directory {relpath :relpath, {type :type} :stat, error :error :as entry}]
+  (if (and (= type "file") (not error))
+    (assoc entry "permissions" (vfs/get-permissions fs (vfs/join fs [directory relpath])))
+    entry))
+
+
+(defn get-permissions
+  [fs directory entries]
+  (map (partial get-permissions-for-entry fs directory)
+       entries))
+
+(defn entry-is-type?
+  [type entry]
+  (= (get-in entry [:stat :type]) type))
+
+(def entry-is-directory? (partial entry-is-type? "directory"))
+(def entry-is-file? (partial entry-is-type? "file"))
+
+(defn entry-is-directory?
+  [entry]
+  (= (get-in entry [:stat :type]) "directory"))
+
+
+(defn handle-msg-get_permissions
+  [fs ch {:keys [delivery-tag exchange routing-key] :as meta} ^bytes payload]
+  (let [body (json/read-json (String. payload "UTF-8"))
+        directory (:directory body)
+        entries-with-permissions (get-permissions fs directory (:entries body))]
+
+    (let [listdir-cmd (routing-key-string-with-command routing-key "listdir")]
+      (doseq [entry (filter (fn [entry]
+                              (and (entry-is-directory? entry)
+                                   (not (:error entry))))
+                            entries-with-permissions)]
+        (let [subdirectory-path (vfs/join fs [directory (:relpath entry)])]
+          (println "publish listdir" subdirectory-path listdir-cmd)
+          (lb/publish ch exchange listdir-cmd
+                      (json/write-str {:path subdirectory-path})))))
+
+
+    (lb/publish ch exchange (routing-key-string-with-command routing-key "update_directory")
+                (json/write-str (assoc body :entries entries-with-permissions)))
+
+    (lb/ack ch delivery-tag)))
+
+
 (defn handle-msg-listdir
-  [fs ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
-  (println (format "[consumer] Received a message: %s, delivery tag: %d, content type: %s, type: %s"
-                   (String. payload "UTF-8")
-                   delivery-tag
-                   content-type
-                   type))
+  [fs ch {:keys [delivery-tag exchange routing-key] :as meta} ^bytes payload]
+  (let [body (json/read-json (String. payload "UTF-8"))
+        path (:path body)
+        entries (vfs/cmd-listdir fs path)]
+    (println "handle-msg-listdir" path)
+    (lb/publish ch
+                exchange
+                (routing-key-string-with-command routing-key "get_permissions")
+                (json/write-str {:directory path :entries entries})))
   (lb/ack ch delivery-tag))
 
 
@@ -241,7 +292,8 @@
 
 
 (def command->msg-handler
-  {"listdir" handle-msg-listdir})
+  {"listdir" handle-msg-listdir
+   "get_permissions" handle-msg-get_permissions})
 
 
 
