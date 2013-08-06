@@ -3,6 +3,7 @@
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [fscrawler-tika-convert.reap :as reap]
+            [fscrawler-tika-convert.routing-key :as rk]
             [fscrawler-tika-convert.misc :as misc])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
@@ -25,22 +26,6 @@
   (:import [java.util.concurrent Executors]))
 
 
-(defn map-from-routing-key-string
-  "build map from routing key"
-  [rk-string]
-  (zipmap [:id :command :filesystem] (string/split rk-string #"\.")))
-
-
-(defn routing-key-string-from-map
-  "build routing key string from map"
-  [m]
-  (string/join "." [(:id m) (:command m) (:filesystem m)]))
-
-
-(defn routing-key-string-with-command
-  "replace command part of routing key string with command"
-  [rk-string command]
-  (routing-key-string-from-map (assoc (map-from-routing-key-string rk-string) :command command)))
 
 
 (def number-of-cores
@@ -88,7 +73,7 @@
                           body)]
            (lb/publish ch
                        exchange
-                       (routing-key-string-with-command routing-key "import_file")
+                       (rk/routing-key-string-with-command routing-key "import_file")
                        (json/write-str new-body))
            (lb/ack ch delivery-tag))
          (catch Exception err
@@ -184,7 +169,7 @@
         directory (:directory body)
         entries-with-permissions (get-permissions fs directory (:entries body))]
 
-    (let [listdir-cmd (routing-key-string-with-command routing-key "listdir")]
+    (let [listdir-cmd (rk/routing-key-string-with-command routing-key "listdir")]
       (doseq [entry (filter (fn [entry]
                               (and (entry-is-directory? entry)
                                    (not (:error entry))))
@@ -195,7 +180,7 @@
                       (json/write-str {:path subdirectory-path})))))
 
 
-    (lb/publish ch exchange (routing-key-string-with-command routing-key "update_directory")
+    (lb/publish ch exchange (rk/routing-key-string-with-command routing-key "update_directory")
                 (json/write-str (assoc body :entries entries-with-permissions)))
 
     (lb/ack ch delivery-tag)))
@@ -209,7 +194,7 @@
     (println "handle-msg-listdir" path)
     (lb/publish ch
                 exchange
-                (routing-key-string-with-command routing-key "get_permissions")
+                (rk/routing-key-string-with-command routing-key "get_permissions")
                 (json/write-str {:directory path :entries entries})))
   (lb/ack ch delivery-tag))
 
