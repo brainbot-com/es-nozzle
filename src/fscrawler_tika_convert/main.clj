@@ -3,27 +3,12 @@
             [clj-logging-config.log4j :as log-config])
   (:require [fscrawler-tika-convert.reap :as reap]
             [fscrawler-tika-convert.core :as core]
-            [fscrawler-tika-convert.misc :refer [trimmed-lines-from-string die]])
+            [fscrawler-tika-convert.misc :refer [trimmed-lines-from-string die setup-logging!]])
   (:require [clojure.tools.cli :as cli])
   (:require [clojure.string :as string])
   (:require [clojure.stacktrace :as trace])
   (:require [com.brainbot.iniconfig :as ini])
   (:gen-class))
-
-
-(defn setup-logging!
-  "configure logging"
-  []
-  ;; (log-config/set-logger! "org.apache.pdfbox" :pattern "%c %d %p %m%n")
-  (doseq [name ["org" "com" "fscrawler-tika-convert" ""]]
-    (log-config/set-logger! name :pattern "%c %d %p %m%n"))
-
-  ;; Jul 01, 2013 4:38:09 PM com.coremedia.iso.boxes.AbstractContainerBox parseChildBoxes
-
-  (doseq [name ["org.apache.pdfbox" "com.coremedia"]]
-    (log-config/set-logger! name :level :off))
-
-  #_(convert "/home/ralf/t/seven-languages-in-seven-weeks_p4_0.pdf"))
 
 
 (defn parse-command-line-options
