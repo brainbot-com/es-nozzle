@@ -91,7 +91,7 @@
   (le/declare ch exchange-name "topic")
   (let [queue-name (format "%s.%s.%s" exchange-name command filesystem)]
     (let [queue-state (lq/declare ch queue-name :auto-delete false)]
-      (logging/info "declared queue" (select-keys queue-state [:queue :consumer-count :message-count])))
+      (logging/debug "declared queue" (select-keys queue-state [:queue :consumer-count :message-count])))
     (lq/bind ch queue-name exchange-name :routing-key queue-name)
     queue-name))
 
