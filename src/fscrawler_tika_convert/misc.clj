@@ -42,6 +42,13 @@
 
 (def default-section-name "fscrawler")
 
+(defn get-filesystems-from-iniconfig
+  [iniconfig section]
+  (trimmed-lines-from-string
+   (or (get-in iniconfig [section "filesystems"])
+       (get-in iniconfig [default-section-name "filesystems"]))))
+
+
 (defn rmq-settings-from-config
   [iniconfig]
   (rmq/settings-from (get-in iniconfig [default-section-name "amqp-url"])))

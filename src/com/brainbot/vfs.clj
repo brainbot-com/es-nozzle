@@ -61,7 +61,7 @@
    the filesystems key"
   [iniconfig section]
   (map (partial make-single-filesystem-from-iniconfig iniconfig)
-       (misc/trimmed-lines-from-string (get-in iniconfig [section "filesystems"]))))
+       (misc/get-filesystems-from-iniconfig iniconfig section)))
 
 
 (defn cmd-listdir

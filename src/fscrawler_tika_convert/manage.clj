@@ -85,7 +85,7 @@
 (defn manage-run-section
   [iniconfig section]
   (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
-        filesystems (misc/trimmed-lines-from-string (get-in iniconfig [section "filesystems"]))]
+        filesystems (misc/get-filesystems-from-iniconfig iniconfig section)]
     (when (zero? (count filesystems))
       (misc/die (str "no filesystems defined in section " section)))
     (doseq [fs filesystems]
