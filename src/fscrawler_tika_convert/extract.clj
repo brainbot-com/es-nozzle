@@ -13,15 +13,14 @@
 
 
 (defn extract-options-from-iniconfig
-  [config iniconfig inisection]
-  (let [section (or (config inisection)
-                    (die (str "section " inisection " missing in " iniconfig)))
-        fscrawler-section (or (config "fscrawler") {})
+  [iniconfig section]
+  (let [source (:source (meta iniconfig))
+        fscrawler-section (or (iniconfig "fscrawler") {})
         max-size (Integer. (fscrawler-section "max_size")),
         amqp-url (get fscrawler-section "amqp_url" "amqp://localhost/%2f")
-        filesystems (misc/trimmed-lines-from-string (section "filesystems"))]
+        filesystems (misc/trimmed-lines-from-string (get-in iniconfig [section "filesystems"]))]
     (when (zero? (count filesystems))
-      (die (str "no filesystems defined in section " inisection " in " iniconfig)))
+      (die (str "no filesystems defined in section " section " in " source)))
     {:max-size max-size
      :amqp-url amqp-url
      :filesystems filesystems}))
@@ -30,7 +29,7 @@
 (defn extract-run-section
   [iniconfig section]
   (let [{:keys [filesystems] :as options} (extract-options-from-iniconfig
-                                           iniconfig (:source (meta iniconfig)) section)]
+                                           iniconfig section)]
     (reap/start-watching-futures!)
 
     (doseq [filesystem filesystems]
