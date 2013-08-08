@@ -16,8 +16,8 @@
   [iniconfig section]
   (let [source (:source (meta iniconfig))
         fscrawler-section (or (iniconfig "fscrawler") {})
-        max-size (Integer. (fscrawler-section "max_size")),
-        amqp-url (get fscrawler-section "amqp_url" "amqp://localhost/%2f")
+        max-size (Integer. (fscrawler-section "max-size")),
+        amqp-url (get fscrawler-section "amqp-url" "amqp://localhost/%2f")
         filesystems (misc/trimmed-lines-from-string (get-in iniconfig [section "filesystems"]))]
     (when (zero? (count filesystems))
       (die (str "no filesystems defined in section " section " in " source)))

@@ -7,8 +7,8 @@
 (def config-1
   (ini/read-ini-string
 "[fscrawler]
-amqp_url = amqp://localhost
-max_size = 10000000
+amqp-url = amqp://localhost
+max-size = 10000000
 [bar]
 filesystems =
 [baz]
