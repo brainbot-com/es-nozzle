@@ -281,8 +281,6 @@
    "get_permissions" handle-msg-get_permissions})
 
 
-
-
 (defn build-handle-connection
   [filesystems]
   (fn [conn]
@@ -305,11 +303,9 @@
   (rmq/settings-from (get-in iniconfig [default-section-name "amqp-url"])))
 
 
-(defn doit
-  []
-  (let [iniconfig (ini/read-ini "config.ini")
-        section "worker-1"
-        rmq-settings (rmq-settings-from-config iniconfig)
+(defn worker-run-section
+  [iniconfig section]
+  (let [rmq-settings (rmq-settings-from-config iniconfig)
         filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
 
     (println "config" iniconfig)
@@ -321,8 +317,3 @@
     (connect-loop-with-thread-pool
      rmq-settings
      (build-handle-connection filesystems))))
-
-
-(defn -main [& args]
-  (log-config/set-logger!)
-  (doit))

@@ -1,5 +1,4 @@
 (ns fscrawler-tika-convert.manage
-  (:gen-class)
   (:require [fscrawler-tika-convert.routing-key :as rk]
             [fscrawler-tika-convert.core :as fscore]
             [fscrawler-tika-convert.misc :as misc]
@@ -86,25 +85,11 @@
       (wait-idle))))
 
 
-(defn doit
-  []
-  (let [iniconfig (ini/read-ini "config.ini")
-        section "worker-1"
-        rmq-settings (fscore/rmq-settings-from-config iniconfig)
+(defn manage-run-section
+  [iniconfig section]
+  (let [rmq-settings (fscore/rmq-settings-from-config iniconfig)
         filesystems (misc/trimmed-lines-from-string (get-in iniconfig [section "filesystems"]))]
-
-    (println "config" iniconfig)
-    (println "rmq-settings" rmq-settings)
-    (println "fs:" filesystems)
     (when (zero? (count filesystems))
       (misc/die (str "no filesystems defined in section " section)))
     (doseq [fs filesystems]
-      (future (manage-filesystem "nextbot" fs))))
-  @(promise))
-
-
-
-(defn -main [& args]
-  (misc/setup-logging!)
-  (logging/info "starting")
-  (doit))
+      (future (manage-filesystem "nextbot" fs)))))
