@@ -1,5 +1,6 @@
 (ns fscrawler-tika-convert.core-test
   (:require [clojure.test :refer :all]
+            [fscrawler-tika-convert.misc :refer :all]
             [fscrawler-tika-convert.core :refer :all]))
 
 

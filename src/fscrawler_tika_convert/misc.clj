@@ -1,6 +1,13 @@
 (ns fscrawler-tika-convert.misc
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
+  (:require [langohr.basic :as lb]
+            [langohr.shutdown :as lshutdown]
+            [langohr.exchange  :as le]
+            [langohr.core :as rmq]
+            [langohr.queue :as lq]
+            [langohr.channel :as lch]
+            [langohr.consumers :as lcons])
   (:require [clojure.string :as string]))
 
 
@@ -31,3 +38,22 @@
 
   (doseq [name ["org.apache.pdfbox" "com.coremedia"]]
     (log-config/set-logger! name :level :off)))
+
+
+(def default-section-name "fscrawler")
+
+(defn rmq-settings-from-config
+  [iniconfig]
+  (rmq/settings-from (get-in iniconfig [default-section-name "amqp-url"])))
+
+
+(defn initialize-rabbitmq-structures
+  "initialize rabbitmq queue and exchange for handling 'command' on
+  'filesystem' submitted on 'exchange-name"
+  [ch command exchange-name filesystem]
+  (le/declare ch exchange-name "topic")
+  (let [queue-name (format "%s.%s.%s" exchange-name command filesystem)]
+    (let [queue-state (lq/declare ch queue-name :auto-delete false)]
+      (logging/debug "declared queue" (select-keys queue-state [:queue :consumer-count :message-count])))
+    (lq/bind ch queue-name exchange-name :routing-key queue-name)
+    queue-name))

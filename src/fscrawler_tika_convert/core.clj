@@ -84,16 +84,6 @@
     (logging/debug "scheduled" fp " ****" )))
 
 
-(defn initialize-rabbitmq-structures
-  "initialize rabbitmq queue and exchange for handling 'command' on
-  'filesystem' submitted on 'exchange-name"
-  [ch command exchange-name filesystem]
-  (le/declare ch exchange-name "topic")
-  (let [queue-name (format "%s.%s.%s" exchange-name command filesystem)]
-    (let [queue-state (lq/declare ch queue-name :auto-delete false)]
-      (logging/debug "declared queue" (select-keys queue-state [:queue :consumer-count :message-count])))
-    (lq/bind ch queue-name exchange-name :routing-key queue-name)
-    queue-name))
 
 
 (defn handle-command-for-filesystem
@@ -103,7 +93,7 @@
                        (logging/info "connecting to rabbitmq" (:amqp-url options) rmq-settings)
                        (rmq/connect rmq-settings))
         ch           (lch/open conn)
-        queue-name   (initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
+        queue-name   (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
     (lb/qos ch (+ number-of-cores 4))
     (lcons/blocking-subscribe ch queue-name (partial handle-message options) :auto-ack false)))
 
@@ -226,7 +216,7 @@
 (defn publish-some-message
   [conn]
   (let [ch (lch/open conn)
-        queue-name (initialize-rabbitmq-structures ch "extract_content" "nextbot" "fscrawler:test")]
+        queue-name (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" "fscrawler:test")]
     (doseq [i (range 15)]
       (println "[main] Publishing...")
       (lb/publish ch "nextbot" queue-name "Hello!" :content-type "text/plain" :type "greetings.hi"))
@@ -290,22 +280,14 @@
       (channel-loop
        conn
        (fn [ch]
-         (let [qname (initialize-rabbitmq-structures ch command "nextbot" fsid)]
+         (let [qname (misc/initialize-rabbitmq-structures ch command "nextbot" fsid)]
            (logging/info "starting consumer for" qname)
            (lb/qos ch 1)
            (lcons/subscribe ch qname (partial handle-msg fs))))))))
 
-(def default-section-name "fscrawler")
-
-
-(defn rmq-settings-from-config
-  [iniconfig]
-  (rmq/settings-from (get-in iniconfig [default-section-name "amqp-url"])))
-
-
 (defn worker-run-section
   [iniconfig section]
-  (let [rmq-settings (rmq-settings-from-config iniconfig)
+  (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
         filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
 
     (println "config" iniconfig)

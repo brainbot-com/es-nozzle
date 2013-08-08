@@ -1,6 +1,5 @@
 (ns fscrawler-tika-convert.manage
   (:require [fscrawler-tika-convert.routing-key :as rk]
-            [fscrawler-tika-convert.core :as fscore]
             [fscrawler-tika-convert.misc :as misc]
             [com.brainbot.vfs :as vfs])
   (:require [langohr.core :as rmq])
@@ -54,15 +53,13 @@
   [id filesystem]
   (let [conn (rmq/connect)
         ch (lch/open conn)]
-    (fscore/initialize-rabbitmq-structures
+    (misc/initialize-rabbitmq-structures
      ch "listdir" id filesystem)
     (lb/publish ch id
                 (rk/routing-key-string-from-map {:id id :filesystem filesystem :command "listdir"})
                 (json/write-str {:path "/"}))
     (rmq/close ch)
     (rmq/close conn)))
-
-
 
 
 (defn manage-filesystem
@@ -87,7 +84,7 @@
 
 (defn manage-run-section
   [iniconfig section]
-  (let [rmq-settings (fscore/rmq-settings-from-config iniconfig)
+  (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
         filesystems (misc/trimmed-lines-from-string (get-in iniconfig [section "filesystems"]))]
     (when (zero? (count filesystems))
       (misc/die (str "no filesystems defined in section " section)))
