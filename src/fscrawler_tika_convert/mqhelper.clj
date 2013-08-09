@@ -4,6 +4,8 @@
   (:import [java.util.concurrent Executors])
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
+  (:require [clojure.data.json :as json])
+  (:require [fscrawler-tika-convert.routing-key :as rk])
 
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
@@ -72,3 +74,24 @@
     (connect-loop
      connect
      handle-connection)))
+
+
+(defn make-handler
+  "create a langohr message handler from a somewhat simpler message
+  handler function
+  simple-fn will be called with two arguments like
+
+  (simple-fn body {:publish publish})
+
+  where body is the decoded message body and publish is a function
+
+  (fn [command publish-body] ...)"
+  [simple-fn]
+  (fn [ch {:keys [delivery-tag exchange routing-key] :as meta} ^bytes payload]
+    (let [body (json/read-json (String. payload "UTF-8"))
+          publish (fn [command publish-body]
+                    (lb/publish ch exchange
+                                (rk/routing-key-string-with-command routing-key command)
+                                (json/write-str publish-body)))]
+      (simple-fn body {:publish publish})
+      (lb/ack ch delivery-tag))))
