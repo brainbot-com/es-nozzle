@@ -1,4 +1,4 @@
-(ns fscrawler-tika-convert.core
+(ns fscrawler-tika-convert.fsworker
   (:gen-class)
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])

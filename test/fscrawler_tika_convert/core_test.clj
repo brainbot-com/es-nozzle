@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [fscrawler-tika-convert.extract :refer :all]
             [fscrawler-tika-convert.misc :refer :all]
-            [fscrawler-tika-convert.core :refer :all]))
+            [fscrawler-tika-convert.fsworker :refer :all]))
 
 
 (deftest test-wash

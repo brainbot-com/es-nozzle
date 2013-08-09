@@ -1,7 +1,7 @@
 (ns fscrawler-tika-convert.main
   (:require [clojure.tools.logging :as logging])
   (:require [fscrawler-tika-convert
-             [core :as core]
+             [fsworker :as fsworker]
              [manage :as manage]
              [extract :as extract]
              [misc :as misc]]
@@ -40,7 +40,7 @@
 
 
 (def type->run-section
-  {"worker" core/worker-run-section
+  {"fsworker" fsworker/worker-run-section
    "meta"   meta-run-section
    "extract"  extract/extract-run-section
    "manage" manage/manage-run-section})
