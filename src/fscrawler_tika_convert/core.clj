@@ -26,21 +26,6 @@
   (:import [java.util.concurrent Executors]))
 
 
-
-
-(defn new-handle-msg
-  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
-  (println (format "[consumer] Received a message: %s, delivery tag: %d, content type: %s, type: %s"
-                   (String. payload "UTF-8")
-                   delivery-tag
-                   content-type
-                   type))
-  (Thread/sleep 1000)
-  (println "done")
-  (lb/ack ch delivery-tag))
-
-
-
 (defn get-permissions-for-entry
   [fs directory {relpath :relpath, {type :type} :stat, error :error :as entry}]
   (if (and (= type "file") (not error))
