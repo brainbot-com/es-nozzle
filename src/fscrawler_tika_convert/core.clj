@@ -45,10 +45,6 @@
 (def entry-is-directory? (partial entry-is-type? "directory"))
 (def entry-is-file? (partial entry-is-type? "file"))
 
-(defn entry-is-directory?
-  [entry]
-  (= (get-in entry [:stat :type]) "directory"))
-
 
 (defn handle-msg-get_permissions
   [fs ch {:keys [delivery-tag exchange routing-key] :as meta} ^bytes payload]
