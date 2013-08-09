@@ -1,7 +1,7 @@
-(ns com.brainbot.stat-test
+(ns brainbot.nozzle.stat-test
   (:import [java.nio.file.attribute PosixFilePermission])
   (:require [clojure.test :refer :all]
-            [com.brainbot.stat :refer :all]))
+            [brainbot.nozzle.stat :refer :all]))
 
 (defn octal-mode-from-type-and-permissions
   [type permissions]

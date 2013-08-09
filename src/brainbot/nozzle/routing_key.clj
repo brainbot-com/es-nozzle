@@ -1,4 +1,4 @@
-(ns fscrawler-tika-convert.routing-key
+(ns brainbot.nozzle.routing-key
   (:require [clojure.string :as string]))
 
 (defn map-from-routing-key-string

@@ -1,6 +1,6 @@
-(ns com.brainbot.vfs
+(ns brainbot.nozzle.vfs
   (:require
-   [fscrawler-tika-convert.misc :as misc]
+   [brainbot.nozzle.misc :as misc]
    [clojure.string :as string]))
 
 
@@ -12,9 +12,9 @@
   (listdir [fs dir] "list directory"))
 
 (def ^:private filesystem-registry
-  (atom {"file" 'com.brainbot.real-fs
-         nil 'com.brainbot.real-fs
-         "smbfs" 'com.brainbot.smb-fs}))
+  (atom {"file" 'brainbot.nozzle.real-fs
+         nil 'brainbot.nozzle.real-fs
+         "smbfs" 'brainbot.nozzle.smb-fs}))
 
 
 ;; (defn register-filesystem
@@ -24,14 +24,14 @@
 
 (defn- load-fs-package
   [name]
-  (binding [*ns* (create-ns 'com.brainbot.vfs.tmp)]
+  (binding [*ns* (create-ns 'brainbot.nozzle.vfs.tmp)]
     (try
       (require [name :as 'mod] :reload)
       (resolve 'mod/filesystem-from-inisection)
       (catch java.io.FileNotFoundException err
         nil)
       (finally
-        (remove-ns 'com.brainbot.vfs.tmp)))))
+        (remove-ns 'brainbot.nozzle.vfs.tmp)))))
 
 
 (defn- get-create-fs-fn

@@ -1,11 +1,11 @@
-(ns fscrawler-tika-convert.mqhelper
+(ns brainbot.nozzle.mqhelper
   (:require [clojure.stacktrace :as trace])
   (:import [com.rabbitmq.client Address ConnectionFactory Connection Channel ShutdownListener])
   (:import [java.util.concurrent Executors])
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [clojure.data.json :as json])
-  (:require [fscrawler-tika-convert.routing-key :as rk])
+  (:require [brainbot.nozzle.routing-key :as rk])
 
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]

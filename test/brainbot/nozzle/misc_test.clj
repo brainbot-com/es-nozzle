@@ -1,6 +1,6 @@
-(ns fscrawler-tika-convert.misc-test
+(ns brainbot.nozzle.misc-test
   (:require [clojure.test :refer :all]
-            [fscrawler-tika-convert.misc :refer :all]))
+            [brainbot.nozzle.misc :refer :all]))
 
 (deftest test-trimmed-lines-from-string
   (testing "trimmed lines from string should work with nil parameter"

@@ -1,4 +1,4 @@
-# fscrawler-tika-convert
+# nozzle
 
 FIXME: description
 
@@ -10,7 +10,7 @@ Download from http://example.com/FIXME.
 
 FIXME: explanation
 
-    $ java -jar fscrawler-tika-convert-0.1.0-standalone.jar [args]
+	$ java -jar nozzle-0.1.0-standalone.jar [args]
 
 ## Options
 

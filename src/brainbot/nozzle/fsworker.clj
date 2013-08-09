@@ -1,11 +1,11 @@
-(ns fscrawler-tika-convert.fsworker
+(ns brainbot.nozzle.fsworker
   (:gen-class)
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
-  (:require [fscrawler-tika-convert.reap :as reap]
-            [fscrawler-tika-convert.mqhelper :as mqhelper]
-            [fscrawler-tika-convert.routing-key :as rk]
-            [fscrawler-tika-convert.misc :as misc])
+  (:require [brainbot.nozzle.reap :as reap]
+            [brainbot.nozzle.mqhelper :as mqhelper]
+            [brainbot.nozzle.routing-key :as rk]
+            [brainbot.nozzle.misc :as misc])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
             [langohr.exchange  :as le]
@@ -16,8 +16,8 @@
   ;; (:require [me.raynes.fs :as fs])
   (:require [clojure.tools.cli :as cli])
   (:require [clojure.string :as string])
-  (:require [com.brainbot.stat :as stat]
-            [com.brainbot.vfs :as vfs])
+  (:require [brainbot.nozzle.stat :as stat]
+            [brainbot.nozzle.vfs :as vfs])
   (:require [clojure.stacktrace :as trace])
   (:require [com.brainbot.iniconfig :as ini])
   (:require [tika])

@@ -1,4 +1,4 @@
-(ns fscrawler-tika-convert.misc
+(ns brainbot.nozzle.misc
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [langohr.basic :as lb]
@@ -31,7 +31,7 @@
   "configure logging"
   []
   ;; (log-config/set-logger! "org.apache.pdfbox" :pattern "%c %d %p %m%n")
-  (doseq [name ["org" "com" "fscrawler-tika-convert" ""]]
+  (doseq [name ["org" "com" "brainbot.nozzle" ""]]
     (log-config/set-logger! name :pattern "%c %d %p %m%n"))
 
   ;; Jul 01, 2013 4:38:09 PM com.coremedia.iso.boxes.AbstractContainerBox parseChildBoxes

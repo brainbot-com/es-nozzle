@@ -1,7 +1,7 @@
-(ns fscrawler-tika-convert.manage
-  (:require [fscrawler-tika-convert.routing-key :as rk]
-            [fscrawler-tika-convert.misc :as misc]
-            [com.brainbot.vfs :as vfs])
+(ns brainbot.nozzle.manage
+  (:require [brainbot.nozzle.routing-key :as rk]
+            [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.vfs :as vfs])
   (:require [langohr.core :as rmq])
 
   (:require [clojure.tools.logging :as logging]

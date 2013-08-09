@@ -1,8 +1,8 @@
-(ns fscrawler-tika-convert.core-test
+(ns brainbot.nozzle.core-test
   (:require [clojure.test :refer :all]
-            [fscrawler-tika-convert.extract :refer :all]
-            [fscrawler-tika-convert.misc :refer :all]
-            [fscrawler-tika-convert.fsworker :refer :all]))
+            [brainbot.nozzle.extract :refer :all]
+            [brainbot.nozzle.misc :refer :all]
+            [brainbot.nozzle.fsworker :refer :all]))
 
 
 (deftest test-wash

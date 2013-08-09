@@ -1,11 +1,11 @@
-(ns fscrawler-tika-convert.main
+(ns brainbot.nozzle.main
   (:require [clojure.tools.logging :as logging])
-  (:require [fscrawler-tika-convert
+  (:require [brainbot.nozzle
              [fsworker :as fsworker]
              [manage :as manage]
              [extract :as extract]
              [misc :as misc]]
-            [fscrawler-tika-convert.misc :refer [die]])
+            [brainbot.nozzle.misc :refer [die]])
   (:require [clojure.tools.cli :as cli])
   (:require [com.brainbot.iniconfig :as ini])
   (:gen-class))

@@ -1,4 +1,4 @@
-(ns com.brainbot.stat
+(ns brainbot.nozzle.stat
   (:import [java.io File IOException FileNotFoundException]
            [java.nio.file Files Path LinkOption Paths]
            [java.nio.file.attribute AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes]))

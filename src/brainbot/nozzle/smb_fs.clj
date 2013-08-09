@@ -1,7 +1,7 @@
-(ns com.brainbot.smb-fs
+(ns brainbot.nozzle.smb-fs
   (:require
    [clojure.string :as string])
-  (:require [com.brainbot.vfs :as vfs])
+  (:require [brainbot.nozzle.vfs :as vfs])
   (:import [jcifs.smb SmbFile NtlmPasswordAuthentication SID ACE]))
 
 (def ^:private group-like-types

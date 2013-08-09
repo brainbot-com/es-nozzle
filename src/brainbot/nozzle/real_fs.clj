@@ -1,4 +1,4 @@
-(ns com.brainbot.real-fs
+(ns brainbot.nozzle.real-fs
   (:require
    [clojure.string :as string])
   (:require [nio2.dir-seq])
@@ -7,7 +7,7 @@
 
            [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
 
-  (:require [com.brainbot.vfs :as vfs]))
+  (:require [brainbot.nozzle.vfs :as vfs]))
 
 
 (def ^:private is-windows

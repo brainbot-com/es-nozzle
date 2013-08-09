@@ -1,5 +1,4 @@
-(defproject fscrawler-tika-convert "0.1.0-SNAPSHOT"
-  :source-paths ["src" "src/fscrawler_tika_convert" "src/com/brainbot"]
+(defproject com.brainbot/nozzle "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -15,10 +14,6 @@
                  [org.clojars.floriano.clj-tika "1.2.4"]
                  [jcifs "1.3.17"]
                  [com.novemberain/langohr "1.0.1"]]
-  :profiles {:doit {:main fscrawler-tika-convert.core}
-             :manage {:main fscrawler-tika-convert.manage}}
-  :aliases {"doit" ["with-profile" "doit" "run"]
-            "manage" ["with-profile" "manage" "run"]}
   :omit-source true
   ;; :jvm-opts ["-Xmx64m" "-server"]
-  :main fscrawler-tika-convert.main)
+  :main brainbot.nozzle.main)

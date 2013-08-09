@@ -1,8 +1,8 @@
-(ns fscrawler-tika-convert.main-test
+(ns brainbot.nozzle.main-test
   (:require [com.brainbot.iniconfig :as ini])
   (:require [clojure.test :refer :all]
-            [fscrawler-tika-convert.misc :refer [die]
-            [fscrawler-tika-convert.main :refer :all]))
+            [brainbot.nozzle.misc :refer [die]
+            [brainbot.nozzle.main :refer :all]))
 
 (def config-1
   (ini/read-ini-string

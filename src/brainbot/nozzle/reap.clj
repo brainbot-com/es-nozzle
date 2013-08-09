@@ -1,4 +1,4 @@
-(ns fscrawler-tika-convert.reap
+(ns brainbot.nozzle.reap
   (:import [java.util.concurrent TimeUnit ScheduledThreadPoolExecutor Callable])
   (:require [clojure.stacktrace :as trace])
   (:require [clojure.tools.logging :as logging]))

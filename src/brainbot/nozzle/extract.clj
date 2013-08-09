@@ -1,9 +1,9 @@
-(ns fscrawler-tika-convert.extract
+(ns brainbot.nozzle.extract
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
-  (:require [fscrawler-tika-convert.reap :as reap]
-            [fscrawler-tika-convert.routing-key :as rk]
-            [fscrawler-tika-convert.misc :as misc])
+  (:require [brainbot.nozzle.reap :as reap]
+            [brainbot.nozzle.routing-key :as rk]
+            [brainbot.nozzle.misc :as misc])
   (:require [clojure.stacktrace :as trace])
   (:require [clojure.string :as string])
   (:require [clojure.data.json :as json])
@@ -18,8 +18,8 @@
             [langohr.consumers :as lcons])
 
   (:require [clojure.stacktrace :as trace])
-  (:require [fscrawler-tika-convert [reap :as reap] [misc :as misc]]
-            [fscrawler-tika-convert.misc :refer [die]]))
+  (:require [brainbot.nozzle [reap :as reap] [misc :as misc]]
+            [brainbot.nozzle.misc :refer [die]]))
 
 
 
