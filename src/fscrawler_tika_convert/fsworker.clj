@@ -3,6 +3,7 @@
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [fscrawler-tika-convert.reap :as reap]
+            [fscrawler-tika-convert.mqhelper :as mqhelper]
             [fscrawler-tika-convert.routing-key :as rk]
             [fscrawler-tika-convert.misc :as misc])
   (:require [langohr.basic :as lb]
@@ -82,30 +83,6 @@
   (lb/ack ch delivery-tag))
 
 
-(defn connect-loop
-  "connect to rabbitmq with settings rmq-settings and call
-  handle-connection with the connection object. if the connection
-  fails, wait for 5 seconds and try again"
-
-  [connect handle-connection]
-  (while true
-    (try
-      (let [conn (connect)
-            restart-promise (promise)
-            sl   (rmq/shutdown-listener
-                  (partial deliver restart-promise))]
-        (.addShutdownListener conn sl)
-        (handle-connection conn)
-        (let [cause @restart-promise]
-          (println "connection closed" cause (class cause) "restarting in 5s")))
-      (catch Exception err
-        (trace/print-stack-trace err)
-        (println "got exception" err)))
-    (Thread/sleep 5000)))
-
-
-
-
 (defn publish-some-message
   [conn]
   (let [ch (lch/open conn)
@@ -115,48 +92,6 @@
       (lb/publish ch "nextbot" queue-name "Hello!" :content-type "text/plain" :type "greetings.hi"))
     (lch/close ch)
     queue-name))
-
-
-
-(defn connect-with-thread-pool
-  [rmq-settings thread-pool]
-  (let [cf (#'rmq/create-connection-factory rmq-settings)]
-    (.newConnection ^ConnectionFactory cf thread-pool)))
-
-
-(defn channel-loop
-  "create a new channel and call handle-channel on it
-   do the same again if the channel is shutdown. this function should
-   be used for channel subscribers. handle-channel should not block"
-
-  [conn handle-channel]
-
-  (let [ch (lch/open conn)
-        restart (fn [cause]
-                  (if-not (lshutdown/initiated-by-application? cause)
-                    (logging/error "channel closed" cause)
-                    (if-not (lshutdown/hard-error? cause)
-                      (future (channel-loop conn handle-channel)))))
-        sl (rmq/shutdown-listener restart)]
-    (.addShutdownListener ch sl)
-    (handle-channel ch)))
-
-
-(defn break-channel
-  [ch delay]
-  (println "break channel" ch delay)
-  (future
-    (Thread/sleep delay)
-    (lq/bind ch "no-such-queu-453456546345", "amq.fanout")))
-
-
-(defn connect-loop-with-thread-pool
-  [rmq-settings handle-connection]
-  (let [thread-pool (Executors/newFixedThreadPool 500)
-        connect (partial connect-with-thread-pool rmq-settings thread-pool)]
-    (connect-loop
-     connect
-     handle-connection)))
 
 
 (def command->msg-handler
@@ -170,13 +105,14 @@
     (logging/info "initializing connection")
     (doseq [{:keys [fsid] :as fs} filesystems
             [command handle-msg] (seq command->msg-handler)]
-      (channel-loop
+      (mqhelper/channel-loop
        conn
        (fn [ch]
          (let [qname (misc/initialize-rabbitmq-structures ch command "nextbot" fsid)]
            (logging/info "starting consumer for" qname)
            (lb/qos ch 1)
            (lcons/subscribe ch qname (partial handle-msg fs))))))))
+
 
 (defn worker-run-section
   [iniconfig section]
@@ -189,6 +125,6 @@
     (when (zero? (count filesystems))
       (misc/die (str "no filesystems defined in section " section)))
 
-    (connect-loop-with-thread-pool
-     rmq-settings
-     (build-handle-connection filesystems))))
+    (mqhelper/connect-loop-with-thread-pool
+      rmq-settings
+      (build-handle-connection filesystems))))
