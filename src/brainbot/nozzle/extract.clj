@@ -126,9 +126,9 @@
 (defn extract-options-from-iniconfig
   [iniconfig section]
   (let [source (:source (meta iniconfig))
-        fscrawler-section (or (iniconfig "fscrawler") {})
-        max-size (Integer. (fscrawler-section "max-size")),
-        amqp-url (get fscrawler-section "amqp-url" "amqp://localhost/%2f")
+        main-section (or (iniconfig misc/main-section-name) {})
+        max-size (Integer. (main-section "max-size")),
+        amqp-url (get main-section "amqp-url" "amqp://localhost/%2f")
         filesystems (misc/get-filesystems-from-iniconfig iniconfig section)]
     (when (zero? (count filesystems))
       (die (str "no filesystems defined in section " section " in " source)))

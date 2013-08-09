@@ -6,7 +6,7 @@
 
 (def config-1
   (ini/read-ini-string
-"[fscrawler]
+"[nozzle]
 amqp-url = amqp://localhost
 max-size = 10000000
 [bar]

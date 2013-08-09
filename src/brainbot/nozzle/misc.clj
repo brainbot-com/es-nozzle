@@ -40,18 +40,18 @@
     (log-config/set-logger! name :level :off)))
 
 
-(def default-section-name "fscrawler")
+(def main-section-name "nozzle")
 
 (defn get-filesystems-from-iniconfig
   [iniconfig section]
   (trimmed-lines-from-string
    (or (get-in iniconfig [section "filesystems"])
-       (get-in iniconfig [default-section-name "filesystems"]))))
+       (get-in iniconfig [main-section-name "filesystems"]))))
 
 
 (defn rmq-settings-from-config
   [iniconfig]
-  (rmq/settings-from (get-in iniconfig [default-section-name "amqp-url"])))
+  (rmq/settings-from (get-in iniconfig [main-section-name "amqp-url"])))
 
 
 (defn initialize-rabbitmq-structures
