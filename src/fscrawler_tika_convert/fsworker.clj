@@ -15,7 +15,6 @@
             [langohr.consumers :as lcons])
   ;; (:require [me.raynes.fs :as fs])
   (:require [clojure.tools.cli :as cli])
-  (:require [clojure.data.json :as json])
   (:require [clojure.string :as string])
   (:require [com.brainbot.stat :as stat]
             [com.brainbot.vfs :as vfs])
@@ -47,40 +46,25 @@
 (def entry-is-file? (partial entry-is-type? "file"))
 
 
-(defn handle-msg-get_permissions
-  [fs ch {:keys [delivery-tag exchange routing-key] :as meta} ^bytes payload]
-  (let [body (json/read-json (String. payload "UTF-8"))
-        directory (:directory body)
-        entries-with-permissions (get-permissions fs directory (:entries body))]
-
-    (let [listdir-cmd (rk/routing-key-string-with-command routing-key "listdir")]
-      (doseq [entry (filter (fn [entry]
-                              (and (entry-is-directory? entry)
-                                   (not (:error entry))))
-                            entries-with-permissions)]
-        (let [subdirectory-path (vfs/join fs [directory (:relpath entry)])]
-          (println "publish listdir" subdirectory-path listdir-cmd)
-          (lb/publish ch exchange listdir-cmd
-                      (json/write-str {:path subdirectory-path})))))
+(defn simple-get_permissions
+  [fs {:keys [directory entries] :as body} {publish :publish}]
+  (let [entries-with-permissions (get-permissions fs directory entries)]
+    (doseq [entry (filter (fn [entry]
+                            (and (entry-is-directory? entry)
+                                 (not (:error entry))))
+                          entries-with-permissions)]
+      (let [subdirectory-path (vfs/join fs [directory (:relpath entry)])]
+        (publish "listdir" {:path subdirectory-path})))
+    (publish "update_directory" (assoc body :entries entries-with-permissions))))
 
 
-    (lb/publish ch exchange (rk/routing-key-string-with-command routing-key "update_directory")
-                (json/write-str (assoc body :entries entries-with-permissions)))
+(defn simple-listdir
+  [fs {path :path :as body} {publish :publish}]
+  (publish "get_permissions" {:directory path
+                              :entries (vfs/cmd-listdir fs path)}))
 
-    (lb/ack ch delivery-tag)))
 
 
-(defn handle-msg-listdir
-  [fs ch {:keys [delivery-tag exchange routing-key] :as meta} ^bytes payload]
-  (let [body (json/read-json (String. payload "UTF-8"))
-        path (:path body)
-        entries (vfs/cmd-listdir fs path)]
-    (println "handle-msg-listdir" path)
-    (lb/publish ch
-                exchange
-                (rk/routing-key-string-with-command routing-key "get_permissions")
-                (json/write-str {:directory path :entries entries})))
-  (lb/ack ch delivery-tag))
 
 
 (defn publish-some-message
@@ -95,8 +79,8 @@
 
 
 (def command->msg-handler
-  {"listdir" handle-msg-listdir
-   "get_permissions" handle-msg-get_permissions})
+  {"listdir" simple-listdir
+   "get_permissions" simple-get_permissions})
 
 
 (defn build-handle-connection
@@ -111,7 +95,7 @@
          (let [qname (misc/initialize-rabbitmq-structures ch command "nextbot" fsid)]
            (logging/info "starting consumer for" qname)
            (lb/qos ch 1)
-           (lcons/subscribe ch qname (partial handle-msg fs))))))))
+           (lcons/subscribe ch qname (mqhelper/make-handler (partial handle-msg fs)))))))))
 
 
 (defn worker-run-section
