@@ -1,10 +1,6 @@
 (ns brainbot.nozzle.fsworker
-  (:gen-class)
-  (:require [clojure.tools.logging :as logging]
-            [clj-logging-config.log4j :as log-config])
-  (:require [brainbot.nozzle.reap :as reap]
-            [brainbot.nozzle.mqhelper :as mqhelper]
-            [brainbot.nozzle.routing-key :as rk]
+  (:require [clojure.tools.logging :as logging])
+  (:require [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.misc :as misc])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
@@ -13,17 +9,7 @@
             [langohr.queue :as lq]
             [langohr.channel :as lch]
             [langohr.consumers :as lcons])
-  ;; (:require [me.raynes.fs :as fs])
-  (:require [clojure.tools.cli :as cli])
-  (:require [clojure.string :as string])
-  (:require [brainbot.nozzle.stat :as stat]
-            [brainbot.nozzle.vfs :as vfs])
-  (:require [clojure.stacktrace :as trace])
-  (:require [com.brainbot.iniconfig :as ini])
-  (:require [tika])
-  (:import java.io.File)
-  (:import [com.rabbitmq.client Address ConnectionFactory Connection Channel ShutdownListener])
-  (:import [java.util.concurrent Executors]))
+  (:require [brainbot.nozzle.vfs :as vfs]))
 
 
 (defn get-permissions-for-entry
@@ -37,6 +23,7 @@
   [fs directory entries]
   (map (partial get-permissions-for-entry fs directory)
        entries))
+
 
 (defn entry-is-type?
   [type entry]
@@ -62,20 +49,6 @@
   [fs {path :path :as body} {publish :publish}]
   (publish "get_permissions" {:directory path
                               :entries (vfs/cmd-listdir fs path)}))
-
-
-
-
-
-(defn publish-some-message
-  [conn]
-  (let [ch (lch/open conn)
-        queue-name (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" "fscrawler:test")]
-    (doseq [i (range 15)]
-      (println "[main] Publishing...")
-      (lb/publish ch "nextbot" queue-name "Hello!" :content-type "text/plain" :type "greetings.hi"))
-    (lch/close ch)
-    queue-name))
 
 
 (def command->msg-handler
