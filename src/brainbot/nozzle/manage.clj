@@ -86,7 +86,7 @@
   [iniconfig section]
   (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
         filesystems (misc/get-filesystems-from-iniconfig iniconfig section)]
-    (when (zero? (count filesystems))
+    (when (empty? filesystems)
       (misc/die (str "no filesystems defined in section " section)))
     (doseq [fs filesystems]
       (future (manage-filesystem "nextbot" fs)))))

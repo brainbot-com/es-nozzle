@@ -79,7 +79,7 @@
     (println "config" iniconfig)
     (println "rmq-settings" rmq-settings)
     (println "fs:" filesystems)
-    (when (zero? (count filesystems))
+    (when (empty? filesystems)
       (misc/die (str "no filesystems defined in section " section)))
 
     (mqhelper/connect-loop-with-thread-pool

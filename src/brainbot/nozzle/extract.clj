@@ -130,7 +130,7 @@
         max-size (Integer. (main-section "max-size")),
         amqp-url (get main-section "amqp-url" "amqp://localhost/%2f")
         filesystems (misc/get-filesystems-from-iniconfig iniconfig section)]
-    (when (zero? (count filesystems))
+    (when (empty? filesystems)
       (die (str "no filesystems defined in section " section " in " source)))
     {:max-size max-size
      :amqp-url amqp-url
