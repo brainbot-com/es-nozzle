@@ -5,6 +5,7 @@
              [fsworker :as fsworker]
              [manage :as manage]
              [extract :as extract]
+             [esconnect :as esconnect]
              [misc :as misc]]
             [brainbot.nozzle.misc :refer [die]])
   (:require [clojure.tools.cli :as cli])
@@ -44,6 +45,7 @@
   {"fsworker" fsworker/worker-run-section
    "meta"   meta-run-section
    "extract"  extract/extract-run-section
+   "esconnect" esconnect/esconnect-run-section
    "manage" manage/manage-run-section})
 
 
