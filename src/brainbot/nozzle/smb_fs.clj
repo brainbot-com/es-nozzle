@@ -1,7 +1,8 @@
 (ns brainbot.nozzle.smb-fs
   (:require
    [clojure.string :as string])
-  (:require [brainbot.nozzle.vfs :as vfs])
+  (:require [brainbot.nozzle.vfs :as vfs]
+            [brainbot.nozzle.misc :as misc])
   (:import [jcifs.smb SmbFile NtlmPasswordAuthentication SID ACE]))
 
 (def ^:private group-like-types
@@ -13,11 +14,6 @@
   (contains? group-like-types (.getType sid)))
 
 
-(defn- ensure-endswith-slash
-  [a-string]
-  (if (.endsWith a-string "/")
-    a-string
-    (str a-string "/")))
 (defn- smb-file-for-entry [fs entry]
   (SmbFile. (string/join [(:root fs) entry]) (:auth fs)))
 
@@ -68,7 +64,7 @@
     (string/join "/" parts))
 
   (listdir [fs dir]
-    (seq (.list (smb-file-for-entry fs (ensure-endswith-slash dir))))))
+    (seq (.list (smb-file-for-entry fs (misc/ensure-endswith-slash dir))))))
 
 
 (defn filesystem-from-inisection

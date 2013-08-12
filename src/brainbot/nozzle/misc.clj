@@ -11,6 +11,12 @@
   (:require [clojure.string :as string]))
 
 
+(defn ensure-endswith-slash
+  [a-string]
+  (if (.endsWith a-string "/")
+    a-string
+    (str a-string "/")))
+
 (defn die
   "print error message msg and exit the program with named argument
  :exit-code or 1"
