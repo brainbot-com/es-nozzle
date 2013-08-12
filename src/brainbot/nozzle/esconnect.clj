@@ -59,6 +59,7 @@
               ["dir" "doc"]
               :size 1000000
               :query {:match_all {}}
+              :fields ["parent" "lastmodified"]
               :filter {:term {:parent parent}}))
 
 
@@ -72,18 +73,25 @@
 
 
 
+(defn make-id
+  [& args]
+  (string/replace (string/join "/" args) #"/+" "/"))
+
 
 (defn simple-update_directory
   [fs es-index {:keys [directory entries] :as body} {publish :publish}]
-  (println "update-directory" body)
+  (let [parent-id (make-id "" directory)
+        entries-by-type (group-by #(get-in % [:stat :type]) entries)]
 
-  (doseq [e (filter #(= (get-in % [:stat :type]) "directory") entries)]
-    (let [id (string/join "/" [directory (:relpath e)])]
-      (println "put" e)
-      (esd/put es-index "dir"
-               id
-               {:mtime (get-in e [:stat :mtime])
-                :parent directory}))))
+    (println "update-directory" fs parent-id entries-by-type)
+
+    (doseq [e (entries-by-type "directory")]
+      (let [id (make-id "" directory (:relpath e))]
+        (println "put" id e)
+        (esd/put es-index "dir"
+                 id
+                 {:lastmodified (get-in e [:stat :mtime])
+                  :parent parent-id})))))
 
 
 
