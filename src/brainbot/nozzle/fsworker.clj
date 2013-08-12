@@ -76,9 +76,6 @@
   (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
         filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
 
-    (println "config" iniconfig)
-    (println "rmq-settings" rmq-settings)
-    (println "fs:" filesystems)
     (when (empty? filesystems)
       (misc/die (str "no filesystems defined in section " section)))
 
