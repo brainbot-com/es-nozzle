@@ -79,6 +79,6 @@
     (when (empty? filesystems)
       (misc/die (str "no filesystems defined in section " section)))
 
-    (mqhelper/connect-loop-with-thread-pool
-      rmq-settings
-      (build-handle-connection filesystems))))
+    (future (mqhelper/connect-loop-with-thread-pool
+              rmq-settings
+              (build-handle-connection filesystems)))))
