@@ -1,7 +1,12 @@
 (ns brainbot.nozzle.esconnect
   (:require [clojure.tools.logging :as logging])
-  (:require [brainbot.nozzle.misc :as misc])
-  (:require [clojurewerkz.elastisch.rest :as esr]
+  (:require [langohr.core :as rmq]
+            [langohr.consumers :as lcons]
+            [langohr.basic :as lb])
+  (:require [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.mqhelper :as mqhelper])
+  (:require [clojurewerkz.elastisch.rest.document :as esd]
+            [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]))
 
 ;; (esr/connect! "http://127.0.0.1:9200")
@@ -47,6 +52,44 @@
     (esi/create index-name :mappings mapping-types)))
 
 
+(defn es-listdir
+  [index-name parent]
+  (esd/search index-name
+              "doc"
+              :size 1000000
+              :query {:match_all {}}
+              :filter {:term {:parent parent}}))
+
+
+(defn es-recursive-delete
+  [index-name parent]
+  (let [with-slash (misc/ensure-endswith-slash parent)]
+    (esd/delete-by-query-across-all-types
+     index-name
+     {:prefix {:_id with-slash}})
+    (esd/delete index-name "dir" parent)))
+
+
+
+
+(defn simple-update_directory
+  [fs {:keys [directory entries] :as body} {publish :publish}]
+  (println "update-directory" body))
+
+
+(defn build-handle-connection
+  [es-index filesystems]
+  (fn [conn]
+    (logging/info "initializing rabbitmq connection")
+    (doseq [fs filesystems]
+      (mqhelper/channel-loop
+       conn
+       (fn [ch]
+         (let [qname (misc/initialize-rabbitmq-structures ch "update_directory" "nextbot" fs)]
+           (logging/info "starting consumer for" qname)
+           (lb/qos ch 1)
+           (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-update_directory fs)))))))))
+
 
 (defn esconnect-run-section
   [iniconfig section]
@@ -64,5 +107,6 @@
      (logging/info "connecting to elasticsearch" es-url)
     (esr/connect! es-url)
     (ensure-index-and-mappings es-index)
-    #_(doseq [fs filesystems]
-      (future (manage-filesystem "nextbot" fs)))))
+    (mqhelper/connect-loop
+     #(rmq/connect rmq-settings)
+     (build-handle-connection es-index filesystems))))
