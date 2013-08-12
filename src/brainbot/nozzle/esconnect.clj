@@ -1,4 +1,5 @@
 (ns brainbot.nozzle.esconnect
+  (:require [clojure.string :as string])
   (:require [clojure.tools.logging :as logging])
   (:require [langohr.core :as rmq]
             [langohr.consumers :as lcons]
@@ -55,7 +56,7 @@
 (defn es-listdir
   [index-name parent]
   (esd/search index-name
-              "doc"
+              ["dir" "doc"]
               :size 1000000
               :query {:match_all {}}
               :filter {:term {:parent parent}}))
@@ -73,8 +74,17 @@
 
 
 (defn simple-update_directory
-  [fs {:keys [directory entries] :as body} {publish :publish}]
-  (println "update-directory" body))
+  [fs es-index {:keys [directory entries] :as body} {publish :publish}]
+  (println "update-directory" body)
+
+  (doseq [e (filter #(= (get-in % [:stat :type]) "directory") entries)]
+    (let [id (string/join "/" [directory (:relpath e)])]
+      (println "put" e)
+      (esd/put es-index "dir"
+               id
+               {:mtime (get-in e [:stat :mtime])
+                :parent directory}))))
+
 
 
 (defn build-handle-connection
@@ -88,7 +98,8 @@
          (let [qname (misc/initialize-rabbitmq-structures ch "update_directory" "nextbot" fs)]
            (logging/info "starting consumer for" qname)
            (lb/qos ch 1)
-           (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-update_directory fs)))))))))
+           (lcons/subscribe ch qname
+                            (mqhelper/make-handler (partial simple-update_directory fs es-index)))))))))
 
 
 (defn esconnect-run-section
