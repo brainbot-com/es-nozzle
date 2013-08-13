@@ -1,4 +1,5 @@
 (ns brainbot.nozzle.esconnect
+  (:require [clojure.pprint :refer [pprint]])
   (:require [clojure.string :as string])
   (:require [clojure.tools.logging :as logging])
   (:require [langohr.core :as rmq]
@@ -90,7 +91,6 @@
   [& args]
   (string/replace (string/join "/" args) #"/+" "/"))
 
-
 (defn enrich-mq-entries
   [directory entries]
   (map
@@ -103,22 +103,55 @@
        :mtime (get-in entry [:stat :mtime])))
    entries))
 
+(defn make-id-map
+  [entries]
+  (apply hash-map (mapcat (juxt :id identity) entries)))
+
+(defn find-missing-entries
+  [existing-map entries]
+  (remove #(contains? existing-map (:id %)) entries))
+
+(defn compare-directories
+  [mq-entries es-entries]
+  (let [mq-entries-by-type (group-by :type mq-entries)
+        mq-directory-map (make-id-map (mq-entries-by-type "directory"))
+        mq-file-map (make-id-map (mq-entries-by-type "file"))
+
+        es-entries-by-type
+          (group-by :type (find-missing-entries (mq-entries-by-type "error") es-entries))
+        es-directory-map (make-id-map (es-entries-by-type "directory"))
+        es-file-map (make-id-map (es-entries-by-type "file"))]
+    (let [retval {:delete-directories (find-missing-entries mq-directory-map (es-entries-by-type "directory"))
+                  :create-directories (find-missing-entries es-directory-map (mq-entries-by-type "directory"))
+                  :delete-files nil
+                  :create-files nil
+                  :update-files nil}]
+
+      (pprint {:compare-directories
+               {:in {:mq-directory-map mq-directory-map
+                     :es-directory-map es-directory-map}
+                :out retval}})
+      (println)
+      retval)))
 
 
 (defn simple-update_directory
   [fs es-index {:keys [directory entries] :as body} {publish :publish}]
   (let [parent-id (make-id "" directory)
-        enriched-entries (enrich-mq-entries directory entries)
-        entries-by-type (group-by :type enriched-entries)]
+        es-entries (enrich-es-entries parent-id (es-listdir es-index parent-id))
+        mq-entries (enrich-mq-entries directory entries)]
 
-    (println "update-directory" fs parent-id entries-by-type)
+    (compare-directories mq-entries es-entries)))
 
-    (doseq [e (entries-by-type "directory")]
-      (println "put" e)
-      (esd/put es-index "dir"
-               (:id e)
-               {:lastmodified (:mtime e)
-                :parent parent-id}))))
+
+
+
+    ;; (doseq [e (entries-by-type "directory")]
+    ;;   (println "put" e)
+    ;;   (esd/put es-index "dir"
+    ;;            (:id e)
+    ;;            {:lastmodified (:mtime e)
+    ;;             :parent parent-id}))))
 
 
 
