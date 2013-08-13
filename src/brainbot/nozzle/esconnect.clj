@@ -76,9 +76,6 @@
           (map convert-entry entries))))))
 
 
-
-
-
 (defn es-recursive-delete
   [index-name parent]
   (let [with-slash (misc/ensure-endswith-slash parent)]
@@ -96,13 +93,15 @@
 
 (defn enrich-mq-entries
   [directory entries]
-  (let [parent-id (make-id "" directory)
-        enrich-entry (fn [entry]
-                       (assoc entry
-                         :id (make-id "" directory (:relpath entry))
-                         :type (get-in entry [:stat :type])
-                         :mtime (get-in entry [:stat :mtime])))]
-    (map enrich-entry entries)))
+  (map
+   (fn [entry]
+     (assoc entry
+       :id (make-id "" directory (:relpath entry))
+       :type (if (:error entry)
+               "error"
+               (get-in entry [:stat :type]))
+       :mtime (get-in entry [:stat :mtime])))
+   entries)
 
 
 
