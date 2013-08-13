@@ -62,6 +62,22 @@
               :fields ["parent" "lastmodified"]
               :filter {:term {:parent parent}}))
 
+(let [estype->type {"dir" "directory"
+                    "doc" "file"}]
+  (defn enrich-es-entries
+    [parent entries]
+    (let [convert-entry (fn [{:keys [_type _id fields]}]
+                          {:id _id
+                           :type (estype->type _type)
+                           :mtime (:lastmodified fields)})]
+      (loop [entries entries]
+        (if (map? entries)
+          (recur (:hits entries))
+          (map convert-entry entries))))))
+
+
+
+
 
 (defn es-recursive-delete
   [index-name parent]
@@ -78,20 +94,32 @@
   (string/replace (string/join "/" args) #"/+" "/"))
 
 
+(defn enrich-mq-entries
+  [directory entries]
+  (let [parent-id (make-id "" directory)
+        enrich-entry (fn [entry]
+                       (assoc entry
+                         :id (make-id "" directory (:relpath entry))
+                         :type (get-in entry [:stat :type])
+                         :mtime (get-in entry [:stat :mtime])))]
+    (map enrich-entry entries)))
+
+
+
 (defn simple-update_directory
   [fs es-index {:keys [directory entries] :as body} {publish :publish}]
   (let [parent-id (make-id "" directory)
-        entries-by-type (group-by #(get-in % [:stat :type]) entries)]
+        enriched-entries (enrich-mq-entries directory entries)
+        entries-by-type (group-by :type enriched-entries)]
 
     (println "update-directory" fs parent-id entries-by-type)
 
     (doseq [e (entries-by-type "directory")]
-      (let [id (make-id "" directory (:relpath e))]
-        (println "put" id e)
-        (esd/put es-index "dir"
-                 id
-                 {:lastmodified (get-in e [:stat :mtime])
-                  :parent parent-id})))))
+      (println "put" e)
+      (esd/put es-index "dir"
+               (:id e)
+               {:lastmodified (:mtime e)
+                :parent parent-id}))))
 
 
 
