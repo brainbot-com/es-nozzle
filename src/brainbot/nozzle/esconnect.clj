@@ -101,7 +101,7 @@
                "error"
                (get-in entry [:stat :type]))
        :mtime (get-in entry [:stat :mtime])))
-   entries)
+   entries))
 
 
 
