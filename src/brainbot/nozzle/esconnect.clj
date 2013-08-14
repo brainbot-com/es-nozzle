@@ -152,7 +152,12 @@
         es-entries (enrich-es-entries parent-id (es-listdir es-index parent-id))
         mq-entries (enrich-mq-entries directory entries)
         diff (compare-directories mq-entries es-entries)]
-    (apply-diff-to-elasticsearch diff es-index parent-id)))
+    (apply-diff-to-elasticsearch diff es-index parent-id)
+
+    (doseq [e (:create-files diff)]
+      (publish "extract_content"
+               {:directory directory
+                :entry (select-keys e [:relpath :permissions :stat])}))))
 
 
 
