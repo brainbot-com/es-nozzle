@@ -8,8 +8,11 @@
             [langohr.queue :as lq]
             [langohr.channel :as lch]
             [langohr.consumers :as lcons])
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [clojure.stacktrace :as trace]))
 
+(def number-of-cores
+  (.availableProcessors (Runtime/getRuntime)))
 
 (defn ensure-endswith-slash
   [a-string]
@@ -54,6 +57,18 @@
    (or (get-in iniconfig [section "filesystems"])
        (get-in iniconfig [main-section-name "filesystems"]))))
 
+
+(defn run-forever
+  "run function forever, i.e. run function, catch exception, wait a
+ bit and restart it"
+  [sleeptime function & args]
+  (while true
+    (try
+      (apply function args)
+      (catch Throwable err
+        (logging/error "got exception" err "while running" function "with" args)
+        (trace/print-stack-trace err)
+        (Thread/sleep sleeptime)))))
 
 (defn rmq-settings-from-config
   [iniconfig]

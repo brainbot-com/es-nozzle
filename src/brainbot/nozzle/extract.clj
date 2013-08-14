@@ -22,12 +22,6 @@
             [brainbot.nozzle.misc :refer [die]]))
 
 
-
-
-(def number-of-cores
-  (.availableProcessors (Runtime/getRuntime)))
-
-
 (defn wash
   "remove unicode 0xfffd character from string
   this is the unicode 'replacement character', which tika uses for
@@ -90,29 +84,13 @@
                        (rmq/connect rmq-settings))
         ch           (lch/open conn)
         queue-name   (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
-    (lb/qos ch (+ number-of-cores 4))
+    (lb/qos ch (+ misc/number-of-cores 4))
     (lcons/blocking-subscribe ch queue-name (partial handle-message options) :auto-ack false)))
-
-
-(defn run-forever
-  "run function forever, i.e. run function, catch exception, wait a
- bit and restart it"
-  [sleeptime function & args]
-  (while true
-    (try
-      (apply function args)
-      (catch Throwable err
-        (logging/error "got exception" err "while running" function "with" args)
-        (trace/print-stack-trace err)
-        (Thread/sleep sleeptime)))))
 
 
 (defn handle-command-for-filesystem-forever
   [filesystem options]
-  (run-forever 5000 handle-command-for-filesystem filesystem options))
-
-
-
+  (misc/run-forever 5000 handle-command-for-filesystem filesystem options))
 
 
 (defn die-on-exit-or-error
