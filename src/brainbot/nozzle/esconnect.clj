@@ -143,6 +143,9 @@
               :parent parent-id})))
 
 
+(defn simple-import_file
+  [fs es-index {directory :directory {relpath :relpath :as entry} :entry :as body} {publish :publish}]
+  (println "simple-import-file" fs directory relpath (keys body)))
 
 
 (defn simple-update_directory
@@ -160,20 +163,24 @@
                 :entry (select-keys e [:relpath :permissions :stat])}))))
 
 
+(def command->msg-handler
+  {"update_directory" simple-update_directory
+   "import_file"      simple-import_file})
 
 (defn build-handle-connection
   [es-index num-workers filesystems]
   (fn [conn]
     (logging/info "initializing rabbitmq connection with" num-workers "workers")
     (doseq [fs filesystems
+            [command handle-msg] (seq command->msg-handler)
             _ (range num-workers)]
       (mqhelper/channel-loop
        conn
        (fn [ch]
-         (let [qname (misc/initialize-rabbitmq-structures ch "update_directory" "nextbot" fs)]
+         (let [qname (misc/initialize-rabbitmq-structures ch command "nextbot" fs)]
            ;; (lb/qos ch 1)
            (lcons/subscribe ch qname
-                            (mqhelper/make-handler (partial simple-update_directory fs es-index)))))))))
+                            (mqhelper/make-handler (partial handle-msg fs es-index)))))))))
 
 
 (defn esconnect-run-section
