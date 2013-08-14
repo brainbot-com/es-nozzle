@@ -24,7 +24,10 @@
 (defn simple-extract_content
   [fs {directory :directory, {relpath :relpath :as entry} :entry, :as body} {publish :publish}]
   (let [path (vfs/join fs [directory relpath])
-        extract (vfs/extract-content fs path)
+        extract (try
+                  (vfs/extract-content fs path)
+                  (catch Throwable err
+                    nil))
         new-entry (if extract
                     (assoc entry :extract extract)
                     entry)]
