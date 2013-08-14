@@ -6,6 +6,7 @@
 
 (defprotocol Filesystem
   "filesystem"
+  (extract-content [fs entry] "extract content from file")
   (get-permissions [fs entry] "get permissions")
   (stat [fs path] "stat entry")
   (join [fs parts] "join parts")

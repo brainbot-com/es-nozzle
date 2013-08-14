@@ -6,6 +6,7 @@
            [java.nio.file Files Path LinkOption Paths]
 
            [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
+  (:require [brainbot.nozzle.extract :refer [convert]])
 
   (:require [brainbot.nozzle.vfs :as vfs]))
 
@@ -112,6 +113,11 @@
 
 (defrecord RealFilesystem [root]
   vfs/Filesystem
+  (extract-content [fs entry]
+    (let [fp (string/join "/" [(:root fs) entry])]
+      {:tika-content (convert fp)}))
+
+
   (get-permissions [fs entry]
     (let [fp (string/join "/" [(:root fs) entry])]
       (if is-windows
