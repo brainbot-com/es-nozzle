@@ -117,8 +117,10 @@
         mq-directory-map (make-id-map (mq-entries-by-type "directory"))
         mq-file-map (make-id-map (mq-entries-by-type "file"))
 
-        es-entries-by-type
-          (group-by :type (find-missing-entries (mq-entries-by-type "error") es-entries))
+        es-entries-by-type (group-by :type
+                                     (find-missing-entries
+                                      (make-id-map (mq-entries-by-type "error"))
+                                      es-entries))
         es-directory-map (make-id-map (es-entries-by-type "directory"))
         es-file-map (make-id-map (es-entries-by-type "file"))]
     (let [retval {:delete-directories (find-missing-entries mq-directory-map (es-entries-by-type "directory"))
