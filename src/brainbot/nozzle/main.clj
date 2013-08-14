@@ -4,7 +4,7 @@
              real-fs smb-fs   ;; we need these two for the uberjar
              [fsworker :as fsworker]
              [manage :as manage]
-             [extract :as extract]
+             [extract2 :as extract]
              [esconnect :as esconnect]
              [misc :as misc]]
             [brainbot.nozzle.misc :refer [die]])
