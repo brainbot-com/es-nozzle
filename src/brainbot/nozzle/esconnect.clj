@@ -157,16 +157,17 @@
 
 
 (defn build-handle-connection
-  [es-index filesystems]
+  [es-index num-workers filesystems]
   (fn [conn]
     (logging/info "initializing rabbitmq connection")
-    (doseq [fs filesystems]
+    (doseq [fs filesystems
+            count (range num-workers)]
       (mqhelper/channel-loop
        conn
        (fn [ch]
          (let [qname (misc/initialize-rabbitmq-structures ch "update_directory" "nextbot" fs)]
-           (logging/info "starting consumer for" qname)
-           (lb/qos ch 1)
+           (logging/info "starting consumer" count "for" qname)
+           ;; (lb/qos ch 1)
            (lcons/subscribe ch qname
                             (mqhelper/make-handler (partial simple-update_directory fs es-index)))))))))
 
@@ -174,6 +175,7 @@
 (defn esconnect-run-section
   [iniconfig section]
   (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
+        num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
         filesystems (misc/get-filesystems-from-iniconfig iniconfig section)
         es-index (get-in iniconfig [misc/main-section-name "es-index"])
         es-url (or (get-in iniconfig [misc/main-section-name "es-url"]) "http://localhost:9200")]
@@ -184,9 +186,9 @@
     (when-not es-index
       (misc/die "es-index setting missing"))
 
-     (logging/info "connecting to elasticsearch" es-url)
+    (logging/info "connecting to elasticsearch" es-url)
     (esr/connect! es-url)
     (ensure-index-and-mappings es-index)
     (mqhelper/connect-loop
      #(rmq/connect rmq-settings)
-     (build-handle-connection es-index filesystems))))
+     (build-handle-connection es-index num-workers filesystems))))
