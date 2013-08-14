@@ -49,7 +49,7 @@
   [index-name]
   (if (esi/exists? index-name)
     (doseq [[doctype mapping] mapping-types]
-      (println "update-mapping" doctype mapping)
+      ;; (println "update-mapping" doctype mapping)
       (esi/update-mapping index-name doctype :mapping {:mapping mapping}))
     (esi/create index-name :mappings mapping-types)))
 
@@ -159,14 +159,13 @@
 (defn build-handle-connection
   [es-index num-workers filesystems]
   (fn [conn]
-    (logging/info "initializing rabbitmq connection")
+    (logging/info "initializing rabbitmq connection with" num-workers "workers")
     (doseq [fs filesystems
-            count (range num-workers)]
+            _ (range num-workers)]
       (mqhelper/channel-loop
        conn
        (fn [ch]
          (let [qname (misc/initialize-rabbitmq-structures ch "update_directory" "nextbot" fs)]
-           (logging/info "starting consumer" count "for" qname)
            ;; (lb/qos ch 1)
            (lcons/subscribe ch qname
                             (mqhelper/make-handler (partial simple-update_directory fs es-index)))))))))
