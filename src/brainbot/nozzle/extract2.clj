@@ -28,10 +28,10 @@
                   (vfs/extract-content fs path)
                   (catch Throwable err
                     nil))
-        new-entry (if extract
-                    (assoc entry :extract extract)
-                    entry)]
-    (publish "import_file" new-entry)))
+        new-body (if extract
+                   (assoc body :extract extract)
+                   body)]
+    (publish "import_file" new-body)))
 
 
 (defn build-handle-connection
