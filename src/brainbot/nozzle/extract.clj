@@ -49,7 +49,7 @@
         routing-key (:routing-key metadata)
         exchange (:exchange metadata)
         directory (:directory body)
-        size (get-in body [:entry :stat :st_size])
+        size (get-in body [:entry :stat :size])
         relpath (:relpath (:entry body))
         delivery-tag (:delivery-tag metadata)
         fp (string/join File/separator [directory relpath])
