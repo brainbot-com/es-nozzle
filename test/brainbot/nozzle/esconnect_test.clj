@@ -21,5 +21,7 @@
                  {:create-directories dir-listing1}))
     (is (=submap (compare-directories [] dir-listing1)
                  {:delete-directories dir-listing1}))
+    (is (=submap (compare-directories dir-listing-with-error [])
+                 {:create-directories []}))
     (is (=submap (compare-directories dir-listing-with-error dir-listing1)
                  {:delete-directories []}))))

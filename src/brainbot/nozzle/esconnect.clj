@@ -123,37 +123,36 @@
                                       es-entries))
         es-directory-map (make-id-map (es-entries-by-type "directory"))
         es-file-map (make-id-map (es-entries-by-type "file"))]
-    (let [retval {:delete-directories (find-missing-entries mq-directory-map (es-entries-by-type "directory"))
-                  :create-directories (find-missing-entries es-directory-map (mq-entries-by-type "directory"))
-                  :delete-files nil
-                  :create-files nil
-                  :update-files nil}]
+    {:delete-directories (find-missing-entries mq-directory-map (es-entries-by-type "directory"))
+     :delete-files (find-missing-entries mq-file-map (es-entries-by-type "file"))
+     :create-directories (find-missing-entries es-directory-map (mq-entries-by-type "directory"))
+     :create-files (find-missing-entries es-file-map (mq-entries-by-type "file"))
+     :update-files nil}))
 
-      (pprint {:compare-directories
-               {:in {:mq-directory-map mq-directory-map
-                     :es-directory-map es-directory-map}
-                :out retval}})
-      (println)
-      retval)))
+
+(defn apply-diff-to-elasticsearch
+  [{:keys [delete-directories delete-files create-directories]} es-index parent-id]
+  (doseq [e delete-directories]
+    (es-recursive-delete es-index (:id e)))
+  (doseq [e delete-files]
+    nil)
+  (doseq [e create-directories]
+    (esd/put es-index "dir"
+             (:id e)
+             {:lastmodified (:mtime e)
+              :parent parent-id})))
+
+
 
 
 (defn simple-update_directory
   [fs es-index {:keys [directory entries] :as body} {publish :publish}]
+  ;; (logging/info "simple-update" directory)
   (let [parent-id (make-id "" directory)
         es-entries (enrich-es-entries parent-id (es-listdir es-index parent-id))
-        mq-entries (enrich-mq-entries directory entries)]
-
-    (compare-directories mq-entries es-entries)))
-
-
-
-
-    ;; (doseq [e (entries-by-type "directory")]
-    ;;   (println "put" e)
-    ;;   (esd/put es-index "dir"
-    ;;            (:id e)
-    ;;            {:lastmodified (:mtime e)
-    ;;             :parent parent-id}))))
+        mq-entries (enrich-mq-entries directory entries)
+        diff (compare-directories mq-entries es-entries)]
+    (apply-diff-to-elasticsearch diff es-index parent-id)))
 
 
 
