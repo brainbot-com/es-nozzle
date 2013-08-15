@@ -145,7 +145,16 @@
 
 (defn simple-import_file
   [fs es-index {directory :directory {relpath :relpath :as entry} :entry :as body} {publish :publish}]
-  (println "simple-import-file" fs directory relpath (keys body)))
+  (let [parent-id (make-id "" directory)
+        id (make-id "" directory relpath)]
+
+    (println "simple-import-file" fs id)
+
+    (esd/put es-index "doc"
+             id
+             {:parent parent-id
+              :lastmodified (get-in entry [:stat :mtime])})))
+
 
 
 (defn simple-update_directory
