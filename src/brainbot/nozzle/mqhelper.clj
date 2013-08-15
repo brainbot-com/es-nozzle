@@ -68,7 +68,8 @@
 
 
 (defn connect-loop-with-thread-pool
-  [rmq-settings handle-connection]
+  [rmq-settings handle-connection &{:keys [thread-pool-size]
+                                    :or {thread-pool-size 500}}]
   (let [thread-pool (Executors/newFixedThreadPool 500)
         connect (partial connect-with-thread-pool rmq-settings thread-pool)]
     (connect-loop
