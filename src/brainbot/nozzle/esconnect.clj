@@ -5,6 +5,8 @@
   (:require [langohr.core :as rmq]
             [langohr.consumers :as lcons]
             [langohr.basic :as lb])
+  (:require [clj-time.core :as tcore]
+            [clj-time.coerce :as tcoerce])
   (:require [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.mqhelper :as mqhelper])
   (:require [clojurewerkz.elastisch.rest.document :as esd]
@@ -24,7 +26,7 @@
             :index_options "docs",
             :store true,
             :omit_norms true},
-           :lastmodified {:type "integer", :store "yes"},
+           :lastmodified {:type "date", :store "yes"},
            :content {:type "string", :store "yes"},
            :deny_token_document
            {:index "not_analyzed",
@@ -39,10 +41,19 @@
           :_source {:enabled false}},
    "dir" {:_all {:enabled false},
           :properties
-          {:lastmodified {:type "integer", :store "yes"},
+          {:lastmodified {:type "date", :store "yes"},
            :name {:index "not_analyzed", :type "string", :store "yes"},
            :parent {:index "not_analyzed", :type "string", :store "yes"}},
           :_source {:enabled false}}})
+
+
+(defn mtime->lastmodified
+  [mtime]
+  (str (tcoerce/from-long (* 1000 (long mtime)))))
+
+(defn lastmodified->mtime
+  [lastmodified]
+  (quot (tcoerce/to-long (tcoerce/from-string lastmodified)) 1000))
 
 
 (defn ensure-index-and-mappings
@@ -70,7 +81,7 @@
     (let [convert-entry (fn [{:keys [_type _id fields]}]
                           {:id _id
                            :type (estype->type _type)
-                           :mtime (:lastmodified fields)})]
+                           :mtime (lastmodified->mtime (:lastmodified fields))})]
       (loop [entries entries]
         (if (map? entries)
           (recur (:hits entries))
@@ -139,7 +150,7 @@
   (doseq [e create-directories]
     (esd/put es-index "dir"
              (:id e)
-             {:lastmodified (:mtime e)
+             {:lastmodified (mtime->lastmodified (:mtime e))
               :parent parent-id})))
 
 (defn simplify-permissions-for-es
@@ -169,7 +180,7 @@
               :tags (get-tags-from-path directory)
               :allow_token_document (simple-perms true)
               :deny_token_document (simple-perms false)
-              :lastmodified (get-in entry [:stat :mtime])})))
+              :lastmodified (mtime->lastmodified (get-in entry [:stat :mtime]))})))
 
 
 
