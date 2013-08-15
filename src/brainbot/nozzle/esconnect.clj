@@ -150,6 +150,9 @@
     {true (or allowed '("NOBODY"))
      false (or denied '("UNAUTHENTICATED"))}))  ;; XXX why can't we have the same default values
 
+(defn get-tags-from-path
+  [s]
+  (sort (disj (set (string/split s #"/")) "")))
 
 (defn simple-import_file
   [fs es-index {:keys [directory entry] :as body} {publish :publish}]
@@ -163,6 +166,7 @@
     (esd/put es-index "doc"
              id
              {:parent parent-id
+              :tags (get-tags-from-path directory)
               :allow_token_document (simple-perms true)
               :deny_token_document (simple-perms false)
               :lastmodified (get-in entry [:stat :mtime])})))
