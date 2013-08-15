@@ -135,7 +135,7 @@
   (doseq [e delete-directories]
     (es-recursive-delete es-index (:id e)))
   (doseq [e delete-files]
-    nil)
+    (esd/delete es-index "doc" (:id e)))
   (doseq [e create-directories]
     (esd/put es-index "dir"
              (:id e)
