@@ -142,17 +142,29 @@
              {:lastmodified (:mtime e)
               :parent parent-id})))
 
+(defn simplify-permissions-for-es
+  [permissions]
+  (let [{allowed true denied false}
+            (misc/remap #(sort (set (map :sid %)))
+                        (group-by :allow permissions))]
+    {true (or allowed '("NOBODY"))
+     false (or denied '("UNAUTHENTICATED"))}))  ;; XXX why can't we have the same default values
+
 
 (defn simple-import_file
-  [fs es-index {directory :directory {relpath :relpath :as entry} :entry :as body} {publish :publish}]
+  [fs es-index {:keys [directory entry] :as body} {publish :publish}]
   (let [parent-id (make-id "" directory)
-        id (make-id "" directory relpath)]
+        id (make-id "" directory (:relpath entry))
+        simple-perms (simplify-permissions-for-es (:permissions entry))]
 
-    (println "simple-import-file" fs id)
+    (println "simple-import-file" fs id entry)
+    (println "permissions" simple-perms)
 
     (esd/put es-index "doc"
              id
              {:parent parent-id
+              :allow_token_document (simple-perms true)
+              :deny_token_document (simple-perms false)
               :lastmodified (get-in entry [:stat :mtime])})))
 
 
