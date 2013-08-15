@@ -14,6 +14,13 @@
 (def number-of-cores
   (.availableProcessors (Runtime/getRuntime)))
 
+
+(defn remap
+  "create a new map from existing map by replacing each value with (f value)"
+  [f a-map]
+  (into {} (for [[key val] a-map] [key (f val)])))
+
+
 (defn ensure-endswith-slash
   [a-string]
   (if (.endsWith a-string "/")

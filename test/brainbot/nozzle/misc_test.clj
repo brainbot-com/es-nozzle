@@ -8,3 +8,8 @@
   (testing "trimmed lines should skip empty lines"
     (is (= (trimmed-lines-from-string "  foo  \nbar\n\n  baz   \n")
            ["foo" "bar" "baz"]))))
+
+(deftest test-remap
+  (testing "basic remap"
+    (is (remap inc {}) {})
+    (is (remap inc {:a 1 :b 2}) {:a 2 :b 3})))
