@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [clj-logging-config "1.9.10"]
                  [org.slf4j/slf4j-log4j12 "1.6.6"]
-                 [com.brainbot/iniconfig "0.1.1"]
+                 [com.brainbot/iniconfig "0.2.0"]
                  [org.clojure/tools.cli "0.2.4"]
                  [info.hoetzel/clj-nio2 "0.1.1"]
                  ;; [me.raynes/fs "1.4.4"]

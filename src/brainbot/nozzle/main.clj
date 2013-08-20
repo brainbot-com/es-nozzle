@@ -64,7 +64,7 @@
 (defn -main [& args]
   (let [{:keys [iniconfig sections]} (parse-command-line-options args)]
     (misc/setup-logging!)
-    (let [cfg (with-meta (ini/read-ini iniconfig) {:source iniconfig})]
+    (let [cfg (ini/read-ini iniconfig)]
       (logging/debug "using config" cfg)
       (run-all-sections
        cfg
