@@ -177,6 +177,7 @@
     (esd/put es-index "doc"
              id
              {:parent parent-id
+              :content (get-in body [:extract :tika-content :text])
               :tags (get-tags-from-path directory)
               :allow_token_document (simple-perms true)
               :deny_token_document (simple-perms false)
