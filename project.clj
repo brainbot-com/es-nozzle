@@ -16,6 +16,7 @@
                  [clj-time "0.5.1"]
                  [clojurewerkz/elastisch "1.2.0"]
                  [com.novemberain/langohr "1.0.1"]]
+  :profiles {:uberjar {:aot :all}}
   :omit-source true
   ;; :jvm-opts ["-Xmx64m" "-server"]
   :main brainbot.nozzle.main)
