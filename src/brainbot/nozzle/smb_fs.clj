@@ -1,6 +1,7 @@
 (ns brainbot.nozzle.smb-fs
   (:require
    [clojure.string :as string])
+  (:require [brainbot.nozzle.extract :refer [convert]])
   (:require [brainbot.nozzle.vfs :as vfs]
             [brainbot.nozzle.misc :as misc])
   (:import [jcifs.smb SmbFile NtlmPasswordAuthentication SID ACE]))
@@ -38,6 +39,12 @@
 
 (defrecord SmbFilesystem [root auth]
   vfs/Filesystem
+  (extract-content [fs entry]
+    (let [smb-file (smb-file-for-entry fs entry)]
+      (with-open [in (.getInputStream smb-file)]
+        {:tika-content (convert in)})))
+
+
   (get-permissions [fs entry]
     (let [smb-file (smb-file-for-entry fs entry)
           acl (seq (.getSecurity smb-file true))]
