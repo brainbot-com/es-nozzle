@@ -27,6 +27,7 @@
         extract (try
                   (vfs/extract-content fs path)
                   (catch Throwable err
+                    (logging/error "error in extract-content" {:error err :path path})
                     nil))
         new-body (if extract
                    (assoc body :extract extract)
