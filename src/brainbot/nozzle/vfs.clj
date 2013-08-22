@@ -51,7 +51,9 @@
   "create filesystem from ini config section"
   [iniconfig section-name]
   (let [section (iniconfig section-name)
-        fstype (section "type")]
+        fstype (get section "type")]
+    (when-not section
+      (throw (ex-info (format "no filesystem %s declared, section missing" section-name) {:section-name section-name})))
     (if-let [create-fs (get-create-fs-fn fstype)]
       (assoc (create-fs section) :fsid section-name)
       (throw (Exception. (str "unknown filesystem type " fstype))))))
