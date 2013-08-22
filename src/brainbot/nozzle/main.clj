@@ -12,6 +12,21 @@
   (:gen-class))
 
 
+
+(defn ensure-java-version
+  []
+  (let [java-version (System/getProperty "java.version")
+        [major minor] (map #(Integer. %)
+                           (rest (re-find #"^(\d+)\.(\d+)" java-version)))]
+
+    (when (> 0 (compare [major minor] [1 7]))
+      (binding [*out* *err*]
+        (println
+         (format "Fatal error: You need at least java version 7. The java installation in %s has version %s."
+                 (System/getProperty "java.home") java-version))
+        (System/exit 1)))))
+
+
 (defn parse-command-line-options
   "parse command line options with clojure.tools.cli
    returns a map of options"
@@ -61,6 +76,7 @@
 
 
 (defn -main [& args]
+  (ensure-java-version)
   (let [{:keys [iniconfig sections]} (parse-command-line-options args)]
     (misc/setup-logging!)
     (let [cfg (ini/read-ini iniconfig)]
