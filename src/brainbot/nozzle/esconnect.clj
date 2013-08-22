@@ -46,12 +46,20 @@
            :parent {:index "not_analyzed", :type "string", :store "yes"}},
           :_source {:enabled false}}})
 
+;;; when sending around messages via rabbitmq we pass the lastmodified
+;;; date as unix time (as integer). the field is called mtime while in
+;;; rabbitmq. elasticsearch has a dedicated date type, and we store
+;;; the lastmodified date under the lastmodified field.
+;;; mtime->lastmodied and lastmodified->mtime convert between these
+;;; two representations.
 
 (defn mtime->lastmodified
+  "convert unix timestamp to elasticsearch compatible string representation"
   [mtime]
   (str (tcoerce/from-long (* 1000 (long mtime)))))
 
 (defn lastmodified->mtime
+  "convert elasticsearch date string to unix timestamp"
   [lastmodified]
   (quot (tcoerce/to-long (tcoerce/from-string lastmodified)) 1000))
 
