@@ -7,6 +7,7 @@
              [esconnect :as esconnect]
              [misc :as misc]]
             [brainbot.nozzle.misc :refer [die]])
+  (:require [clojure.tools.nrepl.server :as nrepl-server])
   (:require [clojure.tools.cli :as cli])
   (:require [com.brainbot.iniconfig :as ini])
   (:gen-class))
@@ -75,8 +76,17 @@
           (run-section iniconfig section))))))
 
 
+(defn maybe-start-repl-server
+  []
+  (if-let [port (System/getProperty "nozzle.repl")]
+    (do
+      (println "starting repl on port" port)
+      (nrepl-server/start-server :port (Integer. port)))))
+
+
 (defn -main [& args]
   (ensure-java-version)
+  (maybe-start-repl-server)
   (let [{:keys [iniconfig sections]} (parse-command-line-options args)]
     (misc/setup-logging!)
     (let [cfg (ini/read-ini iniconfig)]
