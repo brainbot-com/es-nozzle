@@ -1,7 +1,6 @@
 (ns brainbot.nozzle.main
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle
-             real-fs smb-fs   ;; we need these two for the uberjar
              [fsworker :as fsworker]
              [manage :as manage]
              [extract2 :as extract]
