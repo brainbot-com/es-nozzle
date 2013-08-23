@@ -7,7 +7,7 @@
   (:require [clojure.stacktrace :as trace])
   (:require [clojure.string :as string])
   (:require [clojure.data.json :as json])
-  (:require [nozzle.brainbot.tika :as tika])
+  (:require [brainbot.nozzle.tika :as tika])
   (:import java.io.File)
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
