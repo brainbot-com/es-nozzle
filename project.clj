@@ -16,6 +16,7 @@
                  [org.clojars.floriano.clj-tika "1.2.4"]
                  [jcifs "1.3.17"]
                  [clj-time "0.6.0"]
+                 [robert/bruce "0.7.1"]
                  [clojurewerkz/elastisch "1.2.0"]
                  [com.novemberain/langohr "1.0.1"]]
   :profiles {:uberjar {:aot :all}}

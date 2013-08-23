@@ -9,6 +9,7 @@
             [clj-time.coerce :as tcoerce])
   (:require [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.mqhelper :as mqhelper])
+  (:require [robert.bruce :refer [try-try-again]])
   (:require [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]))
@@ -245,6 +246,11 @@
   (doseq [idx (indexes-from-fsmap fsmap)]
     (ensure-index-and-mappings idx)))
 
+(defn initialize-elasticsearch
+  [es-url fsmap]
+  (esr/connect! es-url)
+  (ensure-all-indexes-and-mappings fsmap))
+
 
 (defn esconnect-run-section
   [iniconfig section]
@@ -258,9 +264,10 @@
       (misc/die (str "no filesystems defined in section " section)))
 
     (logging/info "connecting to elasticsearch" es-url)
-    (esr/connect! es-url)
-
-    (ensure-all-indexes-and-mappings fsmap)
+    (try-try-again {:tries :unlimited
+                    :error-hook (fn [err]
+                                  (logging/error "error while initializing elasticsearch connection and indexes" es-url err))}
+                   #(initialize-elasticsearch es-url fsmap))
 
     (mqhelper/connect-loop-with-thread-pool
      rmq-settings
