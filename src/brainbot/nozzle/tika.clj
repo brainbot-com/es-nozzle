@@ -6,7 +6,7 @@
 
 
 (def ^Tika ^{:private true} tika-obj (Tika.))
-
+(def ^{:dynamic true} *default-max-length* (.getMaxStringLength tika-obj))
 
 (defn- conv-metadata [^Metadata mdata]
   (let [names (.names mdata)]
@@ -24,4 +24,4 @@
   ([in max-length]
      (parse-istream (io/input-stream in) max-length))
   ([in]
-     (parse in 100000)))
+     (parse in *default-max-length*)))
