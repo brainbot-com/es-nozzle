@@ -262,6 +262,7 @@
 
     (ensure-all-indexes-and-mappings fsmap)
 
-    (mqhelper/connect-loop
-     #(rmq/connect rmq-settings)
-     (build-handle-connection fsmap num-workers))))
+    (mqhelper/connect-loop-with-thread-pool
+     rmq-settings
+     (build-handle-connection fsmap num-workers)
+     :thread-pool-size num-workers)))
