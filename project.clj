@@ -13,7 +13,7 @@
                  [clojure-complete "0.2.3"]
                  ;; [me.raynes/fs "1.4.4"]
                  [org.clojure/data.json "0.2.2"]
-                 [org.clojars.floriano.clj-tika "1.2.4"]
+                 ;; [org.clojars.floriano.clj-tika "1.2.4"]
                  [jcifs "1.3.17"]
                  [clj-time "0.6.0"]
                  [robert/bruce "0.7.1"]
