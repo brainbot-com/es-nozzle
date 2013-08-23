@@ -213,19 +213,37 @@
    "import_file"      simple-import_file})
 
 (defn build-handle-connection
-  [es-index num-workers filesystems]
+  [fsmap num-workers]
   (fn [conn]
     (logging/info "initializing rabbitmq connection with" num-workers "workers")
-    (doseq [fs filesystems
-            [command handle-msg] (seq command->msg-handler)
-            _ (range num-workers)]
+    (doseq [_ (range num-workers)]
       (mqhelper/channel-loop
        conn
        (fn [ch]
-         (let [qname (misc/initialize-rabbitmq-structures ch command "nextbot" fs)]
-           ;; (lb/qos ch 1)
-           (lcons/subscribe ch qname
-                            (mqhelper/make-handler (partial handle-msg fs es-index)))))))))
+         (doseq [fs (keys fsmap)
+                 [command handle-msg] (seq command->msg-handler)]
+           (let [qname (misc/initialize-rabbitmq-structures ch command "nextbot" fs)]
+             ;; (lb/qos ch 1)
+             (lcons/subscribe ch qname
+                              (mqhelper/make-handler (partial handle-msg fs (get-in fsmap [fs :index])))))))))))
+
+(defn make-standard-fsmap
+  [filesystems]
+  (into
+   {}
+   (for [fs filesystems]
+     [fs {:index fs :prefix "" :filesystem fs}])))
+
+
+(defn indexes-from-fsmap
+  [fsmap]
+  (distinct (map :index (vals fsmap))))
+
+
+(defn ensure-all-indexes-and-mappings
+  [fsmap]
+  (doseq [idx (indexes-from-fsmap fsmap)]
+    (ensure-index-and-mappings idx)))
 
 
 (defn esconnect-run-section
@@ -233,18 +251,17 @@
   (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
         num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
         filesystems (misc/get-filesystems-from-iniconfig iniconfig section)
-        es-index (get-in iniconfig [misc/main-section-name "es-index"])
+        fsmap (make-standard-fsmap filesystems)
         es-url (or (get-in iniconfig [misc/main-section-name "es-url"]) "http://localhost:9200")]
 
     (when (empty? filesystems)
       (misc/die (str "no filesystems defined in section " section)))
 
-    (when-not es-index
-      (misc/die "es-index setting missing"))
-
     (logging/info "connecting to elasticsearch" es-url)
     (esr/connect! es-url)
-    (ensure-index-and-mappings es-index)
+
+    (ensure-all-indexes-and-mappings fsmap)
+
     (mqhelper/connect-loop
      #(rmq/connect rmq-settings)
-     (build-handle-connection es-index num-workers filesystems))))
+     (build-handle-connection fsmap num-workers))))
