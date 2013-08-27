@@ -180,8 +180,6 @@
         id (make-id "" directory (:relpath entry))
         simple-perms (simplify-permissions-for-es (:permissions entry))]
 
-    (println "simple-import-file" fs id entry)
-    (println "permissions" simple-perms)
 
     (esd/put es-index "doc"
              id
