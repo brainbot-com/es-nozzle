@@ -1,35 +1,12 @@
 # nozzle
 
-FIXME: description
+nozzle recursively synchronizes directories into an Elasticsearch
+cluster. nozzle is scalable and fault tolerant.
 
-## Installation
-
-Download from http://example.com/FIXME.
-
-## Usage
-
-FIXME: explanation
-
-	$ java -jar nozzle-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
+Please visit http://debox.brainbot.com/nozzle/ for detailed documentation.
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright © 2013 brainbot technologies AG
 
-Distributed under the Eclipse Public License, the same as Clojure.
+Distributed under the Apache License, Version 2.0
