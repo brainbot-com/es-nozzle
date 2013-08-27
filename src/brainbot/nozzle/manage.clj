@@ -72,14 +72,15 @@
                             {:id id
                              :filesystem fs}))
         wait-idle (partial wait-for-zero-messages get-num-messages)]
-    (logging/info "waiting for" qname "to become idle")
+    (logging/debug "waiting for" qname "to become idle")
     (wait-idle)
     (while true
       (logging/info "starting synchronization of" qname)
       (start-synchronization id fs)
       (Thread/sleep 10000)
-      (logging/info "waiting for synchronization of" qname "to finish")
-      (wait-idle))))
+      (wait-idle)
+      (logging/info "synchronization of" qname "finished. restarting in 1h")
+      (Thread/sleep (* 3600 1000)))))
 
 
 (defn manage-run-section
