@@ -3,7 +3,7 @@
    [clojure.string :as string])
   (:require [nio2.dir-seq])
   (:import [java.io File IOException FileNotFoundException]
-           [java.nio.file Files Path LinkOption Paths]
+           [java.nio.file Files Path LinkOption Paths AccessDeniedException]
 
            [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
   (:require [brainbot.nozzle.extract :refer [convert]])
@@ -117,6 +117,8 @@
     (let [fp (string/join "/" [(:root fs) entry])]
       {:tika-content (convert fp)}))
 
+  (access-denied-exception? [fs err]
+    (instance? AccessDeniedException err))
 
   (get-permissions [fs entry]
     (let [fp (string/join "/" [(:root fs) entry])]

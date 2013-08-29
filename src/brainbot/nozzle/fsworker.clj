@@ -47,8 +47,13 @@
 
 (defn simple-listdir
   [fs {path :path :as body} {publish :publish}]
-  (publish "get_permissions" {:directory path
-                              :entries (vfs/cmd-listdir fs path)}))
+  (if-let [arg (try
+                 {:directory path
+                  :entries (vfs/cmd-listdir fs path)}
+                 (catch Exception err
+                   (logging/error "error in listdir" err)
+                   nil))]
+    (publish "get_permissions" arg)))
 
 
 (def command->msg-handler
