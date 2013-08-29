@@ -41,7 +41,8 @@
                  ;; ["--root" "Root directory of web server" :default "public"])
                  ["--iniconfig" "(required) ini configuration filename"])]
     (when (:help options)
-      (die banner :exit-code 0))
+      (do (println banner)
+          (System/exit 0)))
     (when-not (:iniconfig options)
       (die "--iniconfig option missing"))
     (assoc (dissoc options :help) :sections args)))
