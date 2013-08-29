@@ -12,34 +12,48 @@
   (:require [brainbot.nozzle.vfs :as vfs]))
 
 
-(defn get-permissions-for-entry
-  [fs directory {relpath :relpath, {type :type} :stat, error :error :as entry}]
-  (if (and (= type "file") (not error))
-    (assoc entry "permissions" (vfs/get-permissions fs (vfs/join fs [directory relpath])))
+(defn entry-is-type-ok?
+  [type entry]
+  (and
+   (not (:error entry))
+   (= (get-in entry [:stat :type]) type)))
+
+(def entry-is-directory-ok? (partial entry-is-type-ok? "directory"))
+(def entry-is-file-ok? (partial entry-is-type-ok? "file"))
+
+
+(defn assoc-permissions-for-entry
+  [fs directory {relpath :relpath :as entry}]
+  (assoc entry "permissions"
+         (vfs/get-permissions fs (vfs/join fs [directory relpath]))))
+
+
+(defn safe-assoc-permissions-for-file-entry
+  [fs directory entry]
+  (if (entry-is-file-ok? entry)
+    (try
+      (assoc-permissions-for-entry fs directory entry)
+      (catch Exception err
+        (if (vfs/access-denied-exception? fs err)
+          nil
+          (assoc entry
+            :error (str err)))))
     entry))
+
 
 
 (defn get-permissions
   [fs directory entries]
-  (map (partial get-permissions-for-entry fs directory)
-       entries))
-
-
-(defn entry-is-type?
-  [type entry]
-  (= (get-in entry [:stat :type]) type))
-
-(def entry-is-directory? (partial entry-is-type? "directory"))
-(def entry-is-file? (partial entry-is-type? "file"))
+  (remove nil?
+          (map
+           (partial safe-assoc-permissions-for-file-entry fs directory)
+           entries)))
 
 
 (defn simple-get_permissions
   [fs {:keys [directory entries] :as body} {publish :publish}]
-  (let [entries-with-permissions (get-permissions fs directory entries)]
-    (doseq [entry (filter (fn [entry]
-                            (and (entry-is-directory? entry)
-                                 (not (:error entry))))
-                          entries-with-permissions)]
+  (let [entries-with-permissions (doall (get-permissions fs directory entries))]
+    (doseq [entry (filter entry-is-directory-ok? entries-with-permissions)]
       (let [subdirectory-path (vfs/join fs [directory (:relpath entry)])]
         (publish "listdir" {:path subdirectory-path})))
     (publish "update_directory" (assoc body :entries entries-with-permissions))))
