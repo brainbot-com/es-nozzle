@@ -84,8 +84,34 @@
       (nrepl-server/start-server :port (Integer. port)))))
 
 
+(defn sanity-check-tika-resources
+  "this function checks that the right tika resources are being used.
+
+tika reads the 'META-INF/services/org.apache.tika.parser.Parser' resource
+and uses that to initialize the available parsers.
+
+org.gagravarr/vorbis-java-tika is a dependency of tika and ships with
+it's own version of the above file, but it does only list 3
+vorbis-java-tika parsers.
+
+lein uberjar chooses to use the resource file from vorbis-java-tika
+
+we must make sure that we do not use the file shipped by
+vorbis-java-tika, since then parsing only works for ogg files
+"
+  []
+  (let [path "META-INF/services/org.apache.tika.parser.Parser"
+        content (slurp (clojure.java.io/resource path))        
+        line-count (count (clojure.string/split content #"\n"))]
+    (when (> 20 line-count)
+      (throw (ex-info "internal error: broken tika resources" 
+                      {:line-count line-count
+                       :content content
+                       :path path})))))
+
 (defn -main [& args]
   (ensure-java-version)
+  (sanity-check-tika-resources)
   (maybe-start-repl-server)
   (let [{:keys [iniconfig sections]} (parse-command-line-options args)]
     (misc/setup-logging!)
