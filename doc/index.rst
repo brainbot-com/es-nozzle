@@ -13,6 +13,7 @@ Contents:
 
    intro
    quickstart
+   command
 
 Indices and tables
 ==================
