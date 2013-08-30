@@ -14,6 +14,7 @@ Contents:
    intro
    quickstart
    command
+   filesystem
 
 Indices and tables
 ==================
