@@ -5,6 +5,7 @@
              [manage :as manage]
              [extract2 :as extract]
              [esconnect :as esconnect]
+             [version :as version]
              [misc :as misc]]
             [brainbot.nozzle.misc :refer [die]])
   (:require [clojure.tools.nrepl.server :as nrepl-server])
@@ -36,12 +37,18 @@
   (let [[options args banner]
         (cli/cli args
                  ["-h" "--help" "Show help" :flag true :default false]
+                 ["--version" "show version" :flag true :default false]
                  ;; ["--ampqp-url" "amqp url to connect to"]
                  ;; ["--port" "Port to listen on" :default 5000]
                  ;; ["--root" "Root directory of web server" :default "public"])
                  ["--iniconfig" "(required) ini configuration filename"])]
     (when (:help options)
       (do (println banner)
+          (System/exit 0)))
+    (when (:version options)
+      (do (println "nozzle" (version/nozzle-version)
+                   "on Java" (System/getProperty "java.version")
+                   (System/getProperty "java.vm.name"))
           (System/exit 0)))
     (when-not (:iniconfig options)
       (die "--iniconfig option missing"))
