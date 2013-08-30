@@ -71,9 +71,18 @@
    "esconnect" esconnect/esconnect-run-section
    "manage" manage/manage-run-section})
 
+(defn ensure-sections-exist
+  [iniconfig sections]
+  (let [cfg-sections (set (keys iniconfig))
+        sections-set (set sections)
+        missing (clojure.set/difference sections-set cfg-sections)]
+    (when (seq missing)
+      (die (str "the following sections are missing in " (:source (meta iniconfig)) ": "
+                (clojure.string/join ", " missing))))))
 
 (defn run-all-sections
   [iniconfig sections]
+  (ensure-sections-exist iniconfig sections)
   (doseq [section sections]
     (let [type (get-in iniconfig [section "type"])
           run-section (type->run-section type)]
