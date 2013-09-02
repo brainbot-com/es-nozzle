@@ -21,7 +21,14 @@
                  [trptcolin/versioneer "0.1.0"]
                  [clojurewerkz/elastisch "1.2.0"]
                  [com.novemberain/langohr "1.0.1"]]
-  :profiles {:uberjar {:aot :all}}
+  :profiles {:uberjar {:aot :all}
+             :jmx {:jvm-opts
+                   ["-Dcom.sun.management.jmxremote"
+                    "-Dcom.sun.management.jmxremote.port=9010"
+                    "-Dcom.sun.management.jmxremote.local.only=false"
+                    "-Dcom.sun.management.jmxremote.authenticate=false"
+                    "-Dcom.sun.management.jmxremote.ssl=false"]}}
+
   :repositories [["brainbot" "http://brainbot.com/mvn/releases/"]]
   :omit-source true
   ;; :jvm-opts ["-Xmx64m" "-server"]
