@@ -39,14 +39,15 @@
   [filesystems]
   (fn [conn]
     (logging/info "initializing connection")
-    (doseq [{:keys [fsid] :as fs} filesystems]
-      (mqhelper/channel-loop
-       conn
-       (fn [ch]
-         (let [qname (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" fsid)]
-           (logging/info "starting consumer for" qname)
-           ;; (lb/qos ch 1)
-           (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs)))))))))
+    (dotimes [n 5]
+      (doseq [{:keys [fsid] :as fs} filesystems]
+        (mqhelper/channel-loop
+         conn
+         (fn [ch]
+           (let [qname (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" fsid)]
+             (logging/info "starting consumer for" qname)
+             ;; (lb/qos ch 1)
+             (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs))))))))))
 
 (defn extract-run-section
   [iniconfig section]
