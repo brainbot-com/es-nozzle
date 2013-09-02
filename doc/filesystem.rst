@@ -34,5 +34,5 @@ Example:
     [company]
     type = smbfs
     path = smb://fs/company/
-    user = ralf
+    username = ralf
     password = XXX
