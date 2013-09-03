@@ -14,7 +14,11 @@
                  ;; [me.raynes/fs "1.4.4"]
                  [org.clojure/data.json "0.2.2"]
                  ;; [org.clojars.floriano.clj-tika "1.2.4"]
-                 [org.apache.tika/tika-parsers "1.5-bb1"]
+                 [org.apache.tika/tika-parsers "1.5-bb1"
+                  :exclusions [org.gagravarr/vorbis-java-core
+                               org.gagravarr/vorbis-java-tika]]
+                 [org.gagravarr/vorbis-java-core "0.3-SNAPSHOT"]
+                 [org.gagravarr/vorbis-java-tika "0.3-SNAPSHOT"]
                  [jcifs "1.3.17"]
                  [clj-time "0.6.0"]
                  [robert/bruce "0.7.1"]
@@ -29,7 +33,8 @@
                     "-Dcom.sun.management.jmxremote.authenticate=false"
                     "-Dcom.sun.management.jmxremote.ssl=false"]}}
 
-  :repositories [["brainbot" "http://brainbot.com/mvn/releases/"]]
+  :repositories [["brainbot" "http://brainbot.com/mvn/releases/"]
+                 ["brainbot-snapshots" "http://brainbot.com/mvn/snapshots/"]]
   :omit-source true
   ;; :jvm-opts ["-Xmx64m" "-server"]
   :main brainbot.nozzle.main)
