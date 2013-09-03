@@ -19,31 +19,28 @@
 (def mapping-types
   {"doc" {:_all {:enabled false},
           :properties
-          {:name {:index "not_analyzed", :type "string", :store "yes"},
-           :parent {:index "not_analyzed", :type "string", :store "yes"},
-           :tags
-           {:index "not_analyzed",
-            :type "string",
-            :index_options "docs",
-            :store true,
-            :omit_norms true},
+          {:parent {:index "not_analyzed", :type "string", :store "yes"},
+           :tags {:index "not_analyzed",
+                  :type "string",
+                  :index_options "docs",
+                  :store true,
+                  :omit_norms true},
            :lastmodified {:type "date", :store "yes"},
            :content {:type "string", :store "yes"},
-           :deny_token_document
-           {:index "not_analyzed",
-            :type "string",
-            :store true,
-            :null_value "UNAUTHENTICATED"},
-           :allow_token_document
-           {:index "not_analyzed",
-            :type "string",
-            :store true,
-            :null_value "NOBODY"}},
+           :title   {:type "string", :store "yes"},
+
+           :deny_token_document {:index "not_analyzed",
+                                 :type "string",
+                                 :store true,
+                                 :null_value "UNAUTHENTICATED"},
+           :allow_token_document {:index "not_analyzed",
+                                  :type "string",
+                                  :store true,
+                                  :null_value "NOBODY"}},
           :_source {:enabled false}},
    "dir" {:_all {:enabled false},
           :properties
           {:lastmodified {:type "date", :store "yes"},
-           :name {:index "not_analyzed", :type "string", :store "yes"},
            :parent {:index "not_analyzed", :type "string", :store "yes"}},
           :_source {:enabled false}}})
 
@@ -178,6 +175,8 @@
   [fs es-index {:keys [directory entry] :as body} {publish :publish}]
   (let [parent-id (make-id "" directory)
         id (make-id "" directory (:relpath entry))
+        title (or (get-in body [:extract :tika-content :dc:title])
+                  (:relpath entry))
         simple-perms (simplify-permissions-for-es (:permissions entry))]
 
 
@@ -185,6 +184,7 @@
              id
              {:parent parent-id
               :content (get-in body [:extract :tika-content :text])
+              :title title
               :tags (get-tags-from-path directory)
               :allow_token_document (simple-perms true)
               :deny_token_document (simple-perms false)
