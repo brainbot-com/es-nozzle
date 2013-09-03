@@ -14,35 +14,34 @@
             [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]))
 
+(def ^:private token-document-null-value "NOBODY")
+
 ;; (esr/connect! "http://127.0.0.1:9200")
-
-(def mapping-types
-  {"doc" {:_all {:enabled false},
-          :properties
-          {:parent {:index "not_analyzed", :type "string", :store "yes"},
-           :tags {:index "not_analyzed",
-                  :type "string",
-                  :index_options "docs",
-                  :store true,
-                  :omit_norms true},
-           :lastmodified {:type "date", :store "yes"},
-           :content {:type "string", :store "yes"},
-           :title   {:type "string", :store "yes"},
-
-           :deny_token_document {:index "not_analyzed",
-                                 :type "string",
-                                 :store true,
-                                 :null_value "UNAUTHENTICATED"},
-           :allow_token_document {:index "not_analyzed",
-                                  :type "string",
-                                  :store true,
-                                  :null_value "NOBODY"}},
-          :_source {:enabled false}},
-   "dir" {:_all {:enabled false},
-          :properties
-          {:lastmodified {:type "date", :store "yes"},
-           :parent {:index "not_analyzed", :type "string", :store "yes"}},
-          :_source {:enabled false}}})
+(let [parent {:index "not_analyzed", :type "string", :store "yes"}
+      token {:index "not_analyzed",
+             :type "string",
+             :store true,
+             :null_value token-document-null-value}]
+  (def mapping-types
+    {"doc" {:_all {:enabled false},
+            :_source {:enabled false},
+            :properties
+            {:parent parent
+             :tags {:index "not_analyzed",
+                    :type "string",
+                    :index_options "docs",
+                    :store true,
+                    :omit_norms true},
+             :lastmodified {:type "date", :store "yes"},
+             :content {:type "string", :store "yes"},
+             :title   {:type "string", :store "yes"},
+             :deny_token_document token,
+             :allow_token_document token}},
+     "dir" {:_all {:enabled false},
+            :_source {:enabled false}
+            :properties
+            {:lastmodified {:type "date", :store "yes"},
+             :parent parent}}}))
 
 ;;; when sending around messages via rabbitmq we pass the lastmodified
 ;;; date as unix time (as integer). the field is called mtime while in
@@ -159,13 +158,13 @@
              {:lastmodified (mtime->lastmodified (:mtime e))
               :parent parent-id})))
 
-(defn simplify-permissions-for-es
-  [permissions]
-  (let [{allowed true denied false}
-            (misc/remap #(sort (set (map :sid %)))
-                        (group-by :allow permissions))]
-    {true (or allowed '("NOBODY"))
-     false (or denied '("UNAUTHENTICATED"))}))  ;; XXX why can't we have the same default values
+(let [default-value (list token-document-null-value)]
+  (defn simplify-permissions-for-es
+    [permissions]
+    (let [allow->sids (misc/remap #(sort (set (map :sid %)))
+                                  (group-by :allow permissions))]
+      {:allow (allow->sids true default-value)
+       :deny  (allow->sids false default-value)})))
 
 (defn get-tags-from-path
   [s]
@@ -186,8 +185,8 @@
               :content (get-in body [:extract :tika-content :text])
               :title title
               :tags (get-tags-from-path directory)
-              :allow_token_document (simple-perms true)
-              :deny_token_document (simple-perms false)
+              :allow_token_document (simple-perms :allow)
+              :deny_token_document (simple-perms :deny)
               :lastmodified (mtime->lastmodified (get-in entry [:stat :mtime]))})))
 
 
