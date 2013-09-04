@@ -31,6 +31,13 @@ Of course Elasticsearch must also be installed. Please follow the
 `elasticsearch installation instructions`_ and start at least one
 elasticsearch node.
 
+You don't need to install any additional elasticsearch plugins, though
+having installed some plugins should also not interfere with nozzle.
+
+Elasticsearch indexes will be created by nozzle, so there's also no
+need to create indexes beforehand.
+
+
 .. _RabbitMQ installation instructions for windows: http://www.rabbitmq.com/install-windows.html
 .. _elasticsearch installation instructions: http://www.elasticsearch.org/guide/reference/setup/installation/
 
