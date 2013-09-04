@@ -1,5 +1,6 @@
 (ns brainbot.nozzle.fsworker
   (:require [clojure.tools.logging :as logging])
+  (:require brainbot.nozzle.worker)
   (:require [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.misc :as misc])
   (:require [langohr.basic :as lb]

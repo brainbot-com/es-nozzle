@@ -1,4 +1,5 @@
-(ns brainbot.nozzle.worker)
+(ns brainbot.nozzle.worker
+  (:require brainbot.nozzle.dynaload))
 
 (defprotocol SectionRunner
   (run-section [this iniconfig section-name] "start runner for section"))
