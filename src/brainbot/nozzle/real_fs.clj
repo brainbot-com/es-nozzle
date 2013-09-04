@@ -7,7 +7,8 @@
 
            [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
   (:require [brainbot.nozzle.extract :refer [convert]])
-
+  (:require brainbot.nozzle.dynaload
+            brainbot.nozzle.fsmaker
   (:require [brainbot.nozzle.vfs :as vfs]))
 
 

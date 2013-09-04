@@ -1,5 +1,6 @@
 (ns brainbot.nozzle.fsfilter
-  (:require [brainbot.nozzle.misc :as misc]))
+  (:require [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.dynaload :as dynaload]))
 
 
 (defprotocol RelpathFilterBuilder
@@ -11,7 +12,7 @@
 
 (def dotfile
   (reify
-    brainbot.nozzle.dynaload/Loadable
+    dynaload/Loadable
     RelpathFilterBuilder
     (make-remove? [this iniconfig section-name]
       is-dotfile)))
@@ -30,7 +31,7 @@
 
 (def remove-extensions
   (reify
-    brainbot.nozzle.dynaload/Loadable
+    dynaload/Loadable
     RelpathFilterBuilder
     (make-remove? [this iniconfig section-name]
       (let [extensions (misc/trimmed-lines-from-string (get-in iniconfig [section-name "extensions"]))]

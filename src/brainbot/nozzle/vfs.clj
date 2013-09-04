@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as logging])
   (:require
    brainbot.nozzle.dynaload
+   [brainbot.nozzle.inihelper :as inihelper]
    [brainbot.nozzle.fsmaker :as fsmaker]
    [brainbot.nozzle.misc :as misc]
    [clojure.string :as string]))
@@ -16,20 +17,19 @@
   (join [fs parts] "join parts")
   (listdir [fs dir] "list directory"))
 
+
+(def dynaload-filesystem
+  (comp
+   (partial inihelper/ensure-protocol fsmaker/FilesystemBuilder)
+   inihelper/dynaload-section))
+
+
 (defn make-single-filesystem-from-iniconfig
   "create filesystem from ini config section"
   [iniconfig section-name]
-  (let [section (iniconfig section-name)
-        fstype (get section "type")]
-    (when-not section
-      (throw (ex-info (format "no filesystem %s declared, section missing" section-name)
-                      {:section-name section-name})))
-    (let [fsbuilder (brainbot.nozzle.dynaload/get-loadable fstype)]
-      (if-not (satisfies? fsmaker/FilesystemBuilder fsbuilder)
-        (throw (ex-info (format "the type %s does not implement a filesystem" fstype)
-                        {:section-name section-name :fstype fstype})))
-      (assoc (fsmaker/make-filesystem-from-iniconfig fsbuilder iniconfig section-name)
-        :fsid section-name))))
+  (let [fsbuilder (dynaload-filesystem iniconfig section-name)]
+    (assoc (fsmaker/make-filesystem-from-iniconfig fsbuilder iniconfig section-name)
+      :fsid section-name)))
 
 
 (defn make-filesystems-from-iniconfig

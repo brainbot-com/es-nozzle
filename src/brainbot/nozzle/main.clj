@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle
              [dynaload :as dynaload]
+             [inihelper :as inihelper]
              [worker :as worker]
              [version :as version]
              [misc :as misc]]
@@ -73,14 +74,16 @@
       (die (str "the following sections are missing in " (:source (meta iniconfig)) ": "
                 (clojure.string/join ", " missing))))))
 
+(def dynaload-runner
+  (comp
+   (partial inihelper/ensure-protocol worker/SectionRunner)
+   inihelper/dynaload-section))
+
 (defn run-all-sections
   [iniconfig sections]
   (ensure-sections-exist iniconfig sections)
   (doseq [section sections]
-    (let [type (get-in iniconfig [section "type"])
-          runner (dynaload/get-loadable type)]
-      (when-not (satisfies? worker/SectionRunner runner)
-        (throw (ex-info "not a runner" {})))
+    (let [runner (dynaload-runner iniconfig section)]
       (logging/info "starting runner for section" section)
       (worker/run-section runner iniconfig section))))
 
