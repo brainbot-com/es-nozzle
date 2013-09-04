@@ -1,6 +1,7 @@
 (ns brainbot.nozzle.manage
   (:require [brainbot.nozzle.routing-key :as rk]
             [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.vfs :as vfs])
   (:require [langohr.core :as rmq])
 
@@ -93,5 +94,5 @@
       (future (manage-filesystem "nextbot" fs)))))
 
 (def runner
-  (brainbot.nozzle.worker/reify-run-section
+  (worker/reify-run-section
    manage-run-section))

@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as logging])
   (:require brainbot.nozzle.worker)
   (:require [brainbot.nozzle.mqhelper :as mqhelper]
+            [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.misc :as misc])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
@@ -105,5 +106,5 @@
 
 
 (def runner
-  (brainbot.nozzle.worker/reify-run-section
+  (worker/reify-run-section
    worker-run-section))

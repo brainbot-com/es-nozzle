@@ -3,10 +3,6 @@
   (:require [brainbot.nozzle
              [dynaload :as dynaload]
              [worker :as worker]
-             [fsworker :as fsworker]
-             [manage :as manage]
-             [extract2 :as extract]
-             [esconnect :as esconnect]
              [version :as version]
              [misc :as misc]]
             [brainbot.nozzle.misc :refer [die]])
@@ -83,7 +79,7 @@
   (doseq [section sections]
     (let [type (get-in iniconfig [section "type"])
           runner (dynaload/get-loadable type)]
-      (when-not (satisfies? brainbot.nozzle.worker/SectionRunner runner)
+      (when-not (satisfies? worker/SectionRunner runner)
         (throw (ex-info "not a runner" {})))
       (logging/info "starting runner for section" section)
       (worker/run-section runner iniconfig section))))

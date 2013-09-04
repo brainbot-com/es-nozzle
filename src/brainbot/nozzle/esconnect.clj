@@ -8,6 +8,7 @@
   (:require [clj-time.core :as tcore]
             [clj-time.coerce :as tcoerce])
   (:require [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.mqhelper :as mqhelper])
   (:require [robert.bruce :refer [try-try-again]])
   (:require [clojurewerkz.elastisch.rest.document :as esd]
@@ -272,5 +273,5 @@
      :thread-pool-size num-workers)))
 
 (def runner
-  (brainbot.nozzle.worker/reify-run-section
+  (worker/reify-run-section
    esconnect-run-section))

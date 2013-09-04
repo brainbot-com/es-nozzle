@@ -10,6 +10,7 @@
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.vfs :as vfs])
   (:require [brainbot.nozzle.extract :refer [wash convert]]))
 
@@ -62,5 +63,5 @@
               (build-handle-connection filesystems)))))
 
 (def runner
-  (brainbot.nozzle.worker/reify-run-section
+  (worker/reify-run-section
    extract-run-section))

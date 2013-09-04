@@ -1,5 +1,5 @@
 (ns brainbot.nozzle.worker
-  (:require brainbot.nozzle.dynaload))
+  (:require [brainbot.nozzle.dynaload :as dynaload]))
 
 (defprotocol SectionRunner
   (run-section [this iniconfig section-name] "start runner for section"))
@@ -7,7 +7,7 @@
 (defn reify-run-section
   [f]
   (reify
-    brainbot.nozzle.dynaload/Loadable
-    brainbot.nozzle.worker/SectionRunner
+    dynaload/Loadable
+    SectionRunner
     (run-section [this iniconfig section-name]
       (f iniconfig section-name))))
