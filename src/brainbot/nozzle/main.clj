@@ -120,6 +120,35 @@ vorbis-java-tika, since then parsing only works for ogg files
                        :content content
                        :path path})))))
 
+(def default-ini-config
+  (ini/read-ini-string "
+[all]
+type = meta
+sections =
+    extract
+    manage
+    fsworker
+    esconnect
+
+[extract]
+type = extract
+
+[manage]
+type = manage
+
+[fsworker]
+type = fsworker
+
+[esconnect]
+type = esconnect
+
+[dotfile]
+type = dotfile
+
+[remove-dotfile]
+type = dotfile
+"))
+
 (defn -main [& args]
   (ensure-java-version)
   (sanity-check-tika-resources)
@@ -129,5 +158,5 @@ vorbis-java-tika, since then parsing only works for ogg files
     (let [cfg (ini/read-ini iniconfig)]
       (logging/debug "using config" cfg)
       (run-all-sections
-       cfg
+       (merge default-ini-config cfg)
        sections))))
