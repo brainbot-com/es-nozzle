@@ -150,3 +150,11 @@
     (when-not path
       (throw (Exception. "no path specified in section")))
     (RealFilesystem. path)))
+
+
+(def default-loadable
+  (reify
+    brainbot.nozzle.dynaload/Loadable
+    brainbot.nozzle.fsmaker/FilesystemBuilder
+    (make-filesystem-from-iniconfig [this iniconfig section-name]
+      (filesystem-from-inisection (iniconfig section-name)))))

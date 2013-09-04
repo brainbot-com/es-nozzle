@@ -89,3 +89,11 @@
       (raise "password missing in section"))
 
     (->SmbFilesystem path (NtlmPasswordAuthentication. domain username password))))
+
+
+(def default-loadable
+  (reify
+    brainbot.nozzle.dynaload/Loadable
+    brainbot.nozzle.fsmaker/FilesystemBuilder
+    (make-filesystem-from-iniconfig [this iniconfig section-name]
+      (filesystem-from-inisection (iniconfig section-name)))))
