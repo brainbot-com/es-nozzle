@@ -32,9 +32,8 @@
 (defn- deref-exception
   [a-future]
   (try
-    (do
-      @a-future
-      nil)
+    @a-future
+    nil
     (catch Throwable err
       err)))
 

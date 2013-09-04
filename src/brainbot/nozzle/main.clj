@@ -41,13 +41,13 @@
                  ;; ["--root" "Root directory of web server" :default "public"])
                  ["--iniconfig" "(required) ini configuration filename"])]
     (when (:help options)
-      (do (println banner)
-          (System/exit 0)))
+      (println banner)
+      (System/exit 0))
     (when (:version options)
-      (do (println "nozzle" (version/nozzle-version)
-                   "on Java" (System/getProperty "java.version")
-                   (System/getProperty "java.vm.name"))
-          (System/exit 0)))
+      (println "nozzle" (version/nozzle-version)
+               "on Java" (System/getProperty "java.version")
+               (System/getProperty "java.vm.name"))
+      (System/exit 0))
     (when-not (:iniconfig options)
       (die "--iniconfig option missing"))
     (assoc (dissoc options :help) :sections args)))
@@ -87,10 +87,9 @@
 
 (defn maybe-start-repl-server
   []
-  (if-let [port (System/getProperty "nozzle.repl")]
-    (do
-      (println "starting repl on port" port)
-      (nrepl-server/start-server :port (Integer. port)))))
+  (when-let [port (System/getProperty "nozzle.repl")]
+    (println "starting repl on port" port)
+    (nrepl-server/start-server :port (Integer. port))))
 
 
 (defn sanity-check-tika-resources
