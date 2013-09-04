@@ -13,9 +13,11 @@ Example:
 .. code-block:: ini
 
     [users]
+    type = file
     path = c:\Users
 
     [ralf-src]
+    type = file
     path = /home/ralf/src
 
 
