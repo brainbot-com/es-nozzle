@@ -60,3 +60,7 @@
     (future (mqhelper/connect-loop-with-thread-pool
               rmq-settings
               (build-handle-connection filesystems)))))
+
+(def runner
+  (brainbot.nozzle.worker/reify-run-section
+   extract-run-section))

@@ -1,6 +1,8 @@
 (ns brainbot.nozzle.main
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle
+             [dynaload :as dynaload]
+             [worker :as worker]
              [fsworker :as fsworker]
              [manage :as manage]
              [extract2 :as extract]
@@ -64,12 +66,7 @@
     (run-all-sections iniconfig subsections)))
 
 
-(def type->run-section
-  {"fsworker" fsworker/worker-run-section
-   "meta"   meta-run-section
-   "extract"  extract/extract-run-section
-   "esconnect" esconnect/esconnect-run-section
-   "manage" manage/manage-run-section})
+(def meta-runner (worker/reify-run-section meta-run-section))
 
 (defn ensure-sections-exist
   [iniconfig sections]
@@ -85,12 +82,11 @@
   (ensure-sections-exist iniconfig sections)
   (doseq [section sections]
     (let [type (get-in iniconfig [section "type"])
-          run-section (type->run-section type)]
-      (if (nil? run-section)
-        nil
-        (do
-          (logging/info "starting runner for section" section)
-          (run-section iniconfig section))))))
+          runner (dynaload/get-loadable type)]
+      (when-not (satisfies? brainbot.nozzle.worker/SectionRunner runner)
+        (throw (ex-info "not a runner" {})))
+      (logging/info "starting runner for section" section)
+      (worker/run-section runner iniconfig section))))
 
 
 (defn maybe-start-repl-server

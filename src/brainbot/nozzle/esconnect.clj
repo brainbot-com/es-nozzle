@@ -270,3 +270,7 @@
      rmq-settings
      (build-handle-connection fsmap num-workers)
      :thread-pool-size num-workers)))
+
+(def runner
+  (brainbot.nozzle.worker/reify-run-section
+   esconnect-run-section))

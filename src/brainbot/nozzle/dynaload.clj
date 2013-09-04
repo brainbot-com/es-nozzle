@@ -8,6 +8,13 @@
 (def registry
   (atom {"file" 'brainbot.nozzle.real-fs
          "smbfs" 'brainbot.nozzle.smb-fs
+
+         "fsworker" 'brainbot.nozzle.manage/runner
+         "meta" 'brainbot.nozzle.main/meta-runner
+         "extract" 'brainbot.nozzle.extract2/runner
+         "esconnect" 'brainbot.nozzle.esconnect/runner
+         "manage" 'brainbot.nozzle.manage/runner
+
          "dotfile" 'brainbot.nozzle.fsfilter/dotfile
          "remove-extensions" 'brainbot.nozzle.fsfilter/remove-extensions}))
 

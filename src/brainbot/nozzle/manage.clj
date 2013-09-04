@@ -91,3 +91,7 @@
       (misc/die (str "no filesystems defined in section " section)))
     (doseq [fs filesystems]
       (future (manage-filesystem "nextbot" fs)))))
+
+(def runner
+  (brainbot.nozzle.worker/reify-run-section
+   manage-run-section))
