@@ -36,6 +36,7 @@
              :lastmodified {:type "date", :store "yes"},
              :content {:type "string", :store "yes"},
              :content_type {:type "string", :store "yes" :index "not_analyzed"},
+             :extension {:type "string", :store "yes" :index "not_analyzed"},
              :title   {:type "string", :store "yes"},
              :deny_token_document token,
              :allow_token_document token}},
@@ -61,6 +62,14 @@
   "convert elasticsearch date string to unix timestamp"
   [lastmodified]
   (quot (tcoerce/to-long (tcoerce/from-string lastmodified)) 1000))
+
+
+(defn get-extension
+  [^String s]
+  (let [idx (.lastIndexOf s ".")]
+    (if (< 0 idx)
+      (string/lower-case (subs s idx))
+      "")))
 
 
 (defn strip-mime-type-parameters
@@ -181,9 +190,10 @@
 (defn simple-import_file
   [fs es-index {:keys [directory entry] :as body} {publish :publish}]
   (let [parent-id (make-id "" directory)
-        id (make-id "" directory (:relpath entry))
+        relpath (:relpath entry)
+        id (make-id "" directory relpath)
         title (or (get-in body [:extract :tika-content :dc:title])
-                  (:relpath entry))
+                  relpath)
         simple-perms (simplify-permissions-for-es (:permissions entry))]
 
 
@@ -191,6 +201,7 @@
              id
              {:parent parent-id
               :content (get-in body [:extract :tika-content :text])
+              :extension (get-extension relpath)
               :content_type (strip-mime-type-parameters
                              (or
                               (first (get-in body [:extract :tika-content :content-type]))
