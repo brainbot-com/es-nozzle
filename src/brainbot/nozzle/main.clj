@@ -121,33 +121,9 @@ vorbis-java-tika, since then parsing only works for ogg files
                        :path path})))))
 
 (def default-ini-config
-  (ini/read-ini-string "
-[all]
-type = meta
-sections =
-    extract
-    manage
-    fsworker
-    esconnect
-
-[extract]
-type = extract
-
-[manage]
-type = manage
-
-[fsworker]
-type = fsworker
-
-[esconnect]
-type = esconnect
-
-[dotfile]
-type = dotfile
-
-[remove-dotfile]
-type = dotfile
-"))
+  (-> "META-INF/brainbot.nozzle/default-config.ini"
+      clojure.java.io/resource
+      ini/read-ini))
 
 (defn merge-with-default-config
   "merge cfg with default-ini-config, keep cfg's metadata"
