@@ -149,6 +149,13 @@ type = dotfile
 type = dotfile
 "))
 
+(defn merge-with-default-config
+  "merge cfg with default-ini-config, keep cfg's metadata"
+  [cfg]
+  (with-meta
+    (merge default-ini-config cfg)
+    (meta cfg)))
+
 (defn -main [& args]
   (ensure-java-version)
   (sanity-check-tika-resources)
@@ -158,5 +165,5 @@ type = dotfile
     (let [cfg (ini/read-ini iniconfig)]
       (logging/debug "using config" cfg)
       (run-all-sections
-       (merge default-ini-config cfg)
+       (merge-with-default-config cfg)
        sections))))
