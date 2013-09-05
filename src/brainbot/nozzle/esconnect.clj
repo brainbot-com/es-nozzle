@@ -35,6 +35,7 @@
                     :omit_norms true},
              :lastmodified {:type "date", :store "yes"},
              :content {:type "string", :store "yes"},
+             :content_type {:type "string", :store "yes" :index "not_analyzed"},
              :title   {:type "string", :store "yes"},
              :deny_token_document token,
              :allow_token_document token}},
@@ -60,6 +61,12 @@
   "convert elasticsearch date string to unix timestamp"
   [lastmodified]
   (quot (tcoerce/to-long (tcoerce/from-string lastmodified)) 1000))
+
+
+(defn strip-mime-type-parameters
+  "strip mime type parameters from mime type string"
+  [s]
+  (string/trim (first (string/split s #";" 2))))
 
 
 (defn ensure-index-and-mappings
@@ -184,6 +191,11 @@
              id
              {:parent parent-id
               :content (get-in body [:extract :tika-content :text])
+              :content_type (strip-mime-type-parameters
+                             (or
+                              (first (get-in body [:extract :tika-content :content-type]))
+                              ""))
+
               :title title
               :tags (get-tags-from-path directory)
               :allow_token_document (simple-perms :allow)
