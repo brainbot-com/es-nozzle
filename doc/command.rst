@@ -3,7 +3,7 @@ nozzle configuration file
 As we have seen in the previous section, nozzle is invoked with a
 command line, that looks like::
 
-    java -jar /path/to/nozzle-0.1.0-SNAPSHOT-standalone.jar --iniconfig INIPATH [INISECTION ...]
+    java -jar /path/to/nozzle-0.2.0-SNAPSHOT-standalone.jar --iniconfig INIPATH [INISECTION ...]
 
 nozzle will read the ini file specified with the --iniconfig
 arguments, and will start to work on the ini sections given as

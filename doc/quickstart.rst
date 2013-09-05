@@ -52,7 +52,7 @@ First, please download the `nozzle executable jar archive`_ and put it
 somewhere on your disk. If you have the java executable on your PATH,
 you should be able to show nozzle's help message by running::
 
-    java -jar /path/to/nozzle-0.1.0-SNAPSHOT-standalone.jar --help
+    java -jar /path/to/nozzle-0.2.0-SNAPSHOT-standalone.jar --help
 
 Please make sure that you are using at least java 7, otherwise nozzle
 will fail with an error message similar to the following message::
@@ -83,8 +83,8 @@ Start nozzle
 --------------------------
 nozzle can now be started by running the following command::
 
-    java -jar /path/to/nozzle-0.1.0-SNAPSHOT-standalone.jar --iniconfig /path/to/nozzle.ini all
+    java -jar /path/to/nozzle-0.2.0-SNAPSHOT-standalone.jar --iniconfig /path/to/nozzle.ini all
 
 
-.. _nozzle executable jar archive: http://debox:8080/job/nozzle/ws/target/nozzle-0.1.0-SNAPSHOT-standalone.jar
+.. _nozzle executable jar archive: http://debox:8080/job/nozzle/ws/target/nozzle-0.2.0-SNAPSHOT-standalone.jar
 
