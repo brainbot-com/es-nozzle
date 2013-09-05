@@ -6,7 +6,7 @@
    {"file" 'brainbot.nozzle.real-fs
     "smbfs" 'brainbot.nozzle.smb-fs
 
-    "fsworker" 'brainbot.nozzle.manage/runner
+    "fsworker" 'brainbot.nozzle.fsworker/runner
     "meta" 'brainbot.nozzle.main/meta-runner
     "extract" 'brainbot.nozzle.extract2/runner
     "esconnect" 'brainbot.nozzle.esconnect/runner
