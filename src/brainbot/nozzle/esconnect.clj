@@ -25,7 +25,7 @@
              :null_value token-document-null-value}]
   (def mapping-types
     {"doc" {:_all {:enabled false},
-            :_source {:enabled false},
+            :_source {:enabled true},
             :properties
             {:parent parent
              :tags {:index "not_analyzed",
@@ -39,7 +39,7 @@
              :deny_token_document token,
              :allow_token_document token}},
      "dir" {:_all {:enabled false},
-            :_source {:enabled false}
+            :_source {:enabled true}
             :properties
             {:lastmodified {:type "date", :store "yes"},
              :parent parent}}}))
