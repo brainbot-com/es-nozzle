@@ -8,6 +8,7 @@
   (:require [clj-time.core :as tcore]
             [clj-time.coerce :as tcoerce])
   (:require [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.path :as path]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.mqhelper :as mqhelper])
   (:require [robert.bruce :refer [try-try-again]])
@@ -62,14 +63,6 @@
   "convert elasticsearch date string to unix timestamp"
   [lastmodified]
   (quot (tcoerce/to-long (tcoerce/from-string lastmodified)) 1000))
-
-
-(defn get-extension
-  [^String s]
-  (let [idx (.lastIndexOf s ".")]
-    (if (< 0 idx)
-      (string/lower-case (subs s idx))
-      "")))
 
 
 (defn strip-mime-type-parameters
@@ -201,7 +194,7 @@
              id
              {:parent parent-id
               :content (get-in body [:extract :tika-content :text])
-              :extension (get-extension relpath)
+              :extension (path/get-extension-from-basename relpath)
               :content_type (strip-mime-type-parameters
                              (or
                               (first (get-in body [:extract :tika-content :content-type]))

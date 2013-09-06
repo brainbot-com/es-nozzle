@@ -1,0 +1,15 @@
+(ns brainbot.nozzle.fsfilter-test
+  (:require [clojure.test :refer :all])
+  (:require [brainbot.nozzle.fsfilter :refer :all]))
+
+
+(deftest test-normalize-extension
+  (let [has-ext? (make-has-extension?
+                  ["FOO", "bar", ".baz"])]
+    (is (false? (has-ext? "example.c")))
+    (is (false? (has-ext? ".baz")))
+    (is (false? (has-ext? "foo.baz.c")))
+    (is (true? (has-ext? "example.BAR")))
+    (is (true? (has-ext? "example.bar")))
+    (is (true? (has-ext? "example.baz")))
+    (is (true? (has-ext? "example.foo")))))

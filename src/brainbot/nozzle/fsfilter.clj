@@ -1,5 +1,7 @@
 (ns brainbot.nozzle.fsfilter
+  (:require [clojure.string :as string])
   (:require [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.path :as path]
             [brainbot.nozzle.dynaload :as dynaload]))
 
 
@@ -17,17 +19,19 @@
     (make-remove? [this iniconfig section-name]
       is-dotfile)))
 
-(defn- trim-dot
+(defn- normalize-extension
   [s]
-  (clojure.string/replace s #"^\.+" ""))
+  (string/lower-case
+   (if (= (first s) \.)
+     s
+     (str "." s))))
 
 (defn make-has-extension?
   [extensions]
-  (let [extensions-set (set (map trim-dot extensions))]
+  (let [ext-set (set (map normalize-extension extensions))]
     (fn has-extension [s]
-      (let [idx (.lastIndexOf s ".")]
-        (and (< 0 idx)
-             (contains? extensions-set (subs s (inc idx))))))))
+      (contains? ext-set (path/get-extension-from-basename s)))))
+
 
 (def remove-extensions
   (reify
