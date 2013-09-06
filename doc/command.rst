@@ -7,7 +7,9 @@ command line, that looks like::
 
 nozzle will read the ini file specified with the --iniconfig
 arguments, and will start to work on the ini sections given as
-additional command line arguments.
+additional command line arguments. You may now remark that there was
+no `[all]` section inside the shown config file. That's because nozzle
+predefines some sections. Read on for more details.
 
 Worker sections
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,8 +21,7 @@ describe the possible values for `type` in this section.
 meta sections are used to start a set of other work sections defined
 in the `sections` key.
 
-In the quickstart section we had the following `[all]` section inside
-our ini configuration file:
+nozzle predefines the following `[all]` section:
 
 .. code-block:: ini
 
@@ -59,6 +60,14 @@ Example:
     type = manage
     filesystems = fs1
 
+nozzle predefines the following `[manage]` section:
+
+.. code-block: ini
+
+    [manage]
+    type = manage
+
+
 `type=extract`
 -----------------
 extract sections are used to start the content extraction process.
@@ -72,6 +81,13 @@ Example:
     [extract]
     type = extract
     filesystems = fs1
+
+nozzle predefines the following `[extract]` section:
+
+.. code-block:: ini
+
+    [extract]
+    type = extract
 
 
 
@@ -92,6 +108,14 @@ Example:
     filesystems = fs1
 
 
+nozzle predefines the following `[fsworker]` section:
+
+.. code-block:: ini
+
+    [fsworker]
+    type = fsworker
+
+
 
 `type=esconnect`
 -----------------
@@ -108,3 +132,10 @@ Example:
     [esconnect]
     type = esconnect
     num_workers = 5
+
+nozzle predefines the following `[esconnect]` section:
+
+.. code-block:: ini
+
+    [esconnect]
+    type = esconnect

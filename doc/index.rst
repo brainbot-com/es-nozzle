@@ -15,6 +15,7 @@ Contents:
    quickstart
    command
    filesystem
+   appendix
 
 Indices and tables
 ==================
