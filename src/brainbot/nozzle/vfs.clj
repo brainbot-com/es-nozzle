@@ -3,7 +3,6 @@
   (:require
    brainbot.nozzle.dynaload
    [brainbot.nozzle.inihelper :as inihelper]
-   [brainbot.nozzle.fsmaker :as fsmaker]
    [brainbot.nozzle.misc :as misc]
    [clojure.string :as string]))
 
@@ -20,15 +19,15 @@
 
 (def dynaload-filesystem
   (comp
-   (partial inihelper/ensure-protocol fsmaker/FilesystemBuilder)
+   (partial inihelper/ensure-protocol Filesystem)
    inihelper/dynaload-section))
 
 
 (defn make-single-filesystem-from-iniconfig
   "create filesystem from ini config section"
   [iniconfig section-name]
-  (let [fsbuilder (dynaload-filesystem iniconfig section-name)]
-    (assoc (fsmaker/make-filesystem-from-iniconfig fsbuilder iniconfig section-name)
+  (let [fs (dynaload-filesystem iniconfig section-name)]
+    (assoc fs
       :fsid section-name)))
 
 

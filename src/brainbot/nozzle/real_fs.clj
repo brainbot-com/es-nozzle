@@ -7,9 +7,10 @@
 
            [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
   (:require [brainbot.nozzle.extract :refer [convert]])
-  (:require brainbot.nozzle.dynaload
-            brainbot.nozzle.fsmaker)
-  (:require [brainbot.nozzle.vfs :as vfs]))
+  (:require brainbot.nozzle.dynaload)
+  (:require [brainbot.nozzle.dynaload :as dynaload]
+            [brainbot.nozzle.vfs :as vfs]
+            [brainbot.nozzle.inihelper :as inihelper]))
 
 
 (def ^:private is-windows
@@ -155,7 +156,7 @@
 
 (def default-loadable
   (reify
-    brainbot.nozzle.dynaload/Loadable
-    brainbot.nozzle.fsmaker/FilesystemBuilder
-    (make-filesystem-from-iniconfig [this iniconfig section-name]
+    dynaload/Loadable
+    inihelper/IniConstructor
+    (make-object-from-section [this iniconfig section-name]
       (filesystem-from-inisection (iniconfig section-name)))))

@@ -3,6 +3,7 @@
    [clojure.string :as string])
   (:require [brainbot.nozzle.extract :refer [convert]])
   (:require [brainbot.nozzle.vfs :as vfs]
+            [brainbot.nozzle.inihelper :as inihelper]))
             [brainbot.nozzle.misc :as misc])
   (:import [jcifs.smb SmbFile NtlmPasswordAuthentication SID ACE]))
 
@@ -94,6 +95,6 @@
 (def default-loadable
   (reify
     brainbot.nozzle.dynaload/Loadable
-    brainbot.nozzle.fsmaker/FilesystemBuilder
-    (make-filesystem-from-iniconfig [this iniconfig section-name]
+    inihelper/IniConstructor
+    (make-object-from-section [this iniconfig section-name]
       (filesystem-from-inisection (iniconfig section-name)))))
