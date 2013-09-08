@@ -40,6 +40,9 @@
   [protocol x]
   (when-not (satisfies? protocol x)
     (throw (ex-info
-            (format "wrong type in section %s, expected %s" (:section-name (meta x)) protocol)
-            {})))
+            (format "wrong type in section %s, expected %s, got %s"
+                    (:section-name (meta x))
+                    (:on-interface protocol)
+                    (class x))
+            {:obj x})))
   x)
