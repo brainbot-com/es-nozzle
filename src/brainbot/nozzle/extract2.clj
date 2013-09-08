@@ -10,6 +10,8 @@
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.vfs :as vfs])
   (:require [brainbot.nozzle.extract :refer [wash convert]]))
@@ -50,18 +52,22 @@
              ;; (lb/qos ch 1)
              (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs))))))))))
 
-(defn extract-run-section
-  [iniconfig section]
-  (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
-        filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
 
-    (when (empty? filesystems)
-      (misc/die (str "no filesystems defined in section " section)))
-
+(defrecord ExtractService [rmq-settings filesystems]
+  worker/Service
+  (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
-              rmq-settings
-              (build-handle-connection filesystems)))))
+             rmq-settings
+             (build-handle-connection filesystems)))))
 
 (def runner
-  (worker/reify-run-section
-   extract-run-section))
+  (reify
+    dynaload/Loadable
+    inihelper/IniConstructor
+    (make-object-from-section [this iniconfig section]
+      (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
+            filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
+
+        (when (empty? filesystems)
+          (misc/die (str "no filesystems defined in section " section)))
+        (->ExtractService rmq-settings filesystems)))))

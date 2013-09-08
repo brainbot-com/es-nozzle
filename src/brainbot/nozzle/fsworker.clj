@@ -2,6 +2,8 @@
   (:require [clojure.tools.logging :as logging])
   (:require brainbot.nozzle.worker)
   (:require [brainbot.nozzle.mqhelper :as mqhelper]
+            [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.misc :as misc])
   (:require [langohr.basic :as lb]
@@ -92,19 +94,22 @@
            (lcons/subscribe ch qname (mqhelper/make-handler (partial handle-msg fs)))))))))
 
 
-(defn worker-run-section
-  [iniconfig section]
-  (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
-        filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
-
-    (when (empty? filesystems)
-      (misc/die (str "no filesystems defined in section " section)))
-
+(defrecord FSWorkerService [rmq-settings filesystems]
+  worker/Service
+  (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
-              rmq-settings
-              (build-handle-connection filesystems)))))
-
+             rmq-settings
+             (build-handle-connection filesystems)))))
 
 (def runner
-  (worker/reify-run-section
-   worker-run-section))
+  (reify
+    dynaload/Loadable
+    inihelper/IniConstructor
+    (make-object-from-section [this iniconfig section]
+      (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
+            filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
+
+        (when (empty? filesystems)
+          (misc/die (str "no filesystems defined in section " section)))
+        (->FSWorkerService rmq-settings filesystems)))))
+

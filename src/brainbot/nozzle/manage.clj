@@ -1,6 +1,8 @@
 (ns brainbot.nozzle.manage
   (:require [brainbot.nozzle.routing-key :as rk]
             [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.vfs :as vfs])
   (:require [langohr.core :as rmq])
@@ -84,15 +86,20 @@
       (Thread/sleep (* 3600 1000)))))
 
 
-(defn manage-run-section
-  [iniconfig section]
-  (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
-        filesystems (misc/get-filesystems-from-iniconfig iniconfig section)]
-    (when (empty? filesystems)
-      (misc/die (str "no filesystems defined in section " section)))
+(defrecord ManageService [rmq-settings filesystems]
+  worker/Service
+  (start [this]
     (doseq [fs filesystems]
       (future (manage-filesystem "nextbot" fs)))))
 
+
 (def runner
-  (worker/reify-run-section
-   manage-run-section))
+  (reify
+    dynaload/Loadable
+    inihelper/IniConstructor
+    (make-object-from-section [this iniconfig section-name]
+      (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
+            filesystems (misc/get-filesystems-from-iniconfig iniconfig section-name)]
+        (when (empty? filesystems)
+          (misc/die (str "no filesystems defined in section " section-name)))
+        (->ManageService rmq-settings filesystems)))))

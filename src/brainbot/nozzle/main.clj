@@ -1,6 +1,7 @@
 (ns brainbot.nozzle.main
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle
+             [meta-runner :as meta-runner]
              [dynaload :as dynaload]
              [inihelper :as inihelper]
              [worker :as worker]
@@ -54,17 +55,6 @@
     (assoc (dissoc options :help) :sections args)))
 
 
-(declare run-all-sections)
-
-(defn meta-run-section
-  [iniconfig section]
-  (let [subsections (misc/trimmed-lines-from-string
-                     (get-in iniconfig [section "sections"]))]
-    (run-all-sections iniconfig subsections)))
-
-
-(def meta-runner (worker/reify-run-section meta-run-section))
-
 (defn ensure-sections-exist
   [iniconfig sections]
   (let [cfg-sections (set (keys iniconfig))
@@ -74,19 +64,10 @@
       (die (str "the following sections are missing in " (:source (meta iniconfig)) ": "
                 (clojure.string/join ", " missing))))))
 
-(def dynaload-runner
-  (comp
-   (partial inihelper/ensure-protocol worker/SectionRunner)
-   inihelper/dynaload-section))
-
 (defn run-all-sections
   [iniconfig sections]
   (ensure-sections-exist iniconfig sections)
-  (doseq [section sections]
-    (let [runner (dynaload-runner iniconfig section)]
-      (logging/info "starting runner for section" section)
-      (worker/run-section runner iniconfig section))))
-
+  (worker/start (meta-runner/make-meta-runner iniconfig sections)))
 
 (defn maybe-start-repl-server
   []

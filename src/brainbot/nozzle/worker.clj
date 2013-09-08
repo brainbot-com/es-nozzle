@@ -1,17 +1,16 @@
 (ns brainbot.nozzle.worker
-  (:require [brainbot.nozzle.inihelper :as inihelper]
-            [brainbot.nozzle.dynaload :as dynaload]))
+  (:require [clojure.tools.logging :as logging]))
 
-(defprotocol SectionRunner
-  (run-section [this iniconfig section-name] "start runner for section"))
+(defprotocol Service
+  (start [this])
+  (stop [this]))
 
-(defn reify-run-section
-  [f]
-  (reify
-    dynaload/Loadable
-    inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section-name]
-      this)
-    SectionRunner
-    (run-section [this iniconfig section-name]
-      (f iniconfig section-name))))
+(defn service-as-string
+  [svc]
+  (let [m (meta svc)]
+    (format "service %s for section %s" (:type m) (:section-name m))))
+
+(defn start-service
+  [svc]
+  (logging/info "starting" (service-as-string svc))
+  (start svc))

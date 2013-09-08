@@ -12,7 +12,7 @@
     "smbfs" 'brainbot.nozzle.smb-fs
 
     "fsworker" 'brainbot.nozzle.fsworker/runner
-    "meta" 'brainbot.nozzle.main/meta-runner
+    "meta" 'brainbot.nozzle.meta-runner/runner
     "extract" 'brainbot.nozzle.extract2/runner
     "esconnect" 'brainbot.nozzle.esconnect/runner
     "manage" 'brainbot.nozzle.manage/runner

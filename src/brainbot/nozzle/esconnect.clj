@@ -10,6 +10,8 @@
   (:require [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.path :as path]
             [brainbot.nozzle.worker :as worker]
+            [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.mqhelper :as mqhelper])
   (:require [robert.bruce :refer [try-try-again]])
   (:require [clojurewerkz.elastisch.rest.document :as esd]
@@ -266,18 +268,9 @@
   (ensure-all-indexes-and-mappings fsmap))
 
 
-(defn esconnect-run-section
-  [iniconfig section]
-  (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
-        num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
-        filesystems (misc/get-filesystems-from-iniconfig iniconfig section)
-        fsmap (make-standard-fsmap filesystems)
-        es-url (or (get-in iniconfig [misc/main-section-name "es-url"]) "http://localhost:9200")]
-
-    (when (empty? filesystems)
-      (misc/die (str "no filesystems defined in section " section)))
-
-    (logging/info "connecting to elasticsearch" es-url)
+(defrecord ESConnectService [rmq-settings num-workers fsmap es-url]
+  worker/Service
+  (start [this]
     (try-try-again {:tries :unlimited
                     :error-hook (fn [err]
                                   (logging/error "error while initializing elasticsearch connection and indexes" es-url err))}
@@ -288,6 +281,18 @@
      (build-handle-connection fsmap num-workers)
      :thread-pool-size num-workers)))
 
+
 (def runner
-  (worker/reify-run-section
-   esconnect-run-section))
+  (reify
+    dynaload/Loadable
+    inihelper/IniConstructor
+    (make-object-from-section [this iniconfig section]
+      (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
+            num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
+            filesystems (misc/get-filesystems-from-iniconfig iniconfig section)
+            fsmap (make-standard-fsmap filesystems)
+            es-url (or (get-in iniconfig [misc/main-section-name "es-url"]) "http://localhost:9200")]
+
+        (when (empty? filesystems)
+          (misc/die (str "no filesystems defined in section " section)))
+        (->ESConnectService rmq-settings num-workers fsmap es-url)))))
