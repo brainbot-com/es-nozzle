@@ -3,7 +3,7 @@
    [clojure.string :as string])
   (:require [brainbot.nozzle.extract :refer [convert]])
   (:require [brainbot.nozzle.vfs :as vfs]
-            [brainbot.nozzle.inihelper :as inihelper]))
+            [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.misc :as misc])
   (:import [jcifs.smb SmbFile NtlmPasswordAuthentication SID ACE]))
 
