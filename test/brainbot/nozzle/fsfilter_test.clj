@@ -4,8 +4,9 @@
 
 
 (deftest test-normalize-extension
-  (let [has-ext? (make-has-extension?
-                  ["FOO", "bar", ".baz"])]
+  (let [has-ext? (comp
+                  (make-has-extension? ["FOO", "bar", ".baz"])
+                  (fn [s] {:relpath s :stat {:type :file}}))]
     (is (false? (has-ext? "example.c")))
     (is (false? (has-ext? ".baz")))
     (is (false? (has-ext? "foo.baz.c")))
