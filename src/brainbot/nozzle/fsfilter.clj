@@ -39,8 +39,9 @@
 (defn make-has-extension?
   [extensions]
   (let [ext-set (set (map normalize-extension extensions))]
-    (fn has-extension [s]
-      (contains? ext-set (path/get-extension-from-basename s)))))
+    (fn has-extension [{s :relpath :as entry}]
+      (and (= (get-in entry [:stat :type]) :file)
+           (contains? ext-set (path/get-extension-from-basename s))))))
 
 (def extensions-filter-constructor
   (reify
