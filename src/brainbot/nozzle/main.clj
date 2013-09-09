@@ -101,17 +101,6 @@ vorbis-java-tika, since then parsing only works for ogg files
                        :content content
                        :path path})))))
 
-(def default-ini-config
-  (-> "META-INF/brainbot.nozzle/default-config.ini"
-      clojure.java.io/resource
-      ini/read-ini))
-
-(defn merge-with-default-config
-  "merge cfg with default-ini-config, keep cfg's metadata"
-  [cfg]
-  (with-meta
-    (merge default-ini-config cfg)
-    (meta cfg)))
 
 (defn -main [& args]
   (ensure-java-version)
@@ -119,8 +108,8 @@ vorbis-java-tika, since then parsing only works for ogg files
   (maybe-start-repl-server)
   (let [{:keys [iniconfig sections]} (parse-command-line-options args)]
     (misc/setup-logging!)
-    (let [cfg (ini/read-ini iniconfig)]
+    (let [cfg (inihelper/read-ini-with-defaults iniconfig)]
       (logging/debug "using config" cfg)
       (run-all-sections
-       (merge-with-default-config cfg)
+       cfg
        sections))))

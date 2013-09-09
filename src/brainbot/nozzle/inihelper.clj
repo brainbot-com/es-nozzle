@@ -1,5 +1,24 @@
 (ns brainbot.nozzle.inihelper
+  (:require [com.brainbot.iniconfig :as ini])
   (:require [brainbot.nozzle.dynaload :as dynaload]))
+
+
+(def default-ini-config
+  (-> "META-INF/brainbot.nozzle/default-config.ini"
+      clojure.java.io/resource
+      ini/read-ini))
+
+(defn merge-with-default-config
+  "merge cfg with default-ini-config, keep cfg's metadata"
+  [cfg]
+  (with-meta
+    (merge default-ini-config cfg)
+    (meta cfg)))
+
+
+(defn read-ini-with-defaults
+  [inifile]
+  (-> inifile ini/read-ini merge-with-default-config))
 
 
 (defprotocol IniConstructor
