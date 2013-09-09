@@ -47,7 +47,7 @@
         (mqhelper/channel-loop
          conn
          (fn [ch]
-           (let [qname (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" fsid)]
+           (let [qname (mqhelper/initialize-rabbitmq-structures ch "extract_content" "nextbot" fsid)]
              (logging/info "starting consumer for" qname)
              ;; (lb/qos ch 1)
              (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs))))))))))

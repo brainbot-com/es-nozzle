@@ -239,7 +239,7 @@
        (fn [ch]
          (doseq [fs (keys fsmap)
                  [command handle-msg] (seq command->msg-handler)]
-           (let [qname (misc/initialize-rabbitmq-structures ch command "nextbot" fs)]
+           (let [qname (mqhelper/initialize-rabbitmq-structures ch command "nextbot" fs)]
              ;; (lb/qos ch 1)
              (lcons/subscribe ch qname
                               (mqhelper/make-handler (partial handle-msg fs (get-in fsmap [fs :index])))))))))))

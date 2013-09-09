@@ -67,16 +67,3 @@
         (logging/error "got exception" err "while running" function "with" args)
         (trace/print-stack-trace err)
         (Thread/sleep sleeptime)))))
-
-
-
-(defn initialize-rabbitmq-structures
-  "initialize rabbitmq queue and exchange for handling 'command' on
-  'filesystem' submitted on 'exchange-name"
-  [ch command exchange-name filesystem]
-  (le/declare ch exchange-name "topic")
-  (let [queue-name (format "%s.%s.%s" exchange-name command filesystem)]
-    (let [queue-state (lq/declare ch queue-name :auto-delete false)]
-      (logging/debug "declared queue" (select-keys queue-state [:queue :consumer-count :message-count])))
-    (lq/bind ch queue-name exchange-name :routing-key queue-name)
-    queue-name))

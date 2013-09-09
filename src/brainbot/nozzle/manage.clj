@@ -4,6 +4,7 @@
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
+            [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.vfs :as vfs])
   (:require [langohr.core :as rmq])
 
@@ -56,7 +57,7 @@
   [id filesystem]
   (let [conn (rmq/connect)
         ch (lch/open conn)]
-    (misc/initialize-rabbitmq-structures
+    (mqhelper/initialize-rabbitmq-structures
      ch "listdir" id filesystem)
     (lb/publish ch id
                 (rk/routing-key-string-from-map {:id id :filesystem filesystem :command "listdir"})

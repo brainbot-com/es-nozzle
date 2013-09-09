@@ -4,6 +4,7 @@
   (:require [brainbot.nozzle.reap :as reap]
             [brainbot.nozzle.routing-key :as rk]
             [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.misc :as misc])
   (:require [clojure.stacktrace :as trace])
   (:require [clojure.string :as string])
@@ -84,7 +85,7 @@
                        (logging/info "connecting to rabbitmq" (:amqp-url options) rmq-settings)
                        (rmq/connect rmq-settings))
         ch           (lch/open conn)
-        queue-name   (misc/initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
+        queue-name   (mqhelper/initialize-rabbitmq-structures ch "extract_content" "nextbot" filesystem)]
     (lb/qos ch (+ misc/number-of-cores 4))
     (lcons/blocking-subscribe ch queue-name (partial handle-message options) :auto-ack false)))
 
