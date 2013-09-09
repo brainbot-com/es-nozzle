@@ -31,7 +31,8 @@
   "print error message msg and exit the program with named argument
  :exit-code or 1"
   [msg & {:keys [exit-code] :or {exit-code 1}}]
-  (println "Error:" msg)
+  (binding [*out* *err*]
+    (println "Error:" msg))
   (System/exit exit-code))
 
 
