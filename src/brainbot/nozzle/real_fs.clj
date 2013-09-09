@@ -146,12 +146,23 @@
            (nio2.dir-seq/dir-seq up)))))
 
 
+(defn tilde-expand-path
+  [path]
+  (cond
+    (= path "~")
+      (System/getProperty "user.home")
+    (= "~/" (subs path 0 2))
+      (str (System/getProperty "user.home") (subs path 1))
+    :else
+      path))
+
+
 (defn filesystem-from-inisection
   [section]
   (let [path (section "path")]
     (when-not path
       (throw (Exception. "no path specified in section")))
-    (RealFilesystem. path)))
+    (RealFilesystem. (tilde-expand-path path))))
 
 
 (def default-loadable
