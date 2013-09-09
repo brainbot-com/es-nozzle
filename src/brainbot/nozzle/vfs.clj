@@ -68,7 +68,20 @@
          :error (str err)}))))
 
 
+(defn apply-filters
+  "apply filesystem filters to list of entries"
+  [{remove-filters :remove-filters :as fs} path entries]
+  (reduce
+   (fn [entries filter-fun]
+     (remove filter-fun entries))
+   entries
+   remove-filters))
+
+
 (defn cmd-listdir
   [fs path]
-  (map (make-safe-stat-entry fs path)
-       (listdir-catch-access-denied fs path)))
+  (apply-filters
+   fs
+   path
+   (map (make-safe-stat-entry fs path)
+        (listdir-catch-access-denied fs path))))
