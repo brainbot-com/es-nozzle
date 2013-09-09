@@ -5,5 +5,5 @@
 
 (deftest test-loading-dotfiles
   (let [relpath-filter (dynaload-section {"dotfile" {"type" "dotfile"}} "dotfile")]
-    (is (true? (fsfilter/matches-relpath? relpath-filter ".foo")))
-    (is (false? (fsfilter/matches-relpath? relpath-filter "foo")))))
+    (is (true? ((fsfilter/make-match-entry? relpath-filter) {:relpath ".foo"})))
+    (is (false?((fsfilter/make-match-entry? relpath-filter) {:relpath "foo"})))))

@@ -3,6 +3,7 @@
   (:require
    brainbot.nozzle.dynaload
    [brainbot.nozzle.inihelper :as inihelper]
+   [brainbot.nozzle.fsfilter :as fsfilter]
    [brainbot.nozzle.misc :as misc]
    [clojure.string :as string]))
 
@@ -26,8 +27,12 @@
 (defn make-single-filesystem-from-iniconfig
   "create filesystem from ini config section"
   [iniconfig section-name]
-  (let [fs (dynaload-filesystem iniconfig section-name)]
+  (let [fs (dynaload-filesystem iniconfig section-name)
+        remove (misc/trimmed-lines-from-string (get-in iniconfig [section-name "remove"]))]
     (assoc fs
+      :remove-filters (->> remove
+                           (map (partial fsfilter/make-filter-from-iniconfig iniconfig))
+                           (map fsfilter/make-match-entry?))
       :fsid section-name)))
 
 

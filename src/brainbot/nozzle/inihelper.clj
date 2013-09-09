@@ -37,7 +37,7 @@
     "manage" 'brainbot.nozzle.manage/runner
 
     "dotfile" 'brainbot.nozzle.fsfilter/dotfile
-    "remove-extensions" 'brainbot.nozzle.fsfilter/remove-extensions}))
+    "extensions" 'brainbot.nozzle.fsfilter/extensions-filter-constructor}))
 
 
 (defn dynaload-section
