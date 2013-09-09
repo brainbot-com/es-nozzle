@@ -22,11 +22,10 @@
                            (rest (re-find #"^(\d+)\.(\d+)" java-version)))]
 
     (when (> 0 (compare [major minor] [1 7]))
-      (binding [*out* *err*]
-        (println
-         (format "Fatal error: You need at least java version 7. The java installation in %s has version %s."
-                 (System/getProperty "java.home") java-version))
-        (System/exit 1)))))
+      (die
+       (format "You need at least java version 7. The java installation in %s has version %s."
+               (System/getProperty "java.home")
+               java-version)))))
 
 
 (defn parse-command-line-options
