@@ -56,15 +56,6 @@
     (log-config/set-logger! name :level :off)))
 
 
-(def main-section-name "nozzle")
-
-(defn get-filesystems-from-iniconfig
-  [iniconfig section]
-  (trimmed-lines-from-string
-   (or (get-in iniconfig [section "filesystems"])
-       (get-in iniconfig [main-section-name "filesystems"]))))
-
-
 (defn run-forever
   "run function forever, i.e. run function, catch exception, wait a
  bit and restart it"
@@ -77,9 +68,6 @@
         (trace/print-stack-trace err)
         (Thread/sleep sleeptime)))))
 
-(defn rmq-settings-from-config
-  [iniconfig]
-  (rmq/settings-from (get-in iniconfig [main-section-name "amqp-url"])))
 
 
 (defn initialize-rabbitmq-structures

@@ -65,7 +65,7 @@
     dynaload/Loadable
     inihelper/IniConstructor
     (make-object-from-section [this iniconfig section]
-      (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
+      (let [rmq-settings (inihelper/rmq-settings-from-config iniconfig)
             filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
 
         (when (empty? filesystems)

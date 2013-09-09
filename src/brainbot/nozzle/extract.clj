@@ -3,6 +3,7 @@
             [clj-logging-config.log4j :as log-config])
   (:require [brainbot.nozzle.reap :as reap]
             [brainbot.nozzle.routing-key :as rk]
+            [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.misc :as misc])
   (:require [clojure.stacktrace :as trace])
   (:require [clojure.string :as string])
@@ -104,10 +105,10 @@
 (defn extract-options-from-iniconfig
   [iniconfig section]
   (let [source (:source (meta iniconfig))
-        main-section (or (iniconfig misc/main-section-name) {})
+        main-section (or (iniconfig inihelper/main-section-name) {})
         max-size (Integer. (main-section "max-size")),
         amqp-url (get main-section "amqp-url" "amqp://localhost/%2f")
-        filesystems (misc/get-filesystems-from-iniconfig iniconfig section)]
+        filesystems (inihelper/get-filesystems-from-iniconfig iniconfig section)]
     (when (empty? filesystems)
       (die (str "no filesystems defined in section " section " in " source)))
     {:max-size max-size

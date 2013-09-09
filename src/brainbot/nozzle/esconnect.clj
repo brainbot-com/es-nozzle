@@ -287,11 +287,11 @@
     dynaload/Loadable
     inihelper/IniConstructor
     (make-object-from-section [this iniconfig section]
-      (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
+      (let [rmq-settings (inihelper/rmq-settings-from-config iniconfig)
             num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
-            filesystems (misc/get-filesystems-from-iniconfig iniconfig section)
+            filesystems (inihelper/get-filesystems-from-iniconfig iniconfig section)
             fsmap (make-standard-fsmap filesystems)
-            es-url (or (get-in iniconfig [misc/main-section-name "es-url"]) "http://localhost:9200")]
+            es-url (or (get-in iniconfig [inihelper/main-section-name "es-url"]) "http://localhost:9200")]
 
         (when (empty? filesystems)
           (misc/die (str "no filesystems defined in section " section)))

@@ -41,7 +41,7 @@
    the filesystems key"
   [iniconfig section]
   (map (partial make-single-filesystem-from-iniconfig iniconfig)
-       (misc/get-filesystems-from-iniconfig iniconfig section)))
+       (inihelper/get-filesystems-from-iniconfig iniconfig section)))
 
 (defn- listdir-catch-access-denied
   "call listdir, catch access denied errors, log an error for them and

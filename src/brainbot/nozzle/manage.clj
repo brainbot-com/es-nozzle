@@ -98,8 +98,8 @@
     dynaload/Loadable
     inihelper/IniConstructor
     (make-object-from-section [this iniconfig section-name]
-      (let [rmq-settings (misc/rmq-settings-from-config iniconfig)
-            filesystems (misc/get-filesystems-from-iniconfig iniconfig section-name)]
+      (let [rmq-settings (inihelper/rmq-settings-from-config iniconfig)
+            filesystems (inihelper/get-filesystems-from-iniconfig iniconfig section-name)]
         (when (empty? filesystems)
           (misc/die (str "no filesystems defined in section " section-name)))
         (->ManageService rmq-settings filesystems)))))

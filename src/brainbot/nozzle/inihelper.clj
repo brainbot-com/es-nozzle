@@ -1,12 +1,25 @@
 (ns brainbot.nozzle.inihelper
   (:require [com.brainbot.iniconfig :as ini])
-  (:require [brainbot.nozzle.dynaload :as dynaload]))
+  (:require [langohr.core :as rmq])
+  (:require [brainbot.nozzle.dynaload :as dynaload]
+            [brainbot.nozzle.misc :as misc]))
 
+(def main-section-name "nozzle")
+
+(defn get-filesystems-from-iniconfig
+  [iniconfig section]
+  (misc/trimmed-lines-from-string
+   (or (get-in iniconfig [section "filesystems"])
+       (get-in iniconfig [main-section-name "filesystems"]))))
 
 (def default-ini-config
   (-> "META-INF/brainbot.nozzle/default-config.ini"
       clojure.java.io/resource
       ini/read-ini))
+
+(defn rmq-settings-from-config
+  [iniconfig]
+  (rmq/settings-from (get-in iniconfig [main-section-name "amqp-url"])))
 
 (defn merge-with-default-config
   "merge cfg with default-ini-config, keep cfg's metadata"
