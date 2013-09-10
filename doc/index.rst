@@ -15,6 +15,7 @@ Contents:
    quickstart
    command
    filesystem
+   filters
    appendix
 
 Indices and tables
