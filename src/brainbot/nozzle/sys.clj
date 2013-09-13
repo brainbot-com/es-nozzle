@@ -24,7 +24,6 @@
 
 (defn get-filesystems-for-section
   [system section-name]
-  (println "system:" system)
   (or (misc/trimmed-lines-from-string (get-in system [:iniconfig section-name "filesystems"]))
       (get-in system [:config :filesystems])
       (misc/die (str "no filesystems defined in section " section-name))))
