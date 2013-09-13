@@ -53,7 +53,7 @@
     "extensions" 'brainbot.nozzle.fsfilter/extensions-filter-constructor}))
 
 
-(defn dynaload-section
+(defn- dynaload-section*
   [system section-name]
 
   (let [iniconfig (:iniconfig system)
@@ -72,6 +72,13 @@
         {:type type
          :section-name section-name}))))
 
+(defn dynaload-section
+  [{:keys [name->obj] :as system} section-name]
+  (if-let [obj (@name->obj section-name)]
+    obj
+    (let [obj (dynaload-section* system section-name)]
+      (swap! name->obj assoc section-name obj)
+      obj)))
 
 (defn ensure-protocol
   [protocol x]

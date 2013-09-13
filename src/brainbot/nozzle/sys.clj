@@ -15,6 +15,7 @@
   {:iniconfig iniconfig
    :command-sections command-sections
    :config (parse-main-section iniconfig)
+   :name->obj (atom {})
    :thread-pool (Executors/newFixedThreadPool 256)})
 
 (defn run-system
