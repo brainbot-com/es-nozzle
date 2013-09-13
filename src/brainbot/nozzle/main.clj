@@ -56,15 +56,6 @@
     (assoc (dissoc options :help) :sections args)))
 
 
-(defn ensure-sections-exist
-  [iniconfig sections]
-  (let [cfg-sections (set (keys iniconfig))
-        sections-set (set sections)
-        missing (clojure.set/difference sections-set cfg-sections)]
-    (when (seq missing)
-      (die (str "the following sections are missing in " (:source (meta iniconfig)) ": "
-                (clojure.string/join ", " missing))))))
-
 (defn maybe-start-repl-server
   []
   (when-let [port (System/getProperty "nozzle.repl")]

@@ -19,7 +19,6 @@
 
 (defn run-system
   [{:keys [iniconfig command-sections] :as system}]
-  ;; (ensure-sections-exist iniconfig command-sections)
   (worker/start (meta-runner/make-meta-runner system command-sections)))
 
 (defn get-filesystems-for-section
