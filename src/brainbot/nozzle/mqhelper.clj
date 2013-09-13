@@ -67,11 +67,14 @@
 
 
 (defn connect-loop-with-thread-pool
+  "connect to rabbitmq with settings rmq-settings and call
+  handle-connection with the connection object. if the connection
+  fails, wait for 5 seconds and try again. Use thread-pool for
+  handling messages"
   [rmq-settings handle-connection thread-pool]
-  (let [connect (partial connect-with-thread-pool rmq-settings thread-pool)]
-    (connect-loop
-     connect
-     handle-connection)))
+  (connect-loop
+   #(connect-with-thread-pool rmq-settings thread-pool)
+   handle-connection))
 
 
 (defn make-handler
