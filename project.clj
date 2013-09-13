@@ -27,13 +27,14 @@
                  [clojurewerkz/elastisch "1.2.0"]
                  [com.novemberain/langohr "1.0.1"]]
   :profiles {:uberjar {:aot :all}
+             :repl {:jvm-opts ["-Dnozzle.repl=1511"]}
              :jmx {:jvm-opts
                    ["-Dcom.sun.management.jmxremote"
                     "-Dcom.sun.management.jmxremote.port=9010"
                     "-Dcom.sun.management.jmxremote.local.only=false"
                     "-Dcom.sun.management.jmxremote.authenticate=false"
                     "-Dcom.sun.management.jmxremote.ssl=false"]}}
-
+  :aliases {"nozzle" ["with-profile" "repl" "run" "--iniconfig" "doc/nozzle.ini"]}
   :repositories [["brainbot" "http://brainbot.com/mvn/releases/"]
                  ["brainbot-snapshots" "http://brainbot.com/mvn/snapshots/"]]
   :omit-source true
