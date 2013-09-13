@@ -18,8 +18,12 @@
    :name->obj (atom {})
    :thread-pool (Executors/newFixedThreadPool 256)})
 
+(def ^{:doc "the system map currently running.  only use this for development"}
+  current-system nil)
+
 (defn run-system
   [{:keys [iniconfig command-sections] :as system}]
+  (alter-var-root #'current-system (constantly system))
   (worker/start (meta-runner/make-meta-runner system command-sections)))
 
 (defn get-filesystems-for-section
