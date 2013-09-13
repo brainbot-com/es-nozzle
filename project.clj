@@ -13,7 +13,7 @@
                  [org.clojure/tools.namespace "0.2.4"]
                  [clojure-complete "0.2.3"]
                  ;; [me.raynes/fs "1.4.4"]
-                 [org.clojure/data.json "0.2.2"]
+                 [org.clojure/data.json "0.2.3"]
                  ;; [org.clojars.floriano.clj-tika "1.2.4"]
                  [org.apache.tika/tika-parsers "1.5-bb1"
                   :exclusions [org.gagravarr/vorbis-java-core
@@ -23,7 +23,7 @@
                  [jcifs "1.3.17"]
                  [clj-time "0.6.0"]
                  [robert/bruce "0.7.1"]
-                 [trptcolin/versioneer "0.1.0"]
+                 [trptcolin/versioneer "0.1.1"]
                  [clojurewerkz/elastisch "1.2.0"]
                  [com.novemberain/langohr "1.0.1"]]
   :profiles {:uberjar {:aot :all}
