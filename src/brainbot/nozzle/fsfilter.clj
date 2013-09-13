@@ -9,7 +9,7 @@
 (defprotocol EntryFilter
   (make-match-entry? [this] "make entry matching function"))
 
-(def make-filter-from-iniconfig
+(def make-filter
   (comp
    (partial inihelper/ensure-protocol EntryFilter)
    inihelper/dynaload-section))
@@ -23,7 +23,7 @@
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section-name]
+    (make-object-from-section [this system section-name]
       this)
     EntryFilter
     (make-match-entry? [this] is-dotfile)))
@@ -47,7 +47,7 @@
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section-name]
+    (make-object-from-section [this {:keys [iniconfig]} section-name]
       (let [extensions (misc/trimmed-lines-from-string (get-in iniconfig [section-name "extensions"]))
             has-extension? (make-has-extension? extensions)]
         (reify

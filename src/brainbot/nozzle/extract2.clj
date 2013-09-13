@@ -10,6 +10,7 @@
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
@@ -64,9 +65,10 @@
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section]
-      (let [rmq-settings (inihelper/rmq-settings-from-config iniconfig)
-            filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
+    (make-object-from-section [this system section]
+      (let [rmq-settings (-> system :config :rmq-settings)
+            filesystems (map (partial vfs/make-filesystem system)
+                             (sys/get-filesystems-for-section system section))]
 
         (when (empty? filesystems)
           (misc/die (str "no filesystems defined in section " section)))

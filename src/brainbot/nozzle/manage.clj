@@ -1,6 +1,7 @@
 (ns brainbot.nozzle.manage
   (:require [brainbot.nozzle.routing-key :as rk]
             [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
@@ -98,9 +99,7 @@
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section-name]
-      (let [rmq-settings (inihelper/rmq-settings-from-config iniconfig)
-            filesystems (inihelper/get-filesystems-from-iniconfig iniconfig section-name)]
-        (when (empty? filesystems)
-          (misc/die (str "no filesystems defined in section " section-name)))
+    (make-object-from-section [this system section-name]
+      (let [rmq-settings (-> system :config :rmq-settings)
+            filesystems (sys/get-filesystems-for-section system section-name)]
         (->ManageService rmq-settings filesystems)))))

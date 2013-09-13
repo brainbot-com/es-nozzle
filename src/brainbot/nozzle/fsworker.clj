@@ -5,6 +5,7 @@
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
+            [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.misc :as misc])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
@@ -105,9 +106,10 @@
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section]
-      (let [rmq-settings (inihelper/rmq-settings-from-config iniconfig)
-            filesystems (vfs/make-filesystems-from-iniconfig iniconfig section)]
+    (make-object-from-section [this system section]
+      (let [rmq-settings (-> system :config :rmq-settings)
+            filesystems (map (fn [name] (vfs/make-filesystem system name))
+                             (sys/get-filesystems-for-section system section))]
 
         (when (empty? filesystems)
           (misc/die (str "no filesystems defined in section " section)))

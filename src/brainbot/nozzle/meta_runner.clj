@@ -16,17 +16,17 @@
    inihelper/dynaload-section))
 
 (defn make-meta-runner
-  [iniconfig sections]
+  [system sections]
   (->MetaRunner
    (map (fn [section]
-          (dynaload-runner iniconfig section))
+          (dynaload-runner system section))
         sections)))
 
 (def runner
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section]
+    (make-object-from-section [this system section]
       (let [sections (misc/trimmed-lines-from-string
-                      (get-in iniconfig [section "sections"]))]
-        (make-meta-runner iniconfig sections)))))
+                      (get-in system [:iniconfig section "sections"]))]
+        (make-meta-runner system sections)))))

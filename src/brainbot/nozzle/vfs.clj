@@ -24,24 +24,24 @@
    inihelper/dynaload-section))
 
 
-(defn make-single-filesystem-from-iniconfig
-  "create filesystem from ini config section"
-  [iniconfig section-name]
-  (let [fs (dynaload-filesystem iniconfig section-name)
-        remove (misc/trimmed-lines-from-string (get-in iniconfig [section-name "remove"]))]
+
+(defn make-filesystem
+  [system section-name]
+  (let [fs (dynaload-filesystem system section-name)
+        remove (misc/trimmed-lines-from-string
+                (get-in system [:iniconfig section-name "remove"]))]
     (assoc fs
       :remove-filters (->> remove
-                           (map (partial fsfilter/make-filter-from-iniconfig iniconfig))
+                           (map (partial fsfilter/make-filter system))
                            (map fsfilter/make-match-entry?))
       :fsid section-name)))
 
-
-(defn make-filesystems-from-iniconfig
-  "create a sequence of the filesystems specified in `section` with
-   the filesystems key"
-  [iniconfig section]
-  (map (partial make-single-filesystem-from-iniconfig iniconfig)
-       (inihelper/get-filesystems-from-iniconfig iniconfig section)))
+;; (defn make-filesystems-from-iniconfig
+;;   "create a sequence of the filesystems specified in `section` with
+;;    the filesystems key"
+;;   [iniconfig section]
+;;   (map (partial make-single-filesystem-from-iniconfig iniconfig)
+;;        (inihelper/get-filesystems-from-iniconfig iniconfig section)))
 
 (defn- listdir-catch-access-denied
   "call listdir, catch access denied errors, log an error for them and

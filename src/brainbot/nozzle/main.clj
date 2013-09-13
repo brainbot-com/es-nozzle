@@ -1,6 +1,8 @@
 (ns brainbot.nozzle.main
+  (:import [java.util.concurrent Executors])
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle
+             [sys :as sys]
              [meta-runner :as meta-runner]
              [dynaload :as dynaload]
              [inihelper :as inihelper]
@@ -63,11 +65,6 @@
       (die (str "the following sections are missing in " (:source (meta iniconfig)) ": "
                 (clojure.string/join ", " missing))))))
 
-(defn run-all-sections
-  [iniconfig sections]
-  (ensure-sections-exist iniconfig sections)
-  (worker/start (meta-runner/make-meta-runner iniconfig sections)))
-
 (defn maybe-start-repl-server
   []
   (when-let [port (System/getProperty "nozzle.repl")]
@@ -100,15 +97,13 @@ vorbis-java-tika, since then parsing only works for ogg files
                        :content content
                        :path path})))))
 
-
 (defn -main [& args]
   (ensure-java-version)
   (sanity-check-tika-resources)
   (maybe-start-repl-server)
   (let [{:keys [iniconfig sections]} (parse-command-line-options args)]
     (misc/setup-logging!)
-    (let [cfg (inihelper/read-ini-with-defaults iniconfig)]
-      (logging/debug "using config" cfg)
-      (run-all-sections
-       cfg
-       sections))))
+    (-> iniconfig
+        inihelper/read-ini-with-defaults
+        (sys/make-system sections)
+        sys/run-system)))

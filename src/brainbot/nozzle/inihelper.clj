@@ -35,7 +35,7 @@
 
 
 (defprotocol IniConstructor
-  (make-object-from-section [this iniconfig section-name]))
+  (make-object-from-section [this system section-name]))
 
 
 (def registry
@@ -54,8 +54,10 @@
 
 
 (defn dynaload-section
-  [iniconfig section-name]
-  (let [type (get-in iniconfig [section-name "type"])]
+  [system section-name]
+
+  (let [iniconfig (:iniconfig system)
+        type (get-in iniconfig [section-name "type"])]
     (when-not type
       (throw (ex-info (format "no type defined in section %s" section-name) {})))
 
@@ -63,7 +65,7 @@
       (when-not (satisfies? IniConstructor loadable)
         (throw (ex-info "bad loadable" {:section-name section-name :type type})))
       (with-meta
-        (make-object-from-section loadable iniconfig section-name)
+        (make-object-from-section loadable system section-name)
         {:type type
          :section-name section-name}))))
 

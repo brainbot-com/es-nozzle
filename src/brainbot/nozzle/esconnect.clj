@@ -9,6 +9,7 @@
             [clj-time.coerce :as tcoerce])
   (:require [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.path :as path]
+            [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
@@ -286,13 +287,11 @@
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section]
-      (let [rmq-settings (inihelper/rmq-settings-from-config iniconfig)
+    (make-object-from-section [this system section]
+      (let [iniconfig (:iniconfig system)
+            rmq-settings (-> system :config :rmq-settings)
             num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
-            filesystems (inihelper/get-filesystems-from-iniconfig iniconfig section)
+            filesystems (sys/get-filesystems-for-section system section)
             fsmap (make-standard-fsmap filesystems)
-            es-url (or (get-in iniconfig [inihelper/main-section-name "es-url"]) "http://localhost:9200")]
-
-        (when (empty? filesystems)
-          (misc/die (str "no filesystems defined in section " section)))
+            es-url (-> system :config :es-url)]
         (->ESConnectService rmq-settings num-workers fsmap es-url)))))

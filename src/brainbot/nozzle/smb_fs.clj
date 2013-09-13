@@ -96,5 +96,5 @@
   (reify
     brainbot.nozzle.dynaload/Loadable
     inihelper/IniConstructor
-    (make-object-from-section [this iniconfig section-name]
-      (filesystem-from-inisection (iniconfig section-name)))))
+    (make-object-from-section [this system section-name]
+      (filesystem-from-inisection ((:iniconfig system) section-name)))))
