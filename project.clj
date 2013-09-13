@@ -10,6 +10,7 @@
                  [org.clojure/tools.cli "0.2.4"]
                  [info.hoetzel/clj-nio2 "0.1.1"]
                  [org.clojure/tools.nrepl "0.2.3"]
+                 [org.clojure/tools.namespace "0.2.4"]
                  [clojure-complete "0.2.3"]
                  ;; [me.raynes/fs "1.4.4"]
                  [org.clojure/data.json "0.2.2"]
