@@ -1,7 +1,6 @@
 (ns brainbot.nozzle.mqhelper
   (:require [clojure.stacktrace :as trace])
   (:import [com.rabbitmq.client Address ConnectionFactory Connection Channel ShutdownListener])
-  (:import [java.util.concurrent Executors])
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [clojure.data.json :as json])
@@ -68,10 +67,8 @@
 
 
 (defn connect-loop-with-thread-pool
-  [rmq-settings handle-connection &{:keys [thread-pool-size]
-                                    :or {thread-pool-size 500}}]
-  (let [thread-pool (Executors/newFixedThreadPool 500)
-        connect (partial connect-with-thread-pool rmq-settings thread-pool)]
+  [rmq-settings handle-connection thread-pool]
+  (let [connect (partial connect-with-thread-pool rmq-settings thread-pool)]
     (connect-loop
      connect
      handle-connection)))

@@ -95,12 +95,13 @@
            (lcons/subscribe ch qname (mqhelper/make-handler (partial handle-msg fs)))))))))
 
 
-(defrecord FSWorkerService [rmq-settings filesystems]
+(defrecord FSWorkerService [rmq-settings filesystems thread-pool]
   worker/Service
   (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
              rmq-settings
-             (build-handle-connection filesystems)))))
+             (build-handle-connection filesystems)
+             thread-pool))))
 
 (def runner
   (reify
@@ -110,8 +111,7 @@
       (let [rmq-settings (-> system :config :rmq-settings)
             filesystems (map (fn [name] (vfs/make-filesystem system name))
                              (sys/get-filesystems-for-section system section))]
-
         (when (empty? filesystems)
           (misc/die (str "no filesystems defined in section " section)))
-        (->FSWorkerService rmq-settings filesystems)))))
+        (->FSWorkerService rmq-settings filesystems (:thread-pool system))))))
 

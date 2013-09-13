@@ -54,12 +54,13 @@
              (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs))))))))))
 
 
-(defrecord ExtractService [rmq-settings filesystems]
+(defrecord ExtractService [rmq-settings filesystems thread-pool]
   worker/Service
   (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
              rmq-settings
-             (build-handle-connection filesystems)))))
+             (build-handle-connection filesystems)
+             thread-pool))))
 
 (def runner
   (reify
@@ -72,4 +73,4 @@
 
         (when (empty? filesystems)
           (misc/die (str "no filesystems defined in section " section)))
-        (->ExtractService rmq-settings filesystems)))))
+        (->ExtractService rmq-settings filesystems (:thread-pool system))))))

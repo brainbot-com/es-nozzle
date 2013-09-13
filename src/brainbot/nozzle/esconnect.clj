@@ -269,7 +269,7 @@
   (ensure-all-indexes-and-mappings fsmap))
 
 
-(defrecord ESConnectService [rmq-settings num-workers fsmap es-url]
+(defrecord ESConnectService [rmq-settings num-workers fsmap es-url thread-pool]
   worker/Service
   (start [this]
     (try-try-again {:tries :unlimited
@@ -280,7 +280,7 @@
     (mqhelper/connect-loop-with-thread-pool
      rmq-settings
      (build-handle-connection fsmap num-workers)
-     :thread-pool-size num-workers)))
+     thread-pool)))
 
 
 (def runner
@@ -294,4 +294,8 @@
             filesystems (sys/get-filesystems-for-section system section)
             fsmap (make-standard-fsmap filesystems)
             es-url (-> system :config :es-url)]
-        (->ESConnectService rmq-settings num-workers fsmap es-url)))))
+        (->ESConnectService rmq-settings
+                            num-workers
+                            fsmap
+                            es-url
+                            (:thread-pool system))))))
