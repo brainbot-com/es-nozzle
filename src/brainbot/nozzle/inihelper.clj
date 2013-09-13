@@ -58,6 +58,9 @@
 
   (let [iniconfig (:iniconfig system)
         type (get-in iniconfig [section-name "type"])]
+    (when-not (contains? iniconfig section-name)
+      (throw (ex-info (format "no section %s declared" section-name)
+                      {})))
     (when-not type
       (throw (ex-info (format "no type defined in section %s" section-name) {})))
 
