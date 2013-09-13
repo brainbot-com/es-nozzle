@@ -70,7 +70,4 @@
       (let [rmq-settings (-> system :config :rmq-settings)
             filesystems (map (partial vfs/make-filesystem system)
                              (sys/get-filesystems-for-section system section))]
-
-        (when (empty? filesystems)
-          (misc/die (str "no filesystems defined in section " section)))
         (->ExtractService rmq-settings filesystems (:thread-pool system))))))

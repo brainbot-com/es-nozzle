@@ -111,7 +111,5 @@
       (let [rmq-settings (-> system :config :rmq-settings)
             filesystems (map (fn [name] (vfs/make-filesystem system name))
                              (sys/get-filesystems-for-section system section))]
-        (when (empty? filesystems)
-          (misc/die (str "no filesystems defined in section " section)))
         (->FSWorkerService rmq-settings filesystems (:thread-pool system))))))
 
