@@ -56,8 +56,8 @@
 
 
 (defn start-synchronization
-  [id filesystem]
-  (let [conn (rmq/connect)
+  [rmq-settings id filesystem]
+  (let [conn (rmq/connect rmq-settings)
         ch (lch/open conn)]
     (mqhelper/initialize-rabbitmq-structures
      ch "listdir" id filesystem)
@@ -69,7 +69,7 @@
 
 
 (defn manage-filesystem*
-  [id {:keys [fsid sleep-between-sync]}]
+  [rmq-settings id {:keys [fsid sleep-between-sync]}]
   (let [qname (rk/routing-key-string-from-map {:id id :filesystem fsid :command "*"})
         get-num-messages (fn []
                            (num-messages-from-queue-state
@@ -82,24 +82,24 @@
     (wait-idle)
     (while true
       (logging/info "starting synchronization of" qname)
-      (start-synchronization id fsid)
+      (start-synchronization rmq-settings id fsid)
       (Thread/sleep 10000)
       (wait-idle)
       (logging/info "synchronization of" qname "finished. restarting in" sleep-between-sync "seconds")
       (Thread/sleep (* sleep-between-sync 1000)))))
 
 (defn manage-filesystem
-  [id fsextra]
+  [rmq-settings id fsextra]
   (try-try-again {:sleep (* 60 1000)
                   :tries :unlimited
                   :error-hook (fn [e] (logging/error "error in manage-filesystem" (:fsid fsextra) e))}
-                 #(manage-filesystem* id fsextra)))
+                 #(manage-filesystem* rmq-settings id fsextra)))
 
 (defrecord ManageService [rmq-settings rmq-prefix filesystems]
   worker/Service
   (start [this]
     (doseq [fs filesystems]
-      (future (manage-filesystem rmq-prefix fs)))))
+      (future (manage-filesystem rmq-settings rmq-prefix fs)))))
 
 (defn http-connect!
   [{:keys [api-endpoint username password]}]
