@@ -1,29 +1,19 @@
 (ns brainbot.nozzle.manage
   (:require [brainbot.nozzle.routing-key :as rk]
-            [brainbot.nozzle.misc :as misc]
-            [brainbot.nozzle.vfs :as vfs]
             [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.vfs :as vfs])
-  (:require [langohr.core :as rmq])
   (:require [robert.bruce :refer [try-try-again]])
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
   (:require [clojure.data.json :as json])
-
-  (:require [com.brainbot.iniconfig :as ini])
-
   (:require [langohr.http :as rmqapi]
             [langohr.basic :as lb]
-            [langohr.shutdown :as lshutdown]
-            [langohr.exchange  :as le]
             [langohr.core :as rmq]
-            [langohr.queue :as lq]
-            [langohr.channel :as lch]
-            [langohr.consumers :as lcons]))
+            [langohr.channel :as lch]))
 
 
 (defn filter-by-vhost
