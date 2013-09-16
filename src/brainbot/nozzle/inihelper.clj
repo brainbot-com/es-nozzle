@@ -19,7 +19,11 @@
 
 (defn rmq-settings-from-config
   [iniconfig]
-  (rmq/settings-from (get-in iniconfig [main-section-name "amqp-url"])))
+  (let [settings (rmq/settings-from (get-in iniconfig [main-section-name "amqp-url"]))
+        api-endpoint (or  (get-in iniconfig [main-section-name "amqp-api-endpoint"])
+                          (format "http://%s:15672" (:host settings)))]
+    (assoc settings
+      :api-endpoint api-endpoint)))
 
 (defn merge-with-default-config
   "merge cfg with default-ini-config, keep cfg's metadata"
