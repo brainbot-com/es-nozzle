@@ -54,3 +54,16 @@ remote file server. It looks like:
 
 where SERVER is the file server to connect to, SHARE is the share to
 use and /PATH1/PATH2 is the directory on the share to import.
+
+Common keys
+------------------------
+Some keys are common to any kind of filesystem. These are:
+
+`remove`
+  This can can be used to specify a list of filters to use with the
+  filesystem.
+
+`sleep-between-sync`
+  This key can be used to specify the time in seconds to wait between
+  two synchronisation runs. The default is 3600, i.e. wait 1 hour
+  before starting synchronisation again.
