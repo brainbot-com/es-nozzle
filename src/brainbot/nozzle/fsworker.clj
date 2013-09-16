@@ -68,7 +68,7 @@
   [fs {path :path :as body} {publish :publish}]
   (if-let [arg (try
                  {:directory path
-                  :entries (vfs/cmd-listdir fs path)}
+                  :entries (vfs/listdir-and-stat fs path)}
                  (catch Exception err
                    (logging/error "error in listdir" err)
                    nil))]

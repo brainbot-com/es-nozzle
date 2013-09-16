@@ -1,11 +1,8 @@
 (ns brainbot.nozzle.vfs
   (:require [clojure.tools.logging :as logging])
-  (:require
-   brainbot.nozzle.dynaload
-   [brainbot.nozzle.inihelper :as inihelper]
-   [brainbot.nozzle.fsfilter :as fsfilter]
-   [brainbot.nozzle.misc :as misc]
-   [clojure.string :as string]))
+  (:require [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.fsfilter :as fsfilter]
+            [brainbot.nozzle.misc :as misc]))
 
 
 (defprotocol Filesystem
@@ -18,12 +15,12 @@
   (listdir [fs dir] "list directory"))
 
 
-(def dynaload-filesystem
+(def ^{:doc "load filesystem from ini section"
+       :private true}
+  dynaload-filesystem
   (comp
    (partial inihelper/ensure-protocol Filesystem)
    inihelper/dynaload-section))
-
-
 
 (defn make-filesystem
   [system section-name]
@@ -36,12 +33,6 @@
                            (map fsfilter/make-match-entry?))
       :fsid section-name)))
 
-;; (defn make-filesystems-from-iniconfig
-;;   "create a sequence of the filesystems specified in `section` with
-;;    the filesystems key"
-;;   [iniconfig section]
-;;   (map (partial make-single-filesystem-from-iniconfig iniconfig)
-;;        (inihelper/get-filesystems-from-iniconfig iniconfig section)))
 
 (defn- listdir-catch-access-denied
   "call listdir, catch access denied errors, log an error for them and
@@ -57,7 +48,7 @@
         (throw err)))))
 
 
-(defn make-safe-stat-entry
+(defn- make-safe-stat-entry
   [fs path]
   (fn [entry]
     (try
@@ -67,8 +58,12 @@
         {:relpath entry
          :error (str err)}))))
 
+(defn- listdir-and-stat*
+  [fs path]
+  (map (make-safe-stat-entry fs path)
+       (listdir-catch-access-denied fs path)))
 
-(defn apply-filters
+(defn- apply-filters
   "apply filesystem filters to list of entries"
   [{remove-filters :remove-filters :as fs} path entries]
   (reduce
@@ -77,11 +72,6 @@
    entries
    remove-filters))
 
-
-(defn cmd-listdir
+(defn listdir-and-stat
   [fs path]
-  (apply-filters
-   fs
-   path
-   (map (make-safe-stat-entry fs path)
-        (listdir-catch-access-denied fs path))))
+  (apply-filters fs path (listdir-and-stat* fs path)))
