@@ -22,16 +22,30 @@
    (partial inihelper/ensure-protocol Filesystem)
    inihelper/dynaload-section))
 
+(defn- match-entry?-seq-from-value
+  [system s]
+  (->> s
+       misc/trimmed-lines-from-string
+       (map (partial fsfilter/make-filter system))
+       (map fsfilter/make-match-entry?)))
+
+(defn- duration-from-string
+  [s]
+  (Integer. s))
+
+(defn make-additional-fs-map [system section-name]
+  {:remove-filters (match-entry?-seq-from-value
+                    system
+                    (get-in system [:iniconfig section-name "remove"]))
+   :sleep-between-sync (duration-from-string
+                        (get-in system [:iniconfig section-name "sleep-between-sync"] "3600"))
+   :fsid section-name})
+
 (defn make-filesystem
   [system section-name]
-  (let [fs (dynaload-filesystem system section-name)
-        remove (misc/trimmed-lines-from-string
-                (get-in system [:iniconfig section-name "remove"]))]
-    (assoc fs
-      :remove-filters (->> remove
-                           (map (partial fsfilter/make-filter system))
-                           (map fsfilter/make-match-entry?))
-      :fsid section-name)))
+  (merge
+   (dynaload-filesystem system section-name)
+   (make-additional-fs-map system section-name)))
 
 
 (defn- listdir-catch-access-denied
