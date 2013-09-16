@@ -15,12 +15,12 @@
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.vfs :as vfs])
-  (:require [brainbot.nozzle.extract :refer [wash convert]]))
+  (:require [brainbot.nozzle.tika :as tika]))
 
 
 (defn extract-content
   [local-file-path entry]
-  (if-let [converted (convert local-file-path)]
+  (if-let [converted (tika/parse local-file-path)]
     (assoc entry "tika-content" converted)
     entry))
 
