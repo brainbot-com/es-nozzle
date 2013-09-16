@@ -9,6 +9,7 @@
   {:rmq-settings (inihelper/rmq-settings-from-config iniconfig)
    :filesystems (misc/trimmed-lines-from-string
                  (get-in iniconfig [inihelper/main-section-name "filesystems"]))
+   :rmq-prefix (get-in iniconfig [inihelper/main-section-name "rmq-prefix"] inihelper/main-section-name)
    :es-url (or (get-in iniconfig [inihelper/main-section-name "es-url"]) "http://localhost:9200")})
 
 (defn make-system [iniconfig command-sections]

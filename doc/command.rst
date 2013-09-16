@@ -37,6 +37,11 @@ of filesystems to work on:
   `amqp-api-endpoint`. Use the same host as specified in amqp-url and
   use 55672 as port, like in
 
+`rmq-prefix`
+  `rmq-prefix` can be used to specify the first name component of
+  every object created in RabbitMQ. It can be used to separate
+  multiple nozzle instances inside the same RabbitMQ virtual host.
+
 .. code-block:: ini
 
     [nozzle]

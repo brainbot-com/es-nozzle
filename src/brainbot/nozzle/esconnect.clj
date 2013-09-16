@@ -231,7 +231,7 @@
    "import_file"      simple-import_file})
 
 (defn build-handle-connection
-  [fsmap num-workers]
+  [fsmap num-workers rmq-prefix]
   (fn [conn]
     (logging/info "initializing rabbitmq connection with" num-workers "workers")
     (doseq [_ (range num-workers)]
@@ -240,7 +240,7 @@
        (fn [ch]
          (doseq [fs (keys fsmap)
                  [command handle-msg] (seq command->msg-handler)]
-           (let [qname (mqhelper/initialize-rabbitmq-structures ch command "nextbot" fs)]
+           (let [qname (mqhelper/initialize-rabbitmq-structures ch command rmq-prefix fs)]
              ;; (lb/qos ch 1)
              (lcons/subscribe ch qname
                               (mqhelper/make-handler (partial handle-msg fs (get-in fsmap [fs :index])))))))))))
@@ -269,7 +269,7 @@
   (ensure-all-indexes-and-mappings fsmap))
 
 
-(defrecord ESConnectService [rmq-settings num-workers fsmap es-url thread-pool]
+(defrecord ESConnectService [rmq-settings rmq-prefix num-workers fsmap es-url thread-pool]
   worker/Service
   (start [this]
     (try-try-again {:tries :unlimited
@@ -279,7 +279,7 @@
 
     (mqhelper/connect-loop-with-thread-pool
      rmq-settings
-     (build-handle-connection fsmap num-workers)
+     (build-handle-connection fsmap num-workers rmq-prefix)
      thread-pool)))
 
 
@@ -290,11 +290,13 @@
     (make-object-from-section [this system section]
       (let [iniconfig (:iniconfig system)
             rmq-settings (-> system :config :rmq-settings)
+            rmq-prefix (-> system :config :rmq-prefix)
             num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
             filesystems (sys/get-filesystems-for-section system section)
             fsmap (make-standard-fsmap filesystems)
             es-url (-> system :config :es-url)]
         (->ESConnectService rmq-settings
+                            rmq-prefix
                             num-workers
                             fsmap
                             es-url

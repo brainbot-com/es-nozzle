@@ -95,11 +95,11 @@
                   :error-hook (fn [e] (logging/error "error in manage-filesystem" (:fsid fsextra) e))}
                  #(manage-filesystem* id fsextra)))
 
-(defrecord ManageService [rmq-settings filesystems]
+(defrecord ManageService [rmq-settings rmq-prefix filesystems]
   worker/Service
   (start [this]
     (doseq [fs filesystems]
-      (future (manage-filesystem "nextbot" fs)))))
+      (future (manage-filesystem rmq-prefix fs)))))
 
 (defn http-connect!
   [{:keys [api-endpoint username password]}]
@@ -112,7 +112,8 @@
     inihelper/IniConstructor
     (make-object-from-section [this system section-name]
       (let [rmq-settings (-> system :config :rmq-settings)
+            rmq-prefix (-> system :config :rmq-prefix)
             filesystem-names (sys/get-filesystems-for-section system section-name)
             filesystems (map #(vfs/make-additional-fs-map system %) filesystem-names)]
         (http-connect! rmq-settings)
-        (->ManageService rmq-settings filesystems)))))
+        (->ManageService rmq-settings rmq-prefix filesystems)))))

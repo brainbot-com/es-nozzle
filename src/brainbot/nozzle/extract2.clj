@@ -40,7 +40,7 @@
 
 
 (defn build-handle-connection
-  [filesystems]
+  [filesystems rmq-prefix]
   (fn [conn]
     (logging/info "initializing connection")
     (dotimes [n 5]
@@ -48,18 +48,18 @@
         (mqhelper/channel-loop
          conn
          (fn [ch]
-           (let [qname (mqhelper/initialize-rabbitmq-structures ch "extract_content" "nextbot" fsid)]
+           (let [qname (mqhelper/initialize-rabbitmq-structures ch "extract_content" rmq-prefix fsid)]
              (logging/info "starting consumer for" qname)
              ;; (lb/qos ch 1)
              (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs))))))))))
 
 
-(defrecord ExtractService [rmq-settings filesystems thread-pool]
+(defrecord ExtractService [rmq-settings rmq-prefix filesystems thread-pool]
   worker/Service
   (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
              rmq-settings
-             (build-handle-connection filesystems)
+             (build-handle-connection filesystems rmq-prefix)
              thread-pool))))
 
 (def runner
@@ -68,6 +68,7 @@
     inihelper/IniConstructor
     (make-object-from-section [this system section]
       (let [rmq-settings (-> system :config :rmq-settings)
+            rmq-prefix (-> system :config :rmq-prefix)
             filesystems (map (partial vfs/make-filesystem system)
                              (sys/get-filesystems-for-section system section))]
-        (->ExtractService rmq-settings filesystems (:thread-pool system))))))
+        (->ExtractService rmq-settings rmq-prefix filesystems (:thread-pool system))))))
