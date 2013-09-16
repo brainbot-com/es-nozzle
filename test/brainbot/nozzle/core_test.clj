@@ -17,7 +17,7 @@
 (deftest test-rmq-settings-from-config
   (testing "no amqp-url"
     (is (= (inihelper/rmq-settings-from-config {inihelper/main-section-name {}})
-           {:username "guest", :password "guest", :vhost "/", :host "localhost", :port 5672})))
+           {:api-endpoint "http://localhost:15672" :username "guest", :password "guest", :vhost "/", :host "localhost", :port 5672})))
   (testing "with amqp-url"
     (is (= (inihelper/rmq-settings-from-config {inihelper/main-section-name {"amqp-url" "amqp://foo.com/host"}})
-           {:host "foo.com", :port 5672, :vhost "host", :username "guest", :password "guest"}))))
+           {:api-endpoint "http://foo.com:15672" :host "foo.com", :port 5672, :vhost "host", :username "guest", :password "guest"}))))
