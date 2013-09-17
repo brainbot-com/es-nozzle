@@ -5,8 +5,7 @@
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
-            [brainbot.nozzle.sys :as sys]
-            [brainbot.nozzle.misc :as misc])
+            [brainbot.nozzle.sys :as sys])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
             [langohr.exchange  :as le]
@@ -18,36 +17,46 @@
 
 
 (defn entry-is-type-ok?
+  "return whether entry does not have :error attribute and has the given type"
   [type entry]
   (and
    (not (:error entry))
    (= (get-in entry [:stat :type]) type)))
 
-(def entry-is-directory-ok? (partial entry-is-type-ok? "directory"))
-(def entry-is-file-ok? (partial entry-is-type-ok? "file"))
+(def ^{:doc "entry does not have :error set and is a directory"}
+  entry-is-directory-ok? (partial entry-is-type-ok? "directory"))
+(def ^{:doc "entry does not have :error set and is a file"}
+  entry-is-file-ok? (partial entry-is-type-ok? "file"))
 
 
 (defn assoc-permissions-for-entry
+  "associate :permissions with entry"
   [fs directory {relpath :relpath :as entry}]
   (assoc entry "permissions"
          (vfs/get-permissions fs (vfs/join fs [directory relpath]))))
 
-
-(defn safe-assoc-permissions-for-file-entry
+(defn safe-assoc-permissions-for-entry
+  "associate :permissions with entry or :error if an exception
+  occurs. return nil on 'access denied exceptions'"
   [fs directory entry]
-  (if (entry-is-file-ok? entry)
-    (try
+  (try
       (assoc-permissions-for-entry fs directory entry)
       (catch Exception err
         (if (vfs/access-denied-exception? fs err)
           nil
           (assoc entry
-            :error (str err)))))
+            :error (str err))))))
+
+(defn safe-assoc-permissions-for-file-entry
+  "associate :permissions with entry passed in, or return entry
+  unchanged if it's not a file"
+  [fs directory entry]
+  (if (entry-is-file-ok? entry)
+    (safe-assoc-permissions-for-entry fs directory entry)
     entry))
 
-
-
 (defn get-permissions
+  "associate :permissions with each file entry in entries and return it"
   [fs directory entries]
   (remove nil?
           (map
@@ -113,4 +122,3 @@
             filesystems (map (fn [name] (vfs/make-filesystem system name))
                              (sys/get-filesystems-for-section system section))]
         (->FSWorkerService rmq-settings rmq-prefix filesystems (:thread-pool system))))))
-
