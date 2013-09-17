@@ -19,13 +19,18 @@
 (def ^:private no-follow-links
   (into-array [LinkOption/NOFOLLOW_LINKS]))
 
+(def ^:private empty-link-options
+  (into-array java.nio.file.LinkOption []))
+
 (defn- get-path
   [path & args]
   (Paths/get path (into-array String args)))
 
-(defn- read-attributes
-  [path]
-  (Files/readAttributes (get-path path) PosixFileAttributes no-follow-links))
+(let [klass (if is-windows BasicFileAttributes PosixFileAttributes)
+      link-options (if is-windows empty-link-options no-follow-links)]
+  (defn- read-attributes
+    [path]
+    (Files/readAttributes (get-path path) klass link-options)))
 
 (defn- type-from-attribute
   [attr]
