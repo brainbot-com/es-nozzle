@@ -4,13 +4,13 @@
 (defn map-from-routing-key-string
   "build map from routing key"
   [rk-string]
-  (zipmap [:id :command :filesystem] (string/split rk-string #"\.")))
+  (zipmap [:id :filesystem :command] (string/split rk-string #"\.")))
 
 
 (defn routing-key-string-from-map
   "build routing key string from map"
-  [m]
-  (string/join "." [(:id m) (:command m) (:filesystem m)]))
+  [{:keys [id command filesystem]}]
+  (string/join "." [id filesystem command]))
 
 
 (defn routing-key-string-with-command
