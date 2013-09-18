@@ -5,12 +5,34 @@
             [brainbot.nozzle.meta-runner :as meta-runner])
   (:import [java.util.concurrent Executors]))
 
-(defn- parse-main-section [iniconfig]
+(defn valid-name?
+  "check if s is a valid-name"
+  [s]
+  (boolean (re-matches #"^[-a-zA-Z0-9_]+$" s)))
+
+(defn- parse-main-section* [iniconfig]
   {:rmq-settings (inihelper/rmq-settings-from-config iniconfig)
    :filesystems (misc/trimmed-lines-from-string
                  (get-in iniconfig [inihelper/main-section-name "filesystems"]))
    :rmq-prefix (get-in iniconfig [inihelper/main-section-name "rmq-prefix"] inihelper/main-section-name)
    :es-url (or (get-in iniconfig [inihelper/main-section-name "es-url"]) "http://localhost:9200")})
+
+
+(defn- parse-main-section
+  [iniconfig]
+  (let [res (parse-main-section* iniconfig)
+        die (fn [msg]
+              (misc/die
+               (format "while parsing section %s in %s: %s"
+                       inihelper/main-section-name
+                       (-> iniconfig meta :source)
+                       msg)))]
+    (when-not (valid-name? (:rmq-prefix res))
+      (die (format "rmq-prefix value %s is not valid" (pr-str (:rmq-prefix res)))))
+    (doseq [fs (:filesystems res)]
+      (when-not (valid-name? fs)
+        (die (format "the filesystem name %s is not valid" (pr-str fs)))))
+    res))
 
 (defn make-system [iniconfig command-sections]
   {:iniconfig iniconfig
