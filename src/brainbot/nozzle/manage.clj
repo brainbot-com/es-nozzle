@@ -115,7 +115,7 @@
 
 (defn http-connect!
   [{:keys [api-endpoint username password]}]
-  (logging/info "using rabbitmq api-endpoint" api-endpoint)
+  (logging/info "using rabbitmq api-endpoint" api-endpoint "as user" username)
   (rmqapi/connect! api-endpoint username password))
 
 (def runner
