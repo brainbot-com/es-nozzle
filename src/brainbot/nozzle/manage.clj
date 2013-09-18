@@ -70,7 +70,7 @@
 (defn manage-filesystem*
   [rmq-settings id {:keys [fsid sleep-between-sync]}]
   (let [qname (rk/routing-key-string-from-map {:id id :filesystem fsid :command "*"})
-        get-num-messages* #(get-num-messages "/" id fsid)
+        get-num-messages* #(get-num-messages (:vhost rmq-settings) id fsid)
         wait-idle #(wait-for-zero-messages get-num-messages*)]
     (logging/debug "waiting for" qname "to become idle")
     (wait-idle)
