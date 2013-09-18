@@ -57,12 +57,30 @@
     (rmq/close ch)
     (rmq/close conn)))
 
+(defn throw-management-api-error []
+  "throw a somewhat informative message about missing management rights"
+  (throw
+   (ex-info
+    "no response from RabbitMQ's management API. make sure you have added the management tag for the user in RabbitMQ"
+    {:endpoint rmqapi/*endpoint*
+     :username rmqapi/*username*})))
+
+(defn list-queues
+  "wrapper around langohr's http/list-queues. this one raises an error
+  instead of returning nil when the user has no management rights for
+  the RabbitMQ management plugin"
+  [& args]
+  (let [qs (apply rmqapi/list-queues args)]
+    (when-not qs
+      (throw-management-api-error))
+    qs))
+
 (defn get-num-messages
   "return number of messages in the given rabbitmq vhost for the given
   filesystem and id/prefix"
   [vhost id filesystem]
   (num-messages-from-queue-state
-   (rmqapi/list-queues)
+   (list-queues vhost)
    vhost
    {:id id
     :filesystem filesystem}))
