@@ -57,17 +57,21 @@
     (rmq/close ch)
     (rmq/close conn)))
 
+(defn get-num-messages
+  "return number of messages in the given rabbitmq vhost for the given
+  filesystem and id/prefix"
+  [vhost id filesystem]
+  (num-messages-from-queue-state
+   (rmqapi/list-queues)
+   vhost
+   {:id id
+    :filesystem filesystem}))
 
 (defn manage-filesystem*
   [rmq-settings id {:keys [fsid sleep-between-sync]}]
   (let [qname (rk/routing-key-string-from-map {:id id :filesystem fsid :command "*"})
-        get-num-messages (fn []
-                           (num-messages-from-queue-state
-                            (rmqapi/list-queues)
-                            "/"
-                            {:id id
-                             :filesystem fsid}))
-        wait-idle (partial wait-for-zero-messages get-num-messages)]
+        get-num-messages* #(get-num-messages "/" id fsid)
+        wait-idle #(wait-for-zero-messages get-num-messages*)]
     (logging/debug "waiting for" qname "to become idle")
     (wait-idle)
     (while true
