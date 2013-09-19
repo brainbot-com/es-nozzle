@@ -9,3 +9,21 @@
     (if (< 0 idx)
       (string/lower-case (subs s idx))
       "")))
+
+(defn- collapse-consecutive-slash
+  [s]
+  (string/replace s #"/+" "/"))
+
+(defn- trim-slash
+  [s]
+  (string/replace s #"^/+|/+$" ""))
+
+
+(defn normalize-path
+  [path]
+  (let [tmp (-> path
+              collapse-consecutive-slash
+              trim-slash)]
+    (if (= "" tmp)
+      "/"
+      tmp)))

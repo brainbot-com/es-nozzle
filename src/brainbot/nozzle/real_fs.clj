@@ -10,6 +10,7 @@
   (:require brainbot.nozzle.dynaload)
   (:require [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.vfs :as vfs]
+            [brainbot.nozzle.path :refer [normalize-path]]
             [brainbot.nozzle.inihelper :as inihelper]))
 
 
@@ -98,25 +99,6 @@
 (defn- posix-acl-from-path
   [path]
   (acl-from-attribute (read-attributes path)))
-
-(defn- collapse-consecutive-slash
-  [s]
-  (string/replace s #"/+" "/"))
-
-(defn- trim-slash
-  [s]
-  (string/replace s #"^/+|/+$" ""))
-
-
-(defn- normalize-path
-  [path]
-  (let [tmp (-> path
-              collapse-consecutive-slash
-              trim-slash)]
-    (if (= "" tmp)
-      "/"
-      tmp)))
-
 
 (defrecord RealFilesystem [root]
   vfs/Filesystem

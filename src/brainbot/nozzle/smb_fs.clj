@@ -4,6 +4,7 @@
   (:require [brainbot.nozzle.extract :refer [convert]])
   (:require [brainbot.nozzle.vfs :as vfs]
             [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.path :refer [normalize-path]]
             [brainbot.nozzle.misc :as misc])
   (:import [jcifs.smb SmbException SmbFile NtlmPasswordAuthentication SID ACE]))
 
@@ -83,7 +84,7 @@
         common-result)))
 
   (join [fs parts]
-    (string/join "/" parts))
+    (normalize-path (string/join "/" parts)))
 
   (listdir [fs dir]
     (seq (.list (smb-file-for-entry fs (misc/ensure-endswith-slash dir))))))
