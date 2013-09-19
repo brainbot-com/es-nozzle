@@ -1,6 +1,10 @@
 Declaring filesystems
 =========================
-In this section we'll learn how to declare filesystems.
+
+In this section we'll learn how to declare filesystems. Each
+filesystem is declared in a ini file section. The section name is used
+as filesystem identifier, which must be a non-empty sequence of the
+characters a-z, A-Z, 0-9, _ and -.
 
 `type=file`
 --------------------

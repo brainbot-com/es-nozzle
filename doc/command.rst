@@ -46,7 +46,9 @@ of filesystems to work on:
   `rmq-prefix` can be used to specify the first name component of
   every object created in RabbitMQ. It can be used to separate
   multiple nozzle instances inside the same RabbitMQ virtual host.
-  The default value is `nozzle`.
+  The default value is `nozzle`. `rmq-prefix` must be a non-empty
+  sequence of the characters a-z, A-Z, 0-9, _ and -.
+
 
 `es-url`
   `es-url` can be used to specify the HTTP location of one
