@@ -40,6 +40,9 @@
 
 (defrecord SmbFilesystem [root auth]
   vfs/Filesystem
+  (access-denied-exception? [fs err]
+    false) ; XXX
+
   (extract-content [fs entry]
     (let [smb-file (smb-file-for-entry fs entry)]
       (with-open [in (.getInputStream smb-file)]
