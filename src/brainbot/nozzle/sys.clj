@@ -58,7 +58,7 @@
     (validate-main-section res die)
     res))
 
-(defn make-system [iniconfig command-sections]
+(defn make-system
   "create a system map. the system map is where we store our
   configuration data and some state. the system map contains the followings keys:
 
@@ -68,6 +68,7 @@
   :thread-pool the thread pool which should be used by workers
   :name->obj an atom, mapping section names as specified in the ini
              config to the objects which we created."
+  [iniconfig command-sections]
   {:iniconfig iniconfig
    :command-sections command-sections
    :config (parse-main-section iniconfig)
