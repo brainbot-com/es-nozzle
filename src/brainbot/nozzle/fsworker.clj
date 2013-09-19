@@ -79,7 +79,7 @@
                  {:directory path
                   :entries (vfs/listdir-and-stat fs path)}
                  (catch Exception err
-                   (logging/error "error in listdir" err)
+                   (logging/error "error in listdir" {:path path, :fsid (:fsid fs), :error err})
                    nil))]
     (publish "get_permissions" arg)))
 
