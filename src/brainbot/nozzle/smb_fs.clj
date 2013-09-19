@@ -5,7 +5,7 @@
   (:require [brainbot.nozzle.vfs :as vfs]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.misc :as misc])
-  (:import [jcifs.smb SmbFile NtlmPasswordAuthentication SID ACE]))
+  (:import [jcifs.smb SmbException SmbFile NtlmPasswordAuthentication SID ACE]))
 
 (def ^:private group-like-types
   #{SID/SID_TYPE_ALIAS SID/SID_TYPE_DOM_GRP SID/SID_TYPE_WKN_GRP})
@@ -37,11 +37,22 @@
       {:allow is-allow,
        :sid (convert-sid sid)})))
 
+; depending on the rights set on our samba server I get "no such file"
+; errors when the samba user does not have permissions to list a
+; directory
+(let [access-denied-error-codes #{SmbException/NT_STATUS_NO_SUCH_FILE
+                                  SmbException/NT_STATUS_ACCESS_DENIED}]
+  (defn access-denied-exception*?
+    [err]
+    (and (instance? SmbException err)
+         (contains? access-denied-error-codes (.getNtStatus err)))))
+
+;; (access-denied-exception*? (SmbException. SmbException/NT_STATUS_NO_SUCH_FILE false))
 
 (defrecord SmbFilesystem [root auth]
   vfs/Filesystem
   (access-denied-exception? [fs err]
-    false) ; XXX
+    (access-denied-exception*? err))
 
   (extract-content [fs entry]
     (let [smb-file (smb-file-for-entry fs entry)]
