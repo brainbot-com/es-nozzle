@@ -9,9 +9,10 @@ Please visit http://brainbot.com/es-nozzle/doc/ for detailed documentation.
 
 The es-nozzle source code is hosted on github: https://github.com/brainbot-com/es-nozzle
 
-es-nozzle is written in clojure and uses leiningen as its build
-system. In order to build from source, install leiningen and run `lein
-uberjar`. Prebuilt jar files are available from http://brainbot.com/es-nozzle/download/
+es-nozzle is written in clojure and uses [leiningen](http://leiningen.org)
+as its build system. In order to build from source, install leiningen
+and run `lein uberjar`. Prebuilt jar files are available from
+http://brainbot.com/es-nozzle/download/
 
 ## License
 
