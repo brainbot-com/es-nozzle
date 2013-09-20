@@ -52,7 +52,7 @@ First, please download the `es-nozzle executable jar archive`_ and put it
 somewhere on your disk. If you have the java executable on your PATH,
 you should be able to show es-nozzle's help message by running::
 
-    java -jar /path/to/es-nozzle-0.2.0-SNAPSHOT-standalone.jar --help
+    java -jar /path/to/es-nozzle-0.3.0-SNAPSHOT-standalone.jar --help
 
 Please make sure that you are using at least java 7, otherwise es-nozzle
 will fail with an error message similar to the following message::
@@ -83,7 +83,7 @@ Start es-nozzle
 --------------------------
 es-nozzle can now be started by running the following command::
 
-    java -jar /path/to/es-nozzle-0.2.0-SNAPSHOT-standalone.jar --iniconfig /path/to/es-nozzle.ini all
+    java -jar /path/to/es-nozzle-0.3.0-SNAPSHOT-standalone.jar --iniconfig /path/to/es-nozzle.ini all
 
 
 .. _es-nozzle executable jar archive: http://brainbot.com/es-nozzle/download/
