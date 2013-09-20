@@ -5,6 +5,6 @@
 
 (def iniconfig
   (inihelper/read-ini-with-defaults
-   (format "%s/doc/nozzle.ini" (System/getProperty "user.dir"))))
+   (format "%s/doc/es-nozzle.ini" (System/getProperty "user.dir"))))
 
 (def system (sys/make-system iniconfig []))
