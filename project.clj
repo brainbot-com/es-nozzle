@@ -35,7 +35,7 @@
                     "-Dcom.sun.management.jmxremote.local.only=false"
                     "-Dcom.sun.management.jmxremote.authenticate=false"
                     "-Dcom.sun.management.jmxremote.ssl=false"]}}
-  :aliases {"nozzle" ["with-profile" "repl" "run" "--iniconfig" "doc/nozzle.ini"]}
+  :aliases {"nozzle" ["with-profile" "repl" "run" "--iniconfig" "doc/es-nozzle.ini"]}
   :repositories [["brainbot" "http://brainbot.com/mvn/releases/"]
                  ["brainbot-snapshots" "http://brainbot.com/mvn/snapshots/"]]
   :omit-source true
