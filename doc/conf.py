@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# nozzle documentation build configuration file, created by
+# es-nozzle documentation build configuration file, created by
 # sphinx-quickstart on Thu Aug 22 18:35:45 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'nozzle'
+project = u'es-nozzle'
 copyright = u'2013, brainbot technologies AG'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -183,7 +183,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'nozzle.tex', u'nozzle Documentation',
+  ('index', 'es-nozzle.tex', u'es-nozzle Documentation',
    u'brainbot technologies AG', 'manual'),
 ]
 
@@ -213,7 +213,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'nozzle', u'nozzle Documentation',
+    ('index', 'es-nozzle', u'es-nozzle Documentation',
      [u'brainbot technologies AG'], 1)
 ]
 
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'nozzle', u'nozzle Documentation',
-   u'brainbot technologies AG', 'nozzle', 'One line description of project.',
+  ('index', 'es-nozzle', u'es-nozzle Documentation',
+   u'brainbot technologies AG', 'es-nozzle', 'One line description of project.',
    'Miscellaneous'),
 ]
 

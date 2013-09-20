@@ -1,12 +1,12 @@
 Overview
 ==========================
-nozzle recursively synchronizes directories into an Elasticsearch_
-cluster. nozzle is scalable and fault tolerant.
+es-nozzle recursively synchronizes directories into an Elasticsearch_
+cluster. es-nozzle is scalable and fault tolerant.
 
 Dependencies
 ==========================
-nozzle needs a running RabbitMQ_ instance. nozzle has been
-tested with RabbitMQ version 2.8.7 and 3.0.1. nozzle works with
+es-nozzle needs a running RabbitMQ_ instance. es-nozzle has been
+tested with RabbitMQ version 2.8.7 and 3.0.1. es-nozzle works with
 elasticsearch version 0.90 and up.
 
 Java_ JDK 7 or JRE 7 must be installed.

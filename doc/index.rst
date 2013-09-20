@@ -1,10 +1,10 @@
-.. nozzle documentation master file, created by
+.. es-nozzle documentation master file, created by
    sphinx-quickstart on Thu Aug 22 18:35:45 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to nozzle's documentation!
-==================================
+Welcome to es-nozzle's documentation!
+=====================================
 
 Contents:
 

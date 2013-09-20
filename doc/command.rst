@@ -1,19 +1,19 @@
-nozzle configuration file
-==========================
-As we have seen in the previous section, nozzle is invoked with a
+es-nozzle configuration file
+============================
+As we have seen in the previous section, es-nozzle is invoked with a
 command line, that looks like::
 
-    java -jar /path/to/nozzle-0.2.0-SNAPSHOT-standalone.jar --iniconfig INIPATH [INISECTION ...]
+    java -jar /path/to/es-nozzle-0.2.0-SNAPSHOT-standalone.jar --iniconfig INIPATH [INISECTION ...]
 
-nozzle will read the ini file specified with the --iniconfig
+es-nozzle will read the ini file specified with the --iniconfig
 arguments, and will start to work on the ini sections given as
 additional command line arguments. You may now remark that there was
-no `[all]` section inside the shown config file. That's because nozzle
+no `[all]` section inside the shown config file. That's because es-nozzle
 predefines some sections. Read on for more details.
 
 The main section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The main section is called `nozzle` and is used to specify how to
+The main section is called `es-nozzle` and is used to specify how to
 connect to RabbitMQ and Elasticsearch. It also contains a default list
 of filesystems to work on:
 
@@ -39,14 +39,14 @@ of filesystems to work on:
 
 .. code-block:: ini
 
-    [nozzle]
+    [es-nozzle]
     amqp-api-endpoint = http://localhost:55672
 
 `rmq-prefix`
   `rmq-prefix` can be used to specify the first name component of
   every object created in RabbitMQ. It can be used to separate
-  multiple nozzle instances inside the same RabbitMQ virtual host.
-  The default value is `nozzle`. `rmq-prefix` must be a non-empty
+  multiple es-nozzle instances inside the same RabbitMQ virtual host.
+  The default value is `es-nozzle`. `rmq-prefix` must be a non-empty
   sequence of the characters a-z, A-Z, 0-9, _ and -.
 
 
@@ -63,7 +63,7 @@ of filesystems to work on:
 
 Worker sections
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Each section that nozzle should work on must have a `type` key. We'll
+Each section that es-nozzle should work on must have a `type` key. We'll
 describe the possible values for `type` in this section.
 
 `type=meta`
@@ -71,7 +71,7 @@ describe the possible values for `type` in this section.
 meta sections are used to start a set of other work sections defined
 in the `sections` key.
 
-nozzle predefines the following `[all]` section:
+es-nozzle predefines the following `[all]` section:
 
 .. code-block:: ini
 
@@ -83,7 +83,7 @@ nozzle predefines the following `[all]` section:
 	fsworker
 	esconnect
 
-Instead of calling nozzle with the `all` argument we could have also
+Instead of calling es-nozzle with the `all` argument we could have also
 called it with `extract manage fsworker esconnect` arguments.
 
 `type=manage`
@@ -98,7 +98,7 @@ Example:
 
 .. code-block:: ini
 
-    [nozzle]
+    [es-nozzle]
     filesystems =
 	fs1
 	fs2
@@ -110,7 +110,7 @@ Example:
     type = manage
     filesystems = fs1
 
-nozzle predefines the following `[manage]` section:
+es-nozzle predefines the following `[manage]` section:
 
 .. code-block: ini
 
@@ -132,7 +132,7 @@ Example:
     type = extract
     filesystems = fs1
 
-nozzle predefines the following `[extract]` section:
+es-nozzle predefines the following `[extract]` section:
 
 .. code-block:: ini
 
@@ -158,7 +158,7 @@ Example:
     filesystems = fs1
 
 
-nozzle predefines the following `[fsworker]` section:
+es-nozzle predefines the following `[fsworker]` section:
 
 .. code-block:: ini
 
@@ -183,7 +183,7 @@ Example:
     type = esconnect
     num_workers = 5
 
-nozzle predefines the following `[esconnect]` section:
+es-nozzle predefines the following `[esconnect]` section:
 
 .. code-block:: ini
 

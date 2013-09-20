@@ -4,7 +4,7 @@
   (:require [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.misc :as misc]))
 
-(def main-section-name "nozzle")
+(def main-section-name "es-nozzle")
 
 (defn get-filesystems-from-iniconfig
   [iniconfig section]

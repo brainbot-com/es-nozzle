@@ -36,7 +36,7 @@ whose name starts with a dot '.'.
 --------------------
 The `smbfs` filesystem is used to recursively synchronize a single
 directory from a windows file server. The share does not have to be
-mounted on the local machine. Instead nozzle will use the `jcifs`
+mounted on the local machine. Instead es-nozzle will use the `jcifs`
 library to connect with the windows file server.
 
 Example:
