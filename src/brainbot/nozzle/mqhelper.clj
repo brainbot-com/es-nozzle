@@ -104,9 +104,9 @@
   'filesystem' submitted on 'exchange-name"
   [ch command exchange-name filesystem]
   (le/declare ch exchange-name "topic")
-  (let [queue-name (rk/routing-key-string-from-map {:id exchange-name
-                                                    :command command
-                                                    :filesystem filesystem})]
+  (let [queue-name (rk/routing-key-string {:id exchange-name
+                                           :command command
+                                           :filesystem filesystem})]
     (let [queue-state (lq/declare ch queue-name :auto-delete false)]
       (logging/debug "declared queue" (select-keys queue-state [:queue :consumer-count :message-count])))
     (lq/bind ch queue-name exchange-name :routing-key queue-name)

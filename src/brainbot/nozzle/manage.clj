@@ -52,7 +52,7 @@
     (mqhelper/initialize-rabbitmq-structures
      ch "listdir" id filesystem)
     (lb/publish ch id
-                (rk/routing-key-string-from-map {:id id :filesystem filesystem :command "listdir"})
+                (rk/routing-key-string {:id id :filesystem filesystem :command "listdir"})
                 (json/write-str {:path "/"}))
     (rmq/close ch)
     (rmq/close conn)))
@@ -87,7 +87,7 @@
 
 (defn manage-filesystem*
   [rmq-settings id {:keys [fsid sleep-between-sync]}]
-  (let [qname (rk/routing-key-string-from-map {:id id :filesystem fsid :command "*"})
+  (let [qname (rk/routing-key-string {:id id :filesystem fsid :command "*"})
         get-num-messages* #(get-num-messages (:vhost rmq-settings) id fsid)
         wait-idle #(wait-for-zero-messages get-num-messages*)]
     (logging/debug "waiting for" qname "to become idle")
