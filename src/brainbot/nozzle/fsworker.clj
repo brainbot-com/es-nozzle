@@ -5,6 +5,7 @@
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]
+            [brainbot.nozzle.routing-key :as rk]
             [brainbot.nozzle.sys :as sys])
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
@@ -88,17 +89,27 @@
   {"listdir" simple-listdir
    "get_permissions" simple-get_permissions})
 
+(let [all-commands ["listdir" "get_permissions" "update_directory" "import_file" "extract_content"]]
+  (defn- init-all-rmq-structures
+    "create all needed rabbitmq structures for the given filesystems"
+    [ch rmq-prefix filesystems]
+    (doseq [fs filesystems
+            c all-commands]
+      (mqhelper/initialize-rabbitmq-structures ch c rmq-prefix fs))))
 
 (defn build-handle-connection
   [filesystems rmq-prefix]
   (fn [conn]
     (logging/info "initializing connection")
+    (let [ch (lch/open conn)]
+      (init-all-rmq-structures ch rmq-prefix (map :fsid filesystems))
+      (lch/close ch))
     (doseq [{:keys [fsid] :as fs} filesystems
             [command handle-msg] (seq command->msg-handler)]
       (mqhelper/channel-loop
        conn
        (fn [ch]
-         (let [qname (mqhelper/initialize-rabbitmq-structures ch command rmq-prefix fsid)]
+         (let [qname (rk/routing-key-string rmq-prefix fsid command)]
            (logging/info "starting consumer for" qname)
            (lb/qos ch 1)
            (lcons/subscribe ch qname (mqhelper/make-handler (partial handle-msg fs)))))))))
