@@ -40,26 +40,25 @@
 
 
 (defn build-handle-connection
-  [filesystems rmq-prefix]
+  [filesystems rmq-prefix num-workers]
   (fn [conn]
-    (logging/info "initializing connection")
-    (dotimes [n 5]
+    (logging/info "initializing connection with" num-workers "workers")
+    (dotimes [n num-workers]
       (doseq [{:keys [fsid] :as fs} filesystems]
         (mqhelper/channel-loop
          conn
          (fn [ch]
            (let [qname (mqhelper/initialize-rabbitmq-structures ch "extract_content" rmq-prefix fsid)]
-             (logging/info "starting consumer for" qname)
              ;; (lb/qos ch 1)
              (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs))))))))))
 
 
-(defrecord ExtractService [rmq-settings rmq-prefix filesystems thread-pool]
+(defrecord ExtractService [rmq-settings rmq-prefix filesystems num-workers thread-pool]
   worker/Service
   (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
              rmq-settings
-             (build-handle-connection filesystems rmq-prefix)
+             (build-handle-connection filesystems rmq-prefix num-workers)
              thread-pool))))
 
 (def runner
@@ -69,6 +68,7 @@
     (make-object-from-section [this system section]
       (let [rmq-settings (-> system :config :rmq-settings)
             rmq-prefix (-> system :config :rmq-prefix)
+             num-workers (Integer. (get-in system [:iniconfig section "num-workers"] "10"))
             filesystems (map (partial vfs/make-filesystem system)
                              (sys/get-filesystems-for-section system section))]
-        (->ExtractService rmq-settings rmq-prefix filesystems (:thread-pool system))))))
+        (->ExtractService rmq-settings rmq-prefix filesystems num-workers (:thread-pool system))))))
