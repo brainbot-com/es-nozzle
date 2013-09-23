@@ -39,5 +39,6 @@
   :repositories [["brainbot" "http://brainbot.com/mvn/releases/"]
                  ["brainbot-snapshots" "http://brainbot.com/mvn/snapshots/"]]
   :omit-source true
+  :uberjar-name "es-nozzle.jar"
   ;; :jvm-opts ["-Xmx64m" "-server"]
   :main brainbot.nozzle.main)
