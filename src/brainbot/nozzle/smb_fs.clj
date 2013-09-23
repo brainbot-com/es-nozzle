@@ -58,7 +58,7 @@
   (extract-content [fs entry]
     (let [smb-file (smb-file-for-entry fs entry)]
       (with-open [in (.getInputStream smb-file)]
-        {:tika-content (tika/parse in)})))
+        {:tika-content (tika/parse in (:extract-text-size fs))})))
 
 
   (get-permissions [fs entry]

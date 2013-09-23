@@ -104,7 +104,7 @@
   vfs/Filesystem
   (extract-content [fs entry]
     (let [fp (string/join "/" [root entry])]
-      {:tika-content (tika/parse fp)}))
+      {:tika-content (tika/parse fp (:extract-text-size fs))}))
 
   (access-denied-exception? [fs err]
     (instance? AccessDeniedException err))

@@ -33,12 +33,18 @@
   [s]
   (Integer. s))
 
+(defn- size-from-string
+  [s]
+  (Integer. s))
+
 (defn make-additional-fs-map [system section-name]
   {:remove-filters (match-entry?-seq-from-value
                     system
                     (get-in system [:iniconfig section-name "remove"]))
    :sleep-between-sync (duration-from-string
                         (get-in system [:iniconfig section-name "sleep-between-sync"] "3600"))
+   :extract-text-size (size-from-string
+                       (get-in system [:iniconfig section-name "extract-text-size"] "100000"))
    :fsid section-name})
 
 (defn make-filesystem
