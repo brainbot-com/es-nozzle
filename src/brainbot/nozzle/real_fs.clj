@@ -6,10 +6,10 @@
            [java.nio.file Files Path LinkOption Paths AccessDeniedException]
 
            [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
-  (:require [brainbot.nozzle.extract :refer [convert]])
   (:require brainbot.nozzle.dynaload)
   (:require [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.vfs :as vfs]
+            [brainbot.nozzle.tika :as tika]
             [brainbot.nozzle.path :refer [normalize-path]]
             [brainbot.nozzle.inihelper :as inihelper]))
 
@@ -104,7 +104,7 @@
   vfs/Filesystem
   (extract-content [fs entry]
     (let [fp (string/join "/" [root entry])]
-      {:tika-content (convert fp)}))
+      {:tika-content (tika/parse fp)}))
 
   (access-denied-exception? [fs err]
     (instance? AccessDeniedException err))
