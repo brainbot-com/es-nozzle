@@ -2,7 +2,7 @@ version=$(shell git describe --tags)
 distname=es-nozzle-$(version)
 dist = dist/$(distname)
 
-.PHONY: uberjar dist cpfiles doc tgz
+.PHONY: uberjar dist cpfiles doc tgz clean
 
 
 dist: uberjar doc cpfiles zip
@@ -30,3 +30,7 @@ doc:
 
 uberjar:
 	lein uberjar
+
+clean:
+	rm -rf dist/es-nozzle-*
+	lein clean
