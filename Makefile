@@ -15,6 +15,7 @@ zip:
 
 cpfiles:
 	@echo "=====> building es-nozzle $(version)"
+	rm -rf $(dist)
 	mkdir -p $(dist)/bin $(dist)/lib
 	echo es-nozzle-$(version) >$(dist)/VERSION.txt
 	cp -p NOTICE.txt LICENSE.txt README.md $(dist)
