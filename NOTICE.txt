@@ -46,3 +46,31 @@ Released under the MIT License: https://github.com/clj-time/clj-time/blob/master
 
 
 -------------
+This product includes clj-iniconfig, which is distributed with the
+following notice:
+
+Copyright © 2013 brainbot technologies AG
+
+Distributed under the Eclipse Public License, the same as Clojure.
+
+-------------
+This product includes clj-nio2
+(https://github.com/juergenhoetzel/clj-nio2), which is distributed under the Eclipse Public License.
+
+-------------
+This product includes robert/bruce, which is distributed with the
+following notice:
+
+Copyright (C) 2011 Joe Gallo
+
+Distributed under the Eclipse Public License, the same as Clojure.
+
+
+-------------
+This product includes versioneer
+(https://github.com/trptcolin/versioneer/), which is distributed with
+the following notice:
+
+Copyright © 2012 Colin Jones
+
+Distributed under the Eclipse Public License, the same as Clojure.
