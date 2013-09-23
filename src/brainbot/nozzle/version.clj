@@ -22,4 +22,4 @@
 
 (defn nozzle-version
   []
-  (enhanced-version "com.brainbot" "nozzle"))
+  (enhanced-version "com.brainbot" "es-nozzle"))
