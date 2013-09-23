@@ -1,0 +1,48 @@
+es-nozzle
+Copyright 2013 brainbot technologies AG
+Distributed under the Apache License, Version 2.0
+
+-------------
+This product includes elastisch, which is distributed with the
+following notice:
+
+## License
+
+Copyright (C) 2011-2013 Alex Petrov, Michael S. Klishin
+
+Distributed under the Eclipse Public License, the same as Clojure.
+-------------
+
+This product includes langohr, which is distributed with the following
+notice:
+
+Copyright (C) 2011-2013 Michael S. Klishin
+
+Double licensed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html) (the same as Clojure) or
+the [Apache Public License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+
+-------------
+
+This product includes the jcifs library (http://jcifs.samba.org/),
+which is Licensed Under the LGPL (http://www.gnu.org/licenses/lgpl-2.1.txt)
+
+-------------
+This product includes clojure, which is distributed with the following
+notice:
+
+ *   Copyright (c) Rich Hickey. All rights reserved.
+ *   The use and distribution terms for this software are covered by the
+ *   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+ *   which can be found in the file epl-v10.html at the root of this distribution.
+ *   By using this software in any fashion, you are agreeing to be bound by
+ *	 the terms of this license.
+ *   You must not remove this notice, or any other, from this software.
+
+-------------
+This product includes clj-time (https://github.com/clj-time), which is
+distributed with the following notice:
+
+Released under the MIT License: https://github.com/clj-time/clj-time/blob/master/MIT-LICENSE.txt
+
+
+-------------
