@@ -22,3 +22,4 @@ pom.xml.asc
 .DS_Store
 .[#]*
 /.idea/
+/dist/
