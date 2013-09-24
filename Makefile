@@ -19,9 +19,9 @@ cpfiles:
 	mkdir -p $(dist)/bin $(dist)/lib
 	echo es-nozzle-$(version) >$(dist)/VERSION.txt
 	cp -p NOTICE.txt LICENSE.txt README.md $(dist)
+	cp -p doc/es-nozzle.ini $(dist)/example-configuration.ini
 	rsync -aHP doc/_build/html/ $(dist)/doc/
 	rsync -aHP target/es-nozzle.jar $(dist)/lib/es-nozzle.jar
-	# sed -e s/@VERSION@/$(version)/ es-nozzle.in >$(dist)/bin/es-nozzle
 	cp -p dist/es-nozzle.bat dist/es-nozzle $(dist)/bin/
 	chmod 755 $(dist)/bin/es-nozzle
 
