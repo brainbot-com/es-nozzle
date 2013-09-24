@@ -92,18 +92,21 @@
               :fields ["parent" "lastmodified"]
               :filter {:term {:parent parent}}))
 
+
 (let [estype->type {"dir" "directory"
                     "doc" "file"}]
-  (defn enrich-es-entries
-    [parent entries]
-    (let [convert-entry (fn [{:keys [_type _id fields]}]
-                          {:id _id
-                           :type (estype->type _type)
-                           :mtime (lastmodified->mtime (:lastmodified fields))})]
-      (loop [entries entries]
-        (if (map? entries)
-          (recur (:hits entries))
-          (map convert-entry entries))))))
+  (defn- convert-es-entry
+    [{:keys [_type _id fields]}]
+    {:id _id
+     :type (estype->type _type)
+     :mtime (-> fields :lastmodified lastmodified->mtime)}))
+
+(defn enrich-es-entries
+  [entries]
+  (loop [entries entries]
+    (if (map? entries)
+      (recur (:hits entries))
+      (map convert-es-entry entries))))
 
 
 (defn es-recursive-delete
@@ -215,7 +218,7 @@
   [fs es-index {:keys [directory entries] :as body} {publish :publish}]
   ;; (logging/info "simple-update" directory)
   (let [parent-id (make-id "" directory)
-        es-entries (enrich-es-entries parent-id (es-listdir es-index parent-id))
+        es-entries (enrich-es-entries (es-listdir es-index parent-id))
         mq-entries (enrich-mq-entries directory entries)
         diff (compare-directories mq-entries es-entries)]
     (apply-diff-to-elasticsearch diff es-index parent-id)
