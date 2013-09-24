@@ -174,10 +174,10 @@
                     "doc" "file"}]
   (defn enrich-es-entries
     [parent entries]
-    (let [convert-entry (fn [{:keys [_type _id fields]}]
+    (let [convert-entry (fn [{:keys [_type _id fields _fields]}]
                           {:id _id
                            :type (estype->type _type)
-                           :mtime (lastmodified->mtime (:lastmodified fields))})]
+                           :mtime (lastmodified->mtime (:lastmodified (or fields _fields)))})]
       (loop [entries entries]
         (if (map? entries)
           (recur (:hits entries))
