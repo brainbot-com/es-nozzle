@@ -13,9 +13,11 @@ else
     JAVA=$(which java)
 fi
 
+: ${ES_NOZZLE_JAVA_OPTS=-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -XX:+HeapDumpOnOutOfMemoryError}
+
 if [ ! -x "$JAVA" ]; then
     echo "Could not find any executable java binary. Please install java in your PATH or set JAVA_HOME"
     exit 1
 fi
 
-exec $JAVA -jar $nhome/lib/es-nozzle.jar "$@"
+exec $JAVA $JAVA_OPTS $ES_NOZZLE_JAVA_OPTS -jar $nhome/lib/es-nozzle.jar "$@"
