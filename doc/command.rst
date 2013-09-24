@@ -50,9 +50,19 @@ of filesystems to work on:
   sequence of the characters a-z, A-Z, 0-9, _ and -.
 
 
+`es-connection-type`
+  `es-connection-type` can be set to specify the type of connection
+  to elasticsearch. Possible values are `native` and `rest`. The
+  default is `rest`.
+
 `es-url`
   `es-url` can be used to specify the HTTP location of one
-  elasticsearch node. The default is to use http://localhost:9200
+  elasticsearch node for `rest`-connections. 
+  The default is to use http://localhost:9200
+
+`es-clustername`
+  `es-clustername` must be set, when you intend to use the `native`
+  client mode. Can be ommited when `es-connection-type` = `rest`.
 
 
 `filesystems`
