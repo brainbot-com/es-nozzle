@@ -1,0 +1,34 @@
+#! /usr/bin/env bash
+
+
+CDPATH=""
+
+SCRIPT=$BASH_SOURCE
+# resolve symlinks to the script itself portably
+while [ -h "$SCRIPT" ] ; do
+    ls=`ls -ld "$SCRIPT"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+	SCRIPT="$link"
+    else
+	SCRIPT="$(dirname "$SCRIPT"$)/$link"
+    fi
+done
+
+nhome=`dirname "$SCRIPT"`/..
+
+
+if [ -x "$JAVA_HOME/bin/java" ]; then
+    JAVA="$JAVA_HOME/bin/java"
+else
+    JAVA=$(which java)
+fi
+
+: ${ES_NOZZLE_JAVA_OPTS=-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -XX:+HeapDumpOnOutOfMemoryError}
+
+if [ ! -x "$JAVA" ]; then
+    echo "Could not find any executable java binary. Please install java in your PATH or set JAVA_HOME"
+    exit 1
+fi
+
+exec $JAVA $JAVA_OPTS $ES_NOZZLE_JAVA_OPTS -jar $nhome/lib/es-nozzle.jar "$@"

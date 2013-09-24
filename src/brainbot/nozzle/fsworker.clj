@@ -98,29 +98,30 @@
       (mqhelper/initialize-rabbitmq-structures ch c rmq-prefix fs))))
 
 (defn build-handle-connection
-  [filesystems rmq-prefix]
+  [filesystems rmq-prefix num-workers]
   (fn [conn]
     (logging/info "initializing connection")
     (let [ch (lch/open conn)]
       (init-all-rmq-structures ch rmq-prefix (map :fsid filesystems))
       (lch/close ch))
     (doseq [{:keys [fsid] :as fs} filesystems
-            [command handle-msg] (seq command->msg-handler)]
+            [command handle-msg] (seq command->msg-handler)
+            _ (range num-workers)]
       (mqhelper/channel-loop
        conn
        (fn [ch]
          (let [qname (rk/routing-key-string rmq-prefix fsid command)]
-           (logging/info "starting consumer for" qname)
-           (lb/qos ch 1)
+           ;; (logging/info "starting consumer for" qname)
+           ;; (lb/qos ch 1)
            (lcons/subscribe ch qname (mqhelper/make-handler (partial handle-msg fs)))))))))
 
 
-(defrecord FSWorkerService [rmq-settings rmq-prefix filesystems thread-pool]
+(defrecord FSWorkerService [rmq-settings rmq-prefix filesystems num-workers thread-pool]
   worker/Service
   (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
              rmq-settings
-             (build-handle-connection filesystems rmq-prefix)
+             (build-handle-connection filesystems rmq-prefix num-workers)
              thread-pool))))
 
 (def runner
@@ -130,6 +131,7 @@
     (make-object-from-section [this system section]
       (let [rmq-settings (-> system :config :rmq-settings)
             rmq-prefix (-> system :config :rmq-prefix)
+            num-workers (Integer. (get-in system [:iniconfig section "num-workers"] "10"))
             filesystems (map (fn [name] (vfs/make-filesystem system name))
                              (sys/get-filesystems-for-section system section))]
-        (->FSWorkerService rmq-settings rmq-prefix filesystems (:thread-pool system))))))
+        (->FSWorkerService rmq-settings rmq-prefix filesystems num-workers (:thread-pool system))))))

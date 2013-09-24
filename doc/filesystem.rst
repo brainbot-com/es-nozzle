@@ -71,3 +71,8 @@ Some keys are common to any kind of filesystem. These are:
   This key can be used to specify the time in seconds to wait between
   two synchronisation runs. The default is 3600, i.e. wait 1 hour
   before starting synchronisation again.
+
+`extract-text-size`
+  This key can be used to specify how much text should be extracted
+  from documents and sent to elasticsearch for indexing. The default
+  is to extract the first 100000 characters from each document.

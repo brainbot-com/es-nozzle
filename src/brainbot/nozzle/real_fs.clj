@@ -6,10 +6,10 @@
            [java.nio.file Files Path LinkOption Paths AccessDeniedException]
 
            [java.nio.file.attribute UserPrincipal GroupPrincipal AclEntryType AclEntryPermission AclFileAttributeView PosixFilePermissions PosixFilePermission BasicFileAttributes PosixFileAttributes])
-  (:require [brainbot.nozzle.extract :refer [convert]])
   (:require brainbot.nozzle.dynaload)
   (:require [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.vfs :as vfs]
+            [brainbot.nozzle.tika :as tika]
             [brainbot.nozzle.path :refer [normalize-path]]
             [brainbot.nozzle.inihelper :as inihelper]))
 
@@ -103,20 +103,20 @@
 (defrecord RealFilesystem [root]
   vfs/Filesystem
   (extract-content [fs entry]
-    (let [fp (string/join "/" [(:root fs) entry])]
-      {:tika-content (convert fp)}))
+    (let [fp (string/join "/" [root entry])]
+      {:tika-content (tika/parse fp (:extract-text-size fs))}))
 
   (access-denied-exception? [fs err]
     (instance? AccessDeniedException err))
 
   (get-permissions [fs entry]
-    (let [fp (string/join "/" [(:root fs) entry])]
+    (let [fp (string/join "/" [root entry])]
       (if is-windows
         (windows-acl-from-path fp)
         (posix-acl-from-path fp))))
 
   (stat [fs entry]
-    (let [fp (string/join "/" [(:root fs) entry])
+    (let [fp (string/join "/" [root entry])
           attr (read-attributes fp)
           ct (fn [t] (/ (.toMillis t) 1000))]
       {:type (type-from-attribute attr)
@@ -127,7 +127,7 @@
     (normalize-path (string/join "/" parts)))
 
   (listdir [fs dir]
-    (let [fp (string/join "/" [(:root fs) dir])
+    (let [fp (string/join "/" [root dir])
           up (get-path fp)]
       (map #(-> % .getFileName str)
            (nio2.dir-seq/dir-seq up)))))

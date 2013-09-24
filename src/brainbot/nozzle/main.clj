@@ -47,7 +47,7 @@
       (println banner)
       (System/exit 0))
     (when (:version options)
-      (println "nozzle" (version/nozzle-version)
+      (println "es-nozzle" (version/nozzle-version)
                "on Java" (System/getProperty "java.version")
                (System/getProperty "java.vm.name"))
       (System/exit 0))

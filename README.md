@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/brainbot-com/es-nozzle.png?branch=master)](https://travis-ci.org/brainbot-com/es-nozzle)
+
 # es-nozzle
 
 es-nozzle recursively synchronizes directories into an Elasticsearch

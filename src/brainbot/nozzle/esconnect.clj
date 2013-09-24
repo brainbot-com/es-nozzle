@@ -167,21 +167,32 @@
           ["dir" "doc"]
           {:size 1000000
            :query {:match_all {}}
-           :fields ["parent" "lastmodified"]
+           :fields ["parent" "lastmodified" "allow_token_document" "deny_token_document"]
            :flt {:term {:parent parent}}}))
+
 
 (let [estype->type {"dir" "directory"
                     "doc" "file"}]
-  (defn enrich-es-entries
-    [parent entries]
-    (let [convert-entry (fn [{:keys [_type _id fields _fields]}]
-                          {:id _id
-                           :type (estype->type _type)
-                           :mtime (lastmodified->mtime (:lastmodified (or fields _fields)))})]
-      (loop [entries entries]
-        (if (map? entries)
-          (recur (:hits entries))
-          (map convert-entry entries))))))
+  (defn- convert-es-entry*
+    [{:keys [_type _id fields]}]
+    {:id _id
+     :type (estype->type _type)
+     :allow (:allow_token_document fields)
+     :deny (:deny_token_document fields)
+     :mtime (-> fields :lastmodified lastmodified->mtime)}))
+
+(defn convert-es-entry
+  [entry]
+  (convert-es-entry*
+   (assoc entry
+     :fields (or (:fields entry) (:_fields entry)))))
+
+(defn enrich-es-entries
+  [entries]
+  (loop [entries entries]
+    (if (map? entries)
+      (recur (:hits entries))
+      (map convert-es-entry entries))))
 
 
 (defn es-recursive-delete
@@ -219,6 +230,37 @@
   [existing-map entries]
   (remove #(contains? existing-map (:id %)) entries))
 
+(declare simplify-permissions-for-es)
+
+(defn permset
+  "create a set. elasticsearch may give us a single string, handle that case"
+  [p]
+  (if (string? p)
+    #{p}
+    (set p)))
+
+(defn entry-needs-update?
+  "compare es-entry with mq-entry and determine if we need to update it"
+  [es-entry mq-entry]
+  (or (not= (:mtime es-entry) (:mtime mq-entry))
+      (let [mqperm (-> mq-entry :permissions simplify-permissions-for-es)
+            mqperm* (misc/remap permset mqperm)
+            esperm (select-keys es-entry [:allow :deny])
+            esperm* (misc/remap permset esperm)]
+        (not= mqperm* esperm*))))
+
+(defn find-updates
+  "compare entries with those in es-file-map and return a seq of
+   entries that need to be updated"
+  [es-file-map entries]
+  (remove
+   nil?
+   (map (fn [mq-entry]
+          (if-let [es-entry (-> mq-entry :id es-file-map)]
+            (when (entry-needs-update? es-entry mq-entry)
+              mq-entry)))
+        entries)))
+
 (defn compare-directories
   [mq-entries es-entries]
   (let [mq-entries-by-type (group-by :type mq-entries)
@@ -235,7 +277,7 @@
      :delete-files (find-missing-entries mq-file-map (es-entries-by-type "file"))
      :create-directories (find-missing-entries es-directory-map (mq-entries-by-type "directory"))
      :create-files (find-missing-entries es-file-map (mq-entries-by-type "file"))
-     :update-files nil}))
+     :update-files (find-updates es-file-map (mq-entries-by-type "file"))}))
 
 
 (defn apply-diff-to-elasticsearch
@@ -294,12 +336,12 @@
   [fs es-index {:keys [directory entries] :as body} {publish :publish}]
   ;; (logging/info "simple-update" directory)
   (let [parent-id (make-id "" directory)
-        es-entries (enrich-es-entries parent-id (es-listdir es-index parent-id))
+        es-entries (enrich-es-entries (es-listdir es-index parent-id))
         mq-entries (enrich-mq-entries directory entries)
         diff (compare-directories mq-entries es-entries)]
     (apply-diff-to-elasticsearch diff es-index parent-id)
 
-    (doseq [e (:create-files diff)]
+    (doseq [e (concat (:create-files diff) (:update-files diff))]
       (publish "extract_content"
                {:directory directory
                 :entry (select-keys e [:relpath :permissions :stat])}))))
