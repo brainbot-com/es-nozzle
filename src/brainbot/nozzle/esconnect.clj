@@ -89,7 +89,7 @@
               ["dir" "doc"]
               :size 1000000
               :query {:match_all {}}
-              :fields ["parent" "lastmodified"]
+              :fields ["parent" "lastmodified" "allow_token_document" "deny_token_document"]
               :filter {:term {:parent parent}}))
 
 
@@ -99,6 +99,8 @@
     [{:keys [_type _id fields]}]
     {:id _id
      :type (estype->type _type)
+     :allow (:allow_token_document fields)
+     :deny (:deny_token_document fields)
      :mtime (-> fields :lastmodified lastmodified->mtime)}))
 
 (defn enrich-es-entries
@@ -143,10 +145,24 @@
   [existing-map entries]
   (remove #(contains? existing-map (:id %)) entries))
 
+(declare simplify-permissions-for-es)
+
+(defn permset
+  "create a set. elasticsearch may give us a single string, handle that case"
+  [p]
+  (if (string? p)
+    #{p}
+    (set p)))
+
 (defn entry-needs-update?
   "compare es-entry with mq-entry and determine if we need to update it"
   [es-entry mq-entry]
-  (not= (:mtime es-entry) (:mtime mq-entry)))
+  (or (not= (:mtime es-entry) (:mtime mq-entry))
+      (let [mqperm (-> mq-entry :permissions simplify-permissions-for-es)
+            mqperm* (misc/remap permset mqperm)
+            esperm (select-keys es-entry [:allow :deny])
+            esperm* (misc/remap permset esperm)]
+        (not= mqperm* esperm*))))
 
 (defn find-updates
   "compare entries with those in es-file-map and return a seq of
