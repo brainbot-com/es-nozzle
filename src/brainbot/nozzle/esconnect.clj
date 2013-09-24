@@ -143,6 +143,23 @@
   [existing-map entries]
   (remove #(contains? existing-map (:id %)) entries))
 
+(defn entry-needs-update?
+  "compare es-entry with mq-entry and determine if we need to update it"
+  [es-entry mq-entry]
+  (not= (:mtime es-entry) (:mtime mq-entry)))
+
+(defn find-updates
+  "compare entries with those in es-file-map and return a seq of
+   entries that need to be updated"
+  [es-file-map entries]
+  (remove
+   nil?
+   (map (fn [mq-entry]
+          (if-let [es-entry (-> mq-entry :id es-file-map)]
+            (when (entry-needs-update? es-entry mq-entry)
+              mq-entry)))
+        entries)))
+
 (defn compare-directories
   [mq-entries es-entries]
   (let [mq-entries-by-type (group-by :type mq-entries)
@@ -159,7 +176,7 @@
      :delete-files (find-missing-entries mq-file-map (es-entries-by-type "file"))
      :create-directories (find-missing-entries es-directory-map (mq-entries-by-type "directory"))
      :create-files (find-missing-entries es-file-map (mq-entries-by-type "file"))
-     :update-files nil}))
+     :update-files (find-updates es-file-map (mq-entries-by-type "file"))}))
 
 
 (defn apply-diff-to-elasticsearch
@@ -223,7 +240,7 @@
         diff (compare-directories mq-entries es-entries)]
     (apply-diff-to-elasticsearch diff es-index parent-id)
 
-    (doseq [e (:create-files diff)]
+    (doseq [e (concat (:create-files diff) (:update-files diff))]
       (publish "extract_content"
                {:directory directory
                 :entry (select-keys e [:relpath :permissions :stat])}))))
