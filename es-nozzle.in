@@ -3,8 +3,19 @@
 
 CDPATH=""
 
-nhome=$(readlink -m "$BASH_SOURCE")
-nhome=${nhome%/*}/..
+SCRIPT=$BASH_SOURCE
+# resolve symlinks to the script itself portably
+while [ -h "$SCRIPT" ] ; do
+    ls=`ls -ld "$SCRIPT"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+	SCRIPT="$link"
+    else
+	SCRIPT="$(dirname "$SCRIPT"$)/$link"
+    fi
+done
+
+nhome=`dirname "$SCRIPT"`/..
 
 
 if [ -x "$JAVA_HOME/bin/java" ]; then
