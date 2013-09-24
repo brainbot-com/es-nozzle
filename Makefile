@@ -25,6 +25,7 @@ cpfiles:
 	cp -p dist/es-nozzle.bat dist/es-nozzle $(dist)/bin/
 	chmod 755 $(dist)/bin/es-nozzle
 	ln -sf $(dist) current
+	rm -rf target/classes
 
 doc:
 	cd doc && make html
