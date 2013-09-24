@@ -17,8 +17,12 @@
    :filesystems (misc/trimmed-lines-from-string
                  (get-in iniconfig [inihelper/main-section-name "filesystems"]))
    :rmq-prefix (get-in iniconfig [inihelper/main-section-name "rmq-prefix"] inihelper/main-section-name)
-   :es-url (or (get-in iniconfig [inihelper/main-section-name "es-url"])
-               "http://localhost:9200")})
+   :es-url (or (get-in iniconfig [inihelper/main-section-name "es-url"]) 
+               "http://localhost:9200")
+   :es-connection-type (or (get-in iniconfig [inihelper/main-section-name "es-connection-type"]) 
+                           "rest")
+   :es-clustername (or (get-in iniconfig [inihelper/main-section-name "es-clustername"]) 
+                       "es-nozzle")})
 
 (defn- inidie
   "call misc/die, put the section name and iniconfig source in front

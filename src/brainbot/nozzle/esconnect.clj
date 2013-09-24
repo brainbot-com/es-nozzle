@@ -15,11 +15,90 @@
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.mqhelper :as mqhelper])
   (:require [robert.bruce :refer [try-try-again]])
-  (:require [clojurewerkz.elastisch.rest.document :as esd]
+  (:require [clojurewerkz.elastisch.rest.document :as esrd]
             [clojurewerkz.elastisch.rest :as esr]
-            [clojurewerkz.elastisch.rest.index :as esi]))
+            [clojurewerkz.elastisch.rest.index :as esri]
+            [clojurewerkz.elastisch.native.document :as esnd]
+            [clojurewerkz.elastisch.native :as esn]
+            [clojurewerkz.elastisch.native.index :as esni])
+  (:require [clojure.stacktrace :as trace])
+  (:import  [org.elasticsearch.node NodeBuilder Node]))
 
 (def ^:private token-document-null-value "NOBODY")
+
+;; define variable for es client
+(def es nil)
+
+;; For automatic testing (and embedded setups) we want to allow the internal client
+;; as well as the rest client. Since we use only very few methods of elastisch,
+;; we define a protocol abstraction for talking with elasticsearch.
+(defprotocol Elasticsearch
+  "elasticsearch connector"
+  (connect [es] "connect the client")
+  (search [es index mapping-types {:keys [size query fields flt] :as options}] "search")
+  (put [es index mapping-type id document] "create or update a document")
+  (delete-by-query-across-all-types [es ^String index-name query] "delete-by-query operation across all mapping types")
+  (delete [es ^String index-name ^String mapping-type id] "delete document by id")
+  (exists? [es ^String index-name] "index exists?")
+  (update-mapping [es ^String index-name-or-names ^String type-name options] "update a mapping")
+  (create [es ^String index-name options] "create an index"))
+
+(defrecord RestElastisch [es-url]
+  Elasticsearch 
+  (connect [es] 
+    (esr/connect! es-url))
+  
+  (search [es index mapping-types {:keys [size query fields flt] :as options}]
+    (esrd/search index mapping-types :size size :query query :fields fields :filter flt))
+  
+  (put [es index mapping-type id document]     
+    (esrd/put index mapping-type id document))
+  
+  (delete-by-query-across-all-types [es index-name query] 
+    (esrd/delete-by-query-across-all-types index-name query))  
+
+  (delete [es index-name mapping-type id]
+    (esrd/delete index-name mapping-type id))
+  
+  (exists? [es index-name]
+    (esri/exists? index-name))
+  
+  (update-mapping [es index-name-or-names type-name {:keys [mapping]}] 
+    (esri/update-mapping index-name-or-names type-name :mapping mapping))
+  
+  (create [es index-name options]
+    (esri/create index-name :mappings options)))
+
+
+
+(defrecord NativeElastisch [clustername local]
+  Elasticsearch 
+  (connect [es]
+    (if local
+      (let [clientnode (.. (NodeBuilder/nodeBuilder) (local true) (clusterName clustername) (node))]
+        (esn/connect-to-local-node! clientnode))
+      (esn/connect! [["127.0.0.1" 9300]] {"cluster.name" clustername})))
+
+  (search [es index mapping-types {:keys [size query fields flt] :as options}]
+    (esnd/search index mapping-types :size size :query query :fields fields :filter flt))
+
+  (put [es index mapping-type id document]     
+    (esnd/put index mapping-type id document))
+
+  (delete-by-query-across-all-types [es index-name query] 
+    (esnd/delete-by-query-across-all-types index-name query))  
+
+  (delete [es index-name mapping-type id]
+    (esnd/delete index-name mapping-type id))
+
+  (exists? [es index-name]
+    (esni/exists? index-name))
+
+  (update-mapping [es index-name-or-names type-name {:keys [mapping]}] 
+    (esni/update-mapping index-name-or-names type-name :mapping {type-name mapping}))
+
+  (create [es index-name options]
+    (esni/create index-name :mappings options)))
 
 ;; (esr/connect! "http://127.0.0.1:9200")
 (let [parent {:index "not_analyzed", :type "string", :store "yes"}
@@ -76,21 +155,20 @@
 
 (defn ensure-index-and-mappings
   [index-name]
-  (if (esi/exists? index-name)
+  (if (exists? es index-name)
     (doseq [[doctype mapping] mapping-types]
       ;; (println "update-mapping" doctype mapping)
-      (esi/update-mapping index-name doctype :mapping {:mapping mapping}))
-    (esi/create index-name :mappings mapping-types)))
-
+      (update-mapping es index-name doctype {:mapping mapping}))
+    (create es index-name mapping-types)))
 
 (defn es-listdir
   [index-name parent]
-  (esd/search index-name
-              ["dir" "doc"]
-              :size 1000000
-              :query {:match_all {}}
-              :fields ["parent" "lastmodified"]
-              :filter {:term {:parent parent}}))
+  (search es index-name
+          ["dir" "doc"]
+          {:size 1000000
+           :query {:match_all {}}
+           :fields ["parent" "lastmodified"]
+           :flt {:term {:parent parent}}}))
 
 (let [estype->type {"dir" "directory"
                     "doc" "file"}]
@@ -109,10 +187,11 @@
 (defn es-recursive-delete
   [index-name parent]
   (let [with-slash (misc/ensure-endswith-slash parent)]
-    (esd/delete-by-query-across-all-types
-     index-name
+    (delete-by-query-across-all-types 
+      es
+      index-name
      {:prefix {:_id with-slash}})
-    (esd/delete index-name "dir" parent)))
+    (delete es index-name "dir" parent)))
 
 
 
@@ -164,9 +243,9 @@
   (doseq [e delete-directories]
     (es-recursive-delete es-index (:id e)))
   (doseq [e delete-files]
-    (esd/delete es-index "doc" (:id e)))
+    (delete es es-index "doc" (:id e)))
   (doseq [e create-directories]
-    (esd/put es-index "dir"
+    (put es es-index "dir"
              (:id e)
              {:lastmodified (mtime->lastmodified (:mtime e))
               :parent parent-id})))
@@ -193,7 +272,7 @@
         simple-perms (simplify-permissions-for-es (:permissions entry))]
 
 
-    (esd/put es-index "doc"
+    (put es es-index "doc"
              id
              {:parent parent-id
               :content (get-in body [:extract :tika-content :text])
@@ -263,19 +342,31 @@
   (doseq [idx (indexes-from-fsmap fsmap)]
     (ensure-index-and-mappings idx)))
 
+(defn make-elastisch-client
+  [{:keys [es-connection-type es-clustername es-url] :as es-config}]
+  (cond (= es-connection-type "native")
+          (->NativeElastisch es-clustername false)
+        (= es-connection-type "local")
+          (->NativeElastisch es-clustername true)
+        (= es-connection-type "rest")
+          (->RestElastisch es-url)))
+
+;; alter variable for es client with client instance
 (defn initialize-elasticsearch
-  [es-url fsmap]
-  (esr/connect! es-url)
+  [es-config fsmap]
+  (alter-var-root #'es (constantly (make-elastisch-client es-config)))
+  (connect es)
   (ensure-all-indexes-and-mappings fsmap))
 
 
-(defrecord ESConnectService [rmq-settings rmq-prefix num-workers fsmap es-url thread-pool]
+(defrecord ESConnectService [rmq-settings rmq-prefix num-workers fsmap es-config thread-pool]
   worker/Service
   (start [this]
     (try-try-again {:tries :unlimited
                     :error-hook (fn [err]
-                                  (logging/error "error while initializing elasticsearch connection and indexes" es-url err))}
-                   #(initialize-elasticsearch es-url fsmap))
+                                  (trace/print-stack-trace err)
+                                  (logging/error "error while initializing elasticsearch connection and indexes" es-config err))}
+                   #(initialize-elasticsearch es-config fsmap))
 
     (mqhelper/connect-loop-with-thread-pool
      rmq-settings
@@ -294,10 +385,12 @@
             num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
             filesystems (sys/get-filesystems-for-section system section)
             fsmap (make-standard-fsmap filesystems)
-            es-url (-> system :config :es-url)]
+            es-config {:es-connection-type (-> system :config :es-connection-type)
+                       :es-clustername (-> system :config :es-clustername)
+                       :es-url (-> system :config :es-url)}]
         (->ESConnectService rmq-settings
                             rmq-prefix
                             num-workers
                             fsmap
-                            es-url
+                            es-config
                             (:thread-pool system))))))
