@@ -24,6 +24,7 @@ cpfiles:
 	rsync -aHP target/es-nozzle.jar $(dist)/lib/es-nozzle.jar
 	cp -p dist/es-nozzle.bat dist/es-nozzle $(dist)/bin/
 	chmod 755 $(dist)/bin/es-nozzle
+	ln -sf $(dist) current
 
 doc:
 	cd doc && make html
