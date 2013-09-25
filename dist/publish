@@ -13,11 +13,13 @@ case $rel in
      *) SNAPSHOT="NO";;
 esac
 
+echo "=================> publishing $rel"
+
 if [ $SNAPSHOT = "YES" ]; then
    target=root@brainbot.com:es-nozzle-snapshots/
 else
    target=root@brainbot.com:es-nozzle-releases/
 fi
 
-rsync -avHP dist/$rel.zip $target
-rsync -avHP current/doc/ $target/doc
+rsync -aH dist/$rel.zip $target
+rsync -aH current/doc/ $target/doc
