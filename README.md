@@ -5,7 +5,7 @@
 es-nozzle recursively synchronizes directories into an Elasticsearch
 cluster. es-nozzle is scalable and fault tolerant.
 
-Please visit http://brainbot.com/es-nozzle/doc/ for detailed documentation.
+Please visit http://brainbot.com/es-nozzle/snapshots/doc/ for detailed documentation.
 
 ## source code
 
