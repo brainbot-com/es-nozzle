@@ -13,8 +13,8 @@ Java_ JDK 7 or JRE 7 must be installed.
 
 Past, Presense, Future
 ========================
-Past
-~~~~~~
+History
+~~~~~~~~
 es-nozzle is a port of a closed-source python project, that
 synchronizes filesystems into brainbot's own search engine. The
 closed-source product is used in production with filesystems
@@ -26,14 +26,14 @@ extractor' for said project. After some time with clojure it became
 clear that having the whole system implemented in clojure and running
 on the JVM, would be a big advantage for multiple reasons.
 
-Presense
-~~~~~~~~~~~
+Current Status
+~~~~~~~~~~~~~~~
 es-nozzle is a young project. It currently only supports synchronizing
 2 types of filesystems into elasticsearch. We do think that es-nozzle
 is ready for public consumption and may be useful to some people. We
 appreciate any feedback on the product.
 
-Future
+Roadmap
 ~~~~~~~~~~~
 We plan to implement support for more filesystem types. IMAP is on our
 ToDo List. Please let us know what else you need!

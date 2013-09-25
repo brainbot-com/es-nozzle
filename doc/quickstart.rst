@@ -18,9 +18,20 @@ If you're running windows, please follow the `RabbitMQ installation
 instructions for windows`_.
 
 After installation of RabbitMQ, the `management plugin`_ must be
-enabled. This can be done by running the following command::
+enabled. This can be done by running the following command as root::
 
     rabbitmq-plugins enable rabbitmq_management
+
+.. NOTE::
+
+  Ubuntu 12.04 install the rabbitmq-plugins command in
+  `/usr/lib/rabbitmq/bin/`, which isn't part of the standard
+  `PATH`. You need to call the above command with the full path
+  instead.
+
+
+Please, also restart RabbitMQ after enabling the rabbitmq management
+plugin.
 
 .. _management plugin: http://www.rabbitmq.com/management.html
 
