@@ -1,4 +1,4 @@
-(ns brainbot.nozzle.extract2
+(ns brainbot.nozzle.extract
   (:require [langohr.basic :as lb]
             [langohr.shutdown :as lshutdown]
             [langohr.exchange  :as le]

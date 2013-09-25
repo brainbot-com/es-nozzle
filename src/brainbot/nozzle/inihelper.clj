@@ -49,7 +49,7 @@
 
     "fsworker" 'brainbot.nozzle.fsworker/runner
     "meta" 'brainbot.nozzle.meta-runner/runner
-    "extract" 'brainbot.nozzle.extract2/runner
+    "extract" 'brainbot.nozzle.extract/runner
     "esconnect" 'brainbot.nozzle.esconnect/runner
     "manage" 'brainbot.nozzle.manage/runner
 
