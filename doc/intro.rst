@@ -33,9 +33,9 @@ Content Sources
 ==========================
 es-nozzle currently has two freely available content adapters.  One to
 synchronize **regular filesystems** and one to synchronize **remote
-CIFS/SMB** repositories . Other adaptors like for IMAP, Microsoft
+CIFS/SMB** repositories . Other adapters like for IMAP, Microsoft
 Exchange or Microsoft SharePoint can be licensed from brainbot
-technologies who also offers to develop custom adaptors.
+technologies who also offers to develop custom adapters.
 
 Scalability
 ==========================
