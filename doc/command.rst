@@ -3,7 +3,7 @@ es-nozzle configuration file
 As we have seen in the previous section, es-nozzle is invoked with a
 command line, that looks like::
 
-    java -jar /path/to/es-nozzle-0.3.0-SNAPSHOT-standalone.jar --iniconfig INIPATH [INISECTION ...]
+    /path/to/es-nozzle-0.3.0/bin/es-nozzle --iniconfig INIPATH [INISECTION ...]
 
 es-nozzle will read the ini file specified with the --iniconfig
 arguments, and will start to work on the ini sections given as

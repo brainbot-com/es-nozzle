@@ -59,11 +59,11 @@ es-nozzle installation
 
 Download es-nozzle
 ------------------
-First, please download the `es-nozzle executable jar archive`_ and put it
+First, please download the `es-nozzle distribution`_ and unpack it
 somewhere on your disk. If you have the java executable on your PATH,
 you should be able to show es-nozzle's help message by running::
 
-    java -jar /path/to/es-nozzle-0.3.0-SNAPSHOT-standalone.jar --help
+    /path/to/es-nozzle-0.3.0/bin/es-nozzle --help
 
 Please make sure that you are using at least java 7, otherwise es-nozzle
 will fail with an error message similar to the following message::
@@ -72,6 +72,16 @@ will fail with an error message similar to the following message::
 
 If you can see the help message, you're ready to continue with the
 next step.
+
+.. NOTE::
+
+  bin/es-nozzle is just a short shell/.bat script wrapper around an
+  executable jar archive contained in the distribution. You can just
+  as well run es-nozzle by running the executable jar archive. The
+  command line then looks like::
+
+     java -jar /path/to/es-nozzle-0.3.0/lib/es-nozzle.jar --help
+
 
 Create a minimal configuration file
 -----------------------------------
@@ -94,8 +104,7 @@ Start es-nozzle
 --------------------------
 es-nozzle can now be started by running the following command::
 
-    java -jar /path/to/es-nozzle-0.3.0-SNAPSHOT-standalone.jar --iniconfig /path/to/es-nozzle.ini all
+    /path/to/es-nozzle-0.3.0/bin/es-nozzle --iniconfig /path/to/es-nozzle.ini all
 
 
-.. _es-nozzle executable jar archive: http://brainbot.com/es-nozzle/download/
-
+.. _es-nozzle distribution: http://brainbot.com/es-nozzle/download/
