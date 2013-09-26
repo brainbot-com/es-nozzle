@@ -121,7 +121,7 @@ es-nozzle predefines the following `[manage]` section:
 `type=extract`
 -----------------
 extract sections are used to start the content extraction process.
-The list of filesystems to work on, are specified with the
+The list of filesystems to work on is specified with the
 `filesystem` key either in the section itself or in the main section.
 
 Example:
