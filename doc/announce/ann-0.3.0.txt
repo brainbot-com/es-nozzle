@@ -18,8 +18,8 @@ synchronization setups that complement the scalability of
 ElasticSearch clusters.
 
 Professional development and production support is available through
-brainbot technologies, a company specialized in search solutions which
-created the framework.
+brainbot technologies AG, a company specialized in search solutions
+which created the framework.
 
 
 Links
