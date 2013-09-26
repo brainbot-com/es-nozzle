@@ -2,8 +2,9 @@
 
 # es-nozzle
 
-es-nozzle recursively synchronizes directories into an Elasticsearch
-cluster. es-nozzle is scalable and fault tolerant.
+es-nozzle is a scalable open source *framework for connecting source
+content repositories* like file systems or mail servers to
+*ElasticSearch* clusters.
 
 Please visit http://brainbot.com/es-nozzle/doc/ for detailed documentation.
 
