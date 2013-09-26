@@ -46,7 +46,7 @@ Usually document conversion is the most processing intensive part of
 repository synchronizations and therefor the limiting factor.  High
 network latencies, slow repositories or quotas can be other limiting
 factors. es-nozzle can be setup to use multiple synchronization
-processes and thereby avoid any bottleneck situation . The system
+processes and thereby avoid any bottleneck situation. The system
 proofed to work reliable in a Enterprise Search solutions with one
 production setup scaling beyond 30 Million documents.
 
