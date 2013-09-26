@@ -16,7 +16,17 @@ Contents:
    command
    filesystem
    filters
+
+.. toctree::
+   :maxdepth: 1
+
+   changelog
+
+.. toctree::
+   :maxdepth: 3
+
    appendix
+
 
 Indices and tables
 ==================
