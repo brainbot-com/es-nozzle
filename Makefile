@@ -31,7 +31,7 @@ doc:
 	cd doc && make html
 
 uberjar:
-	lein uberjar
+	LEIN_SNAPSHOTS_IN_RELEASE=1 lein uberjar
 
 clean:
 	rm -rf dist/es-nozzle-*
