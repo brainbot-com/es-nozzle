@@ -92,7 +92,7 @@ manage sections are used to start and monitor the synchronization of
 different filesystems. They use RabbitMQ's management plugin in order
 to determine if a filesystem is currently being synchronized or not.
 The list of filesystems to work on, are specified with the
-`filesystem` key either in the section itself or in the main section.
+`filesystems` key either in the section itself or in the main section.
 
 Example:
 
@@ -122,7 +122,7 @@ es-nozzle predefines the following `[manage]` section:
 -----------------
 extract sections are used to start the content extraction process.
 The list of filesystems to work on is specified with the
-`filesystem` key either in the section itself or in the main section.
+`filesystems` key either in the section itself or in the main section.
 
 Example:
 
@@ -147,7 +147,7 @@ fsworker sections are used for filesystem access. They list
 directories, read file and directory status, and read permissions from
 the filesystem.
 The list of filesystems to work on, are specified with the
-`filesystem` key either in the section itself or in the main section.
+`filesystems` key either in the section itself or in the main section.
 
 Example:
 
@@ -172,7 +172,7 @@ es-nozzle predefines the following `[fsworker]` section:
 esconnect sections are used to fill an elasticsearch cluster with the
 documents and directories from a filesystem.
 The list of filesystems to work on, are specified with the
-`filesystem` key either in the section itself or in the main section.
+`filesystems` key either in the section itself or in the main section.
 
 Example:
 
