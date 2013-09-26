@@ -2,8 +2,8 @@ Subject: [ANN] es-nozzle 0.3.0 - elasticsearch document ingestion
 
 Hi all,
 
-on behalf of brainbot technologies AG I'm releasing es-nozzle 0.3.0 as
-open source today. This is the first public release.
+on behalf of brainbot technologies AG I'm proud to release es-nozzle
+0.3.0 as open source today. This is the first public release.
 
 es-nozzle is a scalable open source framework for connecting source
 content repositories like file systems or mail servers to
@@ -34,8 +34,11 @@ source code:
   https://github.com/brainbot-com/es-nozzle
 
 Contact:
-  http://brainbot.com / contact@brainbot.com
+  http://brainbot.com / es-nozzle@brainbot.com
   (or use the elasticsearch mailing list)
+
+We're happy about any feedback about this release, so please give it a
+shot and let us know about your experience.
 
 --
 Cheers
