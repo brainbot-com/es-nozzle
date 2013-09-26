@@ -24,7 +24,7 @@ enabled. This can be done by running the following command as root::
 
 .. NOTE::
 
-  Ubuntu 12.04 install the rabbitmq-plugins command in
+  Ubuntu 12.04 installs the rabbitmq-plugins command in
   `/usr/lib/rabbitmq/bin/`, which isn't part of the standard
   `PATH`. You need to call the above command with the full path
   instead.
@@ -45,8 +45,8 @@ elasticsearch node.
 You don't need to install any additional elasticsearch plugins, though
 having installed some plugins should also not interfere with es-nozzle.
 
-Elasticsearch indexes will be created by es-nozzle, so there's also no
-need to create indexes beforehand.
+Elasticsearch indices will be created by es-nozzle, so there's also no
+need to create indices beforehand.
 
 
 .. _RabbitMQ installation instructions for windows: http://www.rabbitmq.com/install-windows.html

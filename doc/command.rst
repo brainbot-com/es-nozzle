@@ -32,7 +32,7 @@ of filesystems to work on:
   `amqp-api-endpoint` can be used to specify the HTTP location of the
   RabbitMQ management API. The default is to use the same host as
   specified in amqp-url, and use 15672 as port. This should work as
-  long as you using RabbitMQ 3.0 or up and didn't change the
+  long as you're using RabbitMQ 3.0 or up and you didn't change the
   management port. If you're using RabbitMQ 2.x, you must specify
   `amqp-api-endpoint`. Use the same host as specified in amqp-url and
   use 55672 as port, like in

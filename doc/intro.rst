@@ -43,12 +43,12 @@ All synchronization information is stored in the ElasticSearch
 cluster. This allows to run **multiple synchronizing instances**
 configured with different content sources, on different machines.
 Usually document conversion is the most processing intensive part of
-repository synchronizations and therefor the limiting factor.  High
+repository synchronizations and therefore the limiting factor.  High
 network latencies, slow repositories or quotas can be other limiting
 factors. es-nozzle can be setup to use multiple synchronization
 processes and thereby avoid any bottleneck situation. The system
-proved to work reliable in a Enterprise Search solutions with one
-production setup scaling beyond 30 Million documents.
+proved to work reliable in an Enterprise Search solutions with one
+production set up scaling beyond 30 Million documents.
 
 
 Dependencies
