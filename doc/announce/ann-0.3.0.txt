@@ -37,7 +37,7 @@ Contact:
   http://brainbot.com / es-nozzle@brainbot.com
   (or use the elasticsearch mailing list)
 
-We're happy about any feedback about this release, so please give it a
+We're excited to get feedback about this release, so please give it a
 shot and let us know about your experience.
 
 --
