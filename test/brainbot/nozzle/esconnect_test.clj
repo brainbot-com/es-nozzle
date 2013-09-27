@@ -33,3 +33,19 @@
   (testing "lastmodified->mtime"
     (is (= 0 (lastmodified->mtime "1970-01-01T00:00:00.000Z")))
     (is (= 1376987900 (lastmodified->mtime "2013-08-20T08:38:20.000Z")))))
+
+
+(deftest test-strip-mime-type-parameters
+  (is (= (strip-mime-type-parameters "text/plain") "text/plain"))
+  (is (= (strip-mime-type-parameters "text/plain ;encoding=utf8") "text/plain")))
+
+(deftest test-make-id
+  (is (= (make-id "foo" "bar" "//baz") "foo/bar/baz")))
+
+(deftest test-permset
+  (is (= (permset ["foo" "bar" "baz"]) #{"foo" "bar" "baz"}))
+  (is (= (permset "foo") #{"foo"})))
+
+(deftest test-get-tags-from-path
+  (is (= (get-tags-from-path "/foo/bar/foo/bar//baz")
+         ["bar" "baz" "foo"])))
