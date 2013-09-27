@@ -25,8 +25,8 @@ enabled. This can be done by running the following command as root::
 .. NOTE::
 
   Ubuntu 12.04 installs the rabbitmq-plugins command in
-  `/usr/lib/rabbitmq/bin/`, which isn't part of the standard
-  `PATH`. You need to call the above command with the full path
+  ``/usr/lib/rabbitmq/bin/``, which isn't part of the standard
+  ``PATH``. You need to call the above command with the full path
   instead.
 
 
@@ -86,19 +86,19 @@ next step.
 Create a minimal configuration file
 -----------------------------------
 es-nozzle itself is configured with an ini file. You can
-:download:`download es-nozzle.ini <es-nozzle.ini>` or copy and paste the
+:download:``download es-nozzle.ini <es-nozzle.ini>`` or copy and paste the
 following content:
 
 .. literalinclude:: es-nozzle.ini
   :language: ini
 
-Please change the `path` key inside the `fstest1` and `fstest2`
+Please change the ``path`` key inside the ``fstest1`` and ``fstest2``
 sections at the end of es-nozzle.ini to some directories on your local
 machine.
 
 If you're not using the default settings of elasticsearch and RabbitMQ
 or if they are not running on the same machine that is running es-nozzle,
-you need to adapt `amqp-url` and `es-url` inside the `es-nozzle` section.
+you need to adapt ``amqp-url`` and ``es-url`` inside the ``es-nozzle`` section.
 
 Start es-nozzle
 --------------------------
