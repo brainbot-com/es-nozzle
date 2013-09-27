@@ -60,18 +60,17 @@
 (defn mtime->lastmodified
   "convert unix timestamp to elasticsearch compatible string representation"
   [mtime]
-  (str (tcoerce/from-long (* 1000 (long mtime)))))
+  (-> mtime long (* 1000) tcoerce/from-long str))
 
 (defn lastmodified->mtime
   "convert elasticsearch date string to unix timestamp"
   [lastmodified]
-  (quot (tcoerce/to-long (tcoerce/from-string lastmodified)) 1000))
-
+  (-> lastmodified tcoerce/from-string tcoerce/to-long (quot 1000)))
 
 (defn strip-mime-type-parameters
   "strip mime type parameters from mime type string"
   [s]
-  (string/trim (first (string/split s #";" 2))))
+  (-> s (string/split #";" 2) first string/trim))
 
 
 (defn ensure-index-and-mappings
