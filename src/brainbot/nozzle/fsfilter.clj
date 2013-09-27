@@ -1,4 +1,5 @@
 (ns brainbot.nozzle.fsfilter
+  "filter filesystem entries"
   (:require [clojure.string :as string])
   (:require [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.inihelper :as inihelper]
@@ -18,7 +19,8 @@
   [{s :relpath}]
   (= (first s) \.))
 
-
+;; dotfile act both as an EntryFilter and IniConstructor since it
+;; doesn't need any parameters
 (def dotfile
   (reify
     dynaload/Loadable
@@ -30,6 +32,8 @@
 
 
 (defn- normalize-extension
+  "normalize extension: convert it to lower-case and make sure it
+   starts with a dot '.'"
   [s]
   (string/lower-case
    (if (= (first s) \.)
