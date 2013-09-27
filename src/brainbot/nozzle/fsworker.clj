@@ -24,6 +24,9 @@
    (not (:error entry))
    (= (get-in entry [:stat :type]) type)))
 
+;; FIXME the following two function defs use a string instead of a
+;; symbol.  that works, because values passed in have been
+;; deserialized with the json reader.
 (def ^{:doc "entry does not have :error set and is a directory"}
   entry-is-directory-ok? (partial entry-is-type-ok? "directory"))
 (def ^{:doc "entry does not have :error set and is a file"}
