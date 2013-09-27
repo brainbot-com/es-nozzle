@@ -58,16 +58,3 @@
 
   (doseq [name ["org.apache.pdfbox" "com.coremedia"]]
     (log-config/set-logger! name :level :off)))
-
-
-(defn run-forever
-  "run function forever, i.e. run function, catch exception, wait a
- bit and restart it"
-  [sleeptime function & args]
-  (while true
-    (try
-      (apply function args)
-      (catch Throwable err
-        (logging/error "got exception" err "while running" function "with" args)
-        (trace/print-stack-trace err)
-        (Thread/sleep sleeptime)))))
