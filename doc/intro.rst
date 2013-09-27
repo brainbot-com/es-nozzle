@@ -1,5 +1,5 @@
 Overview
-==========================
+========
 es-nozzle is a scalable open source **framework for connecting source
 content repositories** like file systems or mail servers to
 **ElasticSearch** clusters.
@@ -17,7 +17,7 @@ through `brainbot technologies`_, a company specialized in search
 solutions which created the framework.
 
 Features
-==========================
+--------
 
 - scalable
 - fault tolerant
@@ -30,7 +30,7 @@ Features
 
 
 Content Sources
-==========================
+---------------
 es-nozzle currently has two freely available content adapters.  One to
 synchronize **regular filesystems** and one to synchronize **remote
 CIFS/SMB** repositories . Other adapters like for IMAP, Microsoft
@@ -38,7 +38,7 @@ Exchange or Microsoft SharePoint can be licensed from brainbot
 technologies who also offers to develop custom adapters.
 
 Scalability
-==========================
+-----------
 All synchronization information is stored in the ElasticSearch
 cluster. This allows to run **multiple synchronizing instances**
 configured with different content sources, on different machines.
@@ -52,7 +52,7 @@ production set up scaling beyond 30 Million documents.
 
 
 Dependencies
-==========================
+------------
 es-nozzle needs a running RabbitMQ_ instance. es-nozzle has been
 tested with RabbitMQ version 2.8.7 and 3.0.1. es-nozzle works with
 elasticsearch version 0.90 and up.
@@ -60,7 +60,7 @@ elasticsearch version 0.90 and up.
 Java_ JDK 7 or JRE 7 must be installed.
 
 Contact
-==========================
+-------
 We appreciate your feedback. 
 
 es-nozzle is hosted on github:
