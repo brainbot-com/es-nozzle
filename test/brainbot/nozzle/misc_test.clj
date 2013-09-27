@@ -13,3 +13,10 @@
   (testing "basic remap"
     (is (remap inc {}) {})
     (is (remap inc {:a 1 :b 2}) {:a 2 :b 3})))
+
+(deftest test-endswith-slash
+  (is (= (ensure-endswith-slash "") "/"))
+  (is (= (ensure-endswith-slash "/") "/"))
+  (is (= (ensure-endswith-slash "foo/") "foo/"))
+  (is (= (ensure-endswith-slash "foo/bar") "foo/bar/"))
+  (is (= (ensure-endswith-slash "foo/") "foo/")))
