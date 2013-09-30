@@ -6,6 +6,8 @@ filesystem is declared in a ini file section. The section name is used
 as filesystem identifier, which must be a non-empty sequence of the
 characters a-z, A-Z, 0-9, _ and -.
 
+.. index:: file, real filesystem, local file system
+
 ``type=file``
 --------------------
 The ``file`` filesystem is used to recursively synchronize a single
@@ -31,6 +33,8 @@ into elasticsearch. The ``remove`` key can be set to a list of filters,
 which can be used to skip documents and directories. In this case the
 ``dotfile`` filter is being used, which removes files and directories
 whose name starts with a dot '.'.
+
+.. index:: samba, cifs, windows share
 
 ``type=smbfs``
 --------------------
@@ -63,16 +67,19 @@ Common keys
 ------------------------
 Some keys are common to any kind of filesystem. These are:
 
-``remove``
+.. confval:: remove
+
   This can can be used to specify a list of filters to use with the
   filesystem.
 
-``sleep-between-sync``
+.. confval:: sleep-between-sync
+
   This key can be used to specify the time in seconds to wait between
   two synchronisation runs. The default is 3600, i.e. wait 1 hour
   before starting synchronisation again.
 
-``extract-text-size``
+.. confval:: extract-text-size
+
   This key can be used to specify how much text should be extracted
   from documents and sent to elasticsearch for indexing. The default
   is to extract the first 100000 characters from each document.
