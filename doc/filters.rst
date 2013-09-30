@@ -1,9 +1,9 @@
-Removing unwanted files and directories
+Excluding files and directories
 =======================================
 
-As we've seen in the previous section, we can remove unwanted files
-and directories from synchronization to elasticsearch. This is done
-by specifying the ``remove`` key inside filesystem sections. Multiple
+As we've seen in the previous section, we can exclude files and
+directories from synchronization to elasticsearch. This is done by
+specifying the ``remove`` key inside filesystem sections. Multiple
 filters can be used for a single filesystem.
 
 Each filter must be declared in it's own ini section.
