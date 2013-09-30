@@ -8,12 +8,16 @@ filters can be used for a single filesystem.
 
 Each filter must be declared in it's own ini section.
 
+.. index:: dotfile, dotfile filter
+
 ``type=dotfile``
 ---------------------
 The dotfile filter can be used to filter files and directories, whose
 name start with a dot '.' character. There's no need to declare a
 section with that type, since the default configuration already
 contains a ``[dotfile]`` section (with ``type=dotfile``).
+
+.. index:: extensions, extensions filter
 
 ``type=extensions``
 -------------------

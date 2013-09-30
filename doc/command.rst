@@ -11,13 +11,16 @@ additional command line arguments. You may now remark that there was
 no ``[all]`` section inside the shown config file. That's because es-nozzle
 predefines some sections. Read on for more details.
 
+.. index:: main ini section
+
 The main section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The main section is called ``es-nozzle`` and is used to specify how to
 connect to RabbitMQ and Elasticsearch. It also contains a default list
 of filesystems to work on:
 
-``amqp-url``
+.. confval:: amqp-url
+
   ``amqp-url`` can be used to specify the location of the RabbitMQ
   server. It looks like ``amqp://USER:PASSWORD@host/VHOST`` USER,
   PASSWORD and VHOST can be ommitted.
@@ -27,8 +30,8 @@ of filesystems to work on:
   Please read http://www.rabbitmq.com/uri-spec.html for a full
   explanation of the uri scheme.
 
+.. confval:: amqp-api-endpoint
 
-``amqp-api-endpoint``
   ``amqp-api-endpoint`` can be used to specify the HTTP location of the
   RabbitMQ management API. The default is to use the same host as
   specified in amqp-url, and use 15672 as port. This should work as
@@ -42,7 +45,8 @@ of filesystems to work on:
     [es-nozzle]
     amqp-api-endpoint = http://localhost:55672
 
-``rmq-prefix``
+.. confval:: rmq-prefix
+
   ``rmq-prefix`` can be used to specify the first name component of
   every object created in RabbitMQ. It can be used to separate
   multiple es-nozzle instances inside the same RabbitMQ virtual host.
@@ -50,12 +54,14 @@ of filesystems to work on:
   sequence of the characters a-z, A-Z, 0-9, _ and -.
 
 
-``es-url``
+.. confval:: es-url
+
   ``es-url`` can be used to specify the HTTP location of one
   elasticsearch node. The default is to use http://localhost:9200
 
 
-``filesystems``
+.. confval:: filesystems
+
   ``filesystems`` can be used to specify a list of filesystems. This
   value is being used as fallback if one the worker sections does not
   specify the list of filesystems.
