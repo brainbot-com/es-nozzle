@@ -86,7 +86,7 @@ next step.
 Create a minimal configuration file
 -----------------------------------
 es-nozzle itself is configured with an ini file. You can
-:download:``download es-nozzle.ini <es-nozzle.ini>`` or copy and paste the
+:download:`download es-nozzle.ini <es-nozzle.ini>` or copy and paste the
 following content:
 
 .. literalinclude:: es-nozzle.ini
