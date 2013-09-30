@@ -3,7 +3,7 @@ Appendix
 
 Using access control with elasticsearch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-es-nozzle reads the filesystem's access control entries (ACE) and maps them into elasticsearch. 
+es-nozzle reads the filesystem's access control entries (ACE) and maps them into elasticsearch.
 This section teaches you, how to use those values.
 
 
@@ -76,3 +76,58 @@ Here's a list of all predefined configuration sections:
 
 .. literalinclude:: ../resources/META-INF/brainbot.nozzle/default-config.ini
   :language: ini
+
+
+Flow of messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following graph show the flow of messages betweeen the different
+components. The rectangular boxes correspond to the different worker
+sections. They contain oval "subcommand" boxes, that each worker needs
+to handle. These subcommand boxes belong to RabbitMQ queues with the
+same name. The dashed red lines mark accesses to external
+resources. As you can see from the below graph, only fsworker and
+extract workers access the filesystem.
+
+
+.. graphviz::
+
+  digraph flow {
+
+      manage [shape=box];
+      manage -> listdir;
+
+      listdir -> get_permissions;
+
+      get_permissions -> listdir;
+      get_permissions -> update_directory;
+
+      update_directory -> extract_content;
+      extract_content -> import_file;
+
+      edge [style=dashed,color=red];
+
+      filesystem [shape=hexagon];
+      listdir -> filesystem;
+      get_permissions -> filesystem;
+      extract_content -> filesystem;
+
+      elasticsearch [shape=hexagon];
+      import_file -> elasticsearch;
+      update_directory -> elasticsearch;
+
+      subgraph cluster_fsworker {
+	  label = "type=fsworker";
+	  get_permissions; listdir;
+      }
+
+      subgraph cluster_esconnect {
+	  label = "type=esconnect";
+	  update_directory; import_file;
+      }
+
+      subgraph cluster_extract {
+	  label = "type=extract";
+	  extract_content;
+      }
+  }
