@@ -2,7 +2,7 @@ Appendix
 ==========
 
 Using access control with elasticsearch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 es-nozzle reads the filesystem's access control entries (ACE) and maps them into elasticsearch. 
 This section teaches you, how to use those values.
 
@@ -61,7 +61,7 @@ user token matches a term of ``deny_token_documents`` AND AT LEAST ONE of the us
 
 
 What you need to do in your application:
-----------------
+--------------------------------------------
  * Collect the user and group tokens of the current user.
  * Transform the tokens in es-nozzle's form ``[USER:username, GROUP:group1, GROUP:group2,…]``
  * Nest your application queries into filtered queries as shown in the curl example.

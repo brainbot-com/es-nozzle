@@ -168,7 +168,7 @@ es-nozzle predefines the following ``[fsworker]`` section:
 
 
 ``type=esconnect``
------------------
+--------------------
 esconnect sections are used to fill an elasticsearch cluster with the
 documents and directories from a filesystem.
 The list of filesystems to work on, are specified with the
