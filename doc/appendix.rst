@@ -9,7 +9,7 @@ This section teaches you, how to use those values.
 
 Spoiler:
 -------------
-If all you want to do is testing the access-control, here you go (replace <USERNAME> accordingly)::
+If all you want to do is test the access-control, here you go (replace <USERNAME> accordingly)::
  
  curl 'http://localhost:9200/_search' -d'
  {"query": 
