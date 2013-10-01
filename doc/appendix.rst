@@ -65,7 +65,7 @@ What you need to do in your application:
 * Collect the user and group tokens of the current user.
 * Transform the tokens in es-nozzle's form ``[USER:username, GROUP:group1, GROUP:group2,…]``
 * Nest your application queries into filtered queries as shown in the curl example.
-* If there is no query (e.g. ``mlt``), use the filter as a top-level element).
+* If there is no query (e.g. ``mlt``), use the filter as a top-level element.
 * If your application needs other filters, just append them to the outer ``and`` filter.
 
 
