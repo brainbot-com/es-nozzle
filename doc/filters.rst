@@ -42,3 +42,6 @@ filter will also match .XML and .ZIP files.
 -------------------
 The apple filter can be used to filter Mac OS/OS X created files like
 .DS_Store, .AppleDouble, __MACOSX and AppleDouble resource forks.
+Like in the dotfile case, there's no need to define a section with
+that type, since the default configuration already contains a
+``[apple]`` section.
