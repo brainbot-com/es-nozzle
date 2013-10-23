@@ -37,3 +37,8 @@ Here's an example that would filter .xml and .zip files:
 The ``extensions`` key is used to list extensions, which should be
 matched. extension matching is case-insensitive: The above 'garbage'
 filter will also match .XML and .ZIP files.
+
+``type=apple``
+-------------------
+The apple filter can be used to filter Mac OS/OS X created files like
+.DS_Store, .AppleDouble, __MACOSX and AppleDouble resource forks.

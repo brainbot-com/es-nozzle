@@ -54,6 +54,7 @@
     "manage" 'brainbot.nozzle.manage/runner
 
     "dotfile" 'brainbot.nozzle.fsfilter/dotfile
+    "apple"   'brainbot.nozzle.fsfilter/apple-garbage
     "extensions" 'brainbot.nozzle.fsfilter/extensions-filter-constructor}))
 
 

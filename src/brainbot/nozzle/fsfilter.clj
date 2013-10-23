@@ -19,16 +19,26 @@
   [{s :relpath}]
   (= (first s) \.))
 
-;; dotfile act both as an EntryFilter and IniConstructor since it
-;; doesn't need any parameters
-(def dotfile
+(defn- reify-simple-filter
+  [matches?]
   (reify
     dynaload/Loadable
     inihelper/IniConstructor
     (make-object-from-section [this system section-name]
       this)
     EntryFilter
-    (make-match-entry? [this] is-dotfile)))
+    (make-match-entry? [this] matches?)))
+
+;; dotfile act both as an EntryFilter and IniConstructor since it
+;; doesn't need any parameters
+(def dotfile (reify-simple-filter is-dotfile))
+
+(let [bad-names #{".DS_Store" ".AppleDouble" "__MACOSX"}]
+  (defn is-apple-garbage? [{relpath :relpath}]
+    (or (contains? bad-names relpath)
+        (= "._" (subs relpath 0 2)))))
+
+(def apple-garbage (reify-simple-filter is-apple-garbage?))
 
 
 (defn- normalize-extension
