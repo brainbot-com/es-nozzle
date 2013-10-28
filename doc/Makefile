@@ -46,6 +46,12 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+htmlnav:
+	env enable_navigation=1 $(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/htmlnav
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/htmlnav."
+
+
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo

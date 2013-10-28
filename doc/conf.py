@@ -254,3 +254,6 @@ def setup(app):
     app.add_object_type('confval', 'confval',
                         objname='configuration value',
                         indextemplate='pair: %s; configuration value')
+
+# enable navigation when environment variable enable_navigation is set
+html_context = {"enable_navigation": os.environ.has_key("enable_navigation")}
