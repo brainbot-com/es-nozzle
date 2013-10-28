@@ -1,0 +1,3 @@
+[submodule "doc/brainbot"]
+	path = doc/brainbot
+	url = https://github.com/brainbot-com/sphinx-bbot-theme.git
