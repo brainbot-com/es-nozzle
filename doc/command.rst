@@ -118,7 +118,7 @@ Example:
 
 es-nozzle predefines the following ``[manage]`` section:
 
-.. code-block: ini
+.. code-block:: ini
 
     [manage]
     type = manage
