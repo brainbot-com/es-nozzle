@@ -16,6 +16,7 @@ Contents:
    command
    filesystem
    filters
+   scaling
 
 .. toctree::
    :maxdepth: 1
