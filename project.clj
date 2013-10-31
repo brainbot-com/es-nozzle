@@ -1,4 +1,4 @@
-(defproject com.brainbot/es-nozzle "0.3.1-SNAPSHOT"
+(defproject com.brainbot/es-nozzle "0.3.1"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Apache License"
