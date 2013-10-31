@@ -1,0 +1,51 @@
+Subject: [ANN] es-nozzle 0.3.1 - elasticsearch document ingestion
+
+Hi,
+
+I've just released es-nozzle 0.3.1. The changelog lists these changes:
+
+- add `apple` filter, which can be used to remove Mac OS/OS X
+  generated hidden files
+- update and extend documentation
+
+
+About
+=====
+es-nozzle is a scalable open source framework for connecting source
+content repositories like file systems or mail servers to
+ElasticSearch clusters.
+
+The framework supports source-repository security policies in
+ElasticsSearch and therefore enables users to create open source
+Enterprise Search solutions based on es-nozzle and ElasticSearch.
+
+The architecture allows for scalable and fault tolerant
+synchronization setups that complement the scalability of
+ElasticSearch clusters.
+
+Professional development and production support is available through
+brainbot technologies AG, a company specialized in search solutions
+which created the framework.
+
+
+Links
+=====
+documentation:
+  http://brainbot.com/es-nozzle/doc/
+
+prebuilt distribution:
+  http://brainbot.com/es-nozzle/download/es-nozzle-0.3.1.zip
+
+source code:
+  https://github.com/brainbot-com/es-nozzle
+
+Contact:
+  http://brainbot.com / es-nozzle@brainbot.com
+  (or use the elasticsearch mailing list)
+
+We're excited to get feedback about this release, so please give it a
+shot and let us know about your experience.
+
+--
+Cheers
+Ralf Schmitt
