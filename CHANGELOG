@@ -1,3 +1,6 @@
+Changes between 0.3.1 and 0.3.2-SNAPSHOT
+---------------------------------------------
+
 Changes between 0.3.0 and 0.3.1
 ---------------------------------------------
 - add `apple` filter, which can be used to remove Mac OS/OS X
