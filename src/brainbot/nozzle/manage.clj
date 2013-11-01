@@ -114,9 +114,14 @@
       (future (manage-filesystem rmq-settings rmq-prefix fs)))))
 
 (defn http-connect!
-  [{:keys [api-endpoint username password]}]
-  (logging/info "using rabbitmq api-endpoint" api-endpoint "as user" username)
-  (rmqapi/connect! api-endpoint username password))
+  "initialize langohr.http by calling its connect! method"
+  ([] (http-connect! {}))
+  ([{:keys [api-endpoint username password]
+      :or {api-endpoint "http://localhost:55672"
+           username "guest"
+           password "guest"}}]
+     (logging/info "using rabbitmq api-endpoint" api-endpoint "as user" username)
+     (rmqapi/connect! api-endpoint username password)))
 
 (def runner
   (reify
