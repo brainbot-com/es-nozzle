@@ -57,8 +57,9 @@
     (rmq/close ch)
     (rmq/close conn)))
 
-(defn throw-management-api-error []
+(defn throw-management-api-error
   "throw a somewhat informative message about missing management rights"
+  []
   (throw
    (ex-info
     "no response from RabbitMQ's management API. make sure you have added the management tag for the user in RabbitMQ"
