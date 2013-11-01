@@ -90,11 +90,12 @@
   (let [qname (rk/routing-key-string {:id id :filesystem fsid :command "*"})
         get-num-messages* #(get-num-messages (:vhost rmq-settings) id fsid)
         wait-idle #(wait-for-zero-messages get-num-messages*)]
-    (logging/debug "waiting for" qname "to become idle")
-    (wait-idle)
     (while true
-      (logging/info "starting synchronization of" qname)
-      (start-synchronization rmq-settings id fsid)
+      (if (zero? (get-num-messages*))
+        (do
+          (logging/info "starting synchronization of" qname)
+          (start-synchronization rmq-settings id fsid))
+        (logging/info "synchronization of" qname "already running"))
       (Thread/sleep 10000)
       (wait-idle)
       (logging/info "synchronization of" qname "finished. restarting in" sleep-between-sync "seconds")
