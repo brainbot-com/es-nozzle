@@ -96,7 +96,7 @@ mappings"
               ["dir" "doc"]
               :size 1000000
               :query {:match_all {}}
-              :fields ["parent" "lastmodified" "allow_token_document" "deny_token_document"]
+              :fields ["parent" "lastmodified" "allow_token_document" "deny_token_document" "size"]
               :filter {:term {:parent parent}}))
 
 
@@ -108,6 +108,7 @@ mappings"
      :type (estype->type _type)
      :allow (:allow_token_document fields)
      :deny (:deny_token_document fields)
+     :size (:size fields)
      :mtime (-> fields :lastmodified lastmodified->mtime)}))
 
 (defn enrich-es-entries
@@ -147,7 +148,8 @@ mappings"
        :type (if (:error entry)
                "error"
                (get-in entry [:stat :type]))
-       :mtime (get-in entry [:stat :mtime])))
+       :mtime (get-in entry [:stat :mtime])
+       :size (get-in entry [:stat :size])))
    entries))
 
 (defn make-id-map
@@ -174,6 +176,7 @@ entry for lookup in existing-map"
   "compare es-entry with mq-entry and determine if we need to update it"
   [es-entry mq-entry]
   (or (not= (:mtime es-entry) (:mtime mq-entry))
+      (not= (:size es-entry) (:size mq-entry))
       (let [mqperm (-> mq-entry :permissions simplify-permissions-for-es)
             mqperm* (misc/remap permset mqperm)
             esperm (select-keys es-entry [:allow :deny])
