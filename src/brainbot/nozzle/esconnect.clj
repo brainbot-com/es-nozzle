@@ -41,6 +41,7 @@ subcommands of the esconnect worker types are implemented here"
                     :store true,
                     :omit_norms true},
              :lastmodified {:type "date", :store "yes"},
+             :size {:type "long", :store "yes"},
              :content {:type "string", :store "yes"},
              :content_type {:type "string", :store "yes" :index "not_analyzed"},
              :extension {:type "string", :store "yes" :index "not_analyzed"},
@@ -260,7 +261,8 @@ how to update the second directory to match the first one"
               :tags (get-tags-from-path directory)
               :allow_token_document (simple-perms :allow)
               :deny_token_document (simple-perms :deny)
-              :lastmodified (mtime->lastmodified (get-in entry [:stat :mtime]))})))
+              :lastmodified (mtime->lastmodified (get-in entry [:stat :mtime]))
+              :size (get-in entry [:stat :size])})))
 
 
 
