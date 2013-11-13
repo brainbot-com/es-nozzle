@@ -1,4 +1,7 @@
 (ns brainbot.nozzle.esconnect
+  "this namespace provides functionality to connect with the
+elasticsearch backend. the import_file and update_directory
+subcommands of the esconnect worker types are implemented here"
   (:require [clojure.pprint :refer [pprint]])
   (:require [clojure.string :as string])
   (:require [clojure.tools.logging :as logging])
@@ -74,6 +77,9 @@
 
 
 (defn ensure-index-and-mappings
+  "create index with name index-name and make sure the mappings in
+mapping-types are used. if the index already exists, just update the
+mappings"
   [index-name]
   (if (esi/exists? index-name)
     (doseq [[doctype mapping] mapping-types]
@@ -83,6 +89,7 @@
 
 
 (defn es-listdir
+  "list contents of directory 'parent' in index 'index-name'"
   [index-name parent]
   (esd/search index-name
               ["dir" "doc"]
@@ -103,6 +110,7 @@
      :mtime (-> fields :lastmodified lastmodified->mtime)}))
 
 (defn enrich-es-entries
+  "convert entries from es-listdir to our common format"
   [entries]
   (loop [entries entries]
     (if (map? entries)
@@ -111,6 +119,7 @@
 
 
 (defn es-recursive-delete
+  "recursively delete directory 'parent' from index 'index-name'"
   [index-name parent]
   (let [with-slash (misc/ensure-endswith-slash parent)]
     (esd/delete-by-query-across-all-types
@@ -121,10 +130,14 @@
 
 
 (defn make-id
+  "build an id suitable for use in elasticsearch. we just join the
+  components with / as separator and make sure that multiple slashes
+  are replaced with one slash"
   [& args]
   (string/replace (string/join "/" args) #"/+" "/"))
 
 (defn enrich-mq-entries
+  "convert entries received via rabbitmq to our common format"
   [directory entries]
   (map
    (fn [entry]
@@ -137,11 +150,14 @@
    entries))
 
 (defn make-id-map
+  "build a hashmap, mapping the :id of each entry to the entry itself"
   [entries]
   (apply hash-map (mapcat (juxt :id identity) entries)))
 
 (defn find-missing-entries
-  [existing-map entries]
+  "return a seq of entries missing in existing-map, uses :id of each
+entry for lookup in existing-map"
+ [existing-map entries]
   (remove #(contains? existing-map (:id %)) entries))
 
 (declare simplify-permissions-for-es)
@@ -176,6 +192,8 @@
         entries)))
 
 (defn compare-directories
+  "compares listing of two directories and creates 'instructions' on
+how to update the second directory to match the first one"
   [mq-entries es-entries]
   (let [mq-entries-by-type (group-by :type mq-entries)
         mq-directory-map (make-id-map (mq-entries-by-type "directory"))
