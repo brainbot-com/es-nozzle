@@ -12,6 +12,7 @@ subcommands of the esconnect worker types are implemented here"
             [clj-time.coerce :as tcoerce])
   (:require [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.path :as path]
+            [brainbot.nozzle.vfs :as vfs]
             [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.worker :as worker]
             [brainbot.nozzle.inihelper :as inihelper]
@@ -240,10 +241,15 @@ how to update the second directory to match the first one"
   [s]
   (sort (disj (set (string/split s #"/")) "")))
 
+
 (defn simple-import_file
-  [fs es-index {:keys [directory entry] :as body} {publish :publish}]
+  [{es-index :index :as fs} {:keys [directory entry] :as body} {publish :publish}]
   (let [parent-id (make-id "" directory)
         relpath (:relpath entry)
+        extension (path/get-extension-from-basename relpath)
+        extension* (if (:sanitize-extensions fs)
+                     (path/sanitize-extension extension)
+                     extension)
         id (make-id "" directory relpath)
         title (or (get-in body [:extract :tika-content :dc:title])
                   relpath)
@@ -254,7 +260,7 @@ how to update the second directory to match the first one"
              id
              {:parent parent-id
               :content (get-in body [:extract :tika-content :text])
-              :extension (path/get-extension-from-basename relpath)
+              :extension extension*
               :content_type (strip-mime-type-parameters
                              (or
                               (first (get-in body [:extract :tika-content :content-type]))
@@ -270,7 +276,7 @@ how to update the second directory to match the first one"
 
 
 (defn simple-update_directory
-  [fs es-index {:keys [directory entries] :as body} {publish :publish}]
+  [{es-index :index :as fs} {:keys [directory entries] :as body} {publish :publish}]
   ;; (logging/info "simple-update" directory)
   (let [parent-id (make-id "" directory)
         es-entries (enrich-es-entries (es-listdir es-index parent-id))
@@ -289,55 +295,48 @@ how to update the second directory to match the first one"
    "import_file"      simple-import_file})
 
 (defn build-handle-connection
-  [fsmap num-workers rmq-prefix]
+  [filesystems num-workers rmq-prefix]
   (fn [conn]
     (logging/info "initializing rabbitmq connection with" num-workers "workers")
     (doseq [_ (range num-workers)]
       (mqhelper/channel-loop
        conn
        (fn [ch]
-         (doseq [fs (keys fsmap)
+         (doseq [fs filesystems
                  [command handle-msg] (seq command->msg-handler)]
-           (let [qname (mqhelper/initialize-rabbitmq-structures ch command rmq-prefix fs)]
+           (let [qname (mqhelper/initialize-rabbitmq-structures ch command rmq-prefix (:fsid fs))]
              ;; (lb/qos ch 1)
              (lcons/subscribe ch qname
-                              (mqhelper/make-handler (partial handle-msg fs (get-in fsmap [fs :index])))))))))))
+                              (mqhelper/make-handler (partial handle-msg fs))))))))))
 
-(defn make-standard-fsmap
+
+(defn indexes-from-filesystems
   [filesystems]
-  (into
-   {}
-   (for [fs filesystems]
-     [fs {:index fs :prefix "" :filesystem fs}])))
-
-
-(defn indexes-from-fsmap
-  [fsmap]
-  (distinct (map :index (vals fsmap))))
+  (distinct (map :index filesystems)))
 
 
 (defn ensure-all-indexes-and-mappings
-  [fsmap]
-  (doseq [idx (indexes-from-fsmap fsmap)]
+  [filesystems]
+  (doseq [idx (indexes-from-filesystems filesystems)]
     (ensure-index-and-mappings idx)))
 
 (defn initialize-elasticsearch
-  [es-url fsmap]
+  [es-url filesystems]
   (esr/connect! es-url)
-  (ensure-all-indexes-and-mappings fsmap))
+  (ensure-all-indexes-and-mappings filesystems))
 
 
-(defrecord ESConnectService [rmq-settings rmq-prefix num-workers fsmap es-url thread-pool]
+(defrecord ESConnectService [rmq-settings rmq-prefix num-workers filesystems es-url thread-pool]
   worker/Service
   (start [this]
     (try-try-again {:tries :unlimited
                     :error-hook (fn [err]
                                   (logging/error "error while initializing elasticsearch connection and indexes" es-url err))}
-                   #(initialize-elasticsearch es-url fsmap))
+                   #(initialize-elasticsearch es-url filesystems))
 
     (mqhelper/connect-loop-with-thread-pool
      rmq-settings
-     (build-handle-connection fsmap num-workers rmq-prefix)
+     (build-handle-connection filesystems num-workers rmq-prefix)
      thread-pool)))
 
 
@@ -350,12 +349,12 @@ how to update the second directory to match the first one"
             rmq-settings (-> system :config :rmq-settings)
             rmq-prefix (-> system :config :rmq-prefix)
             num-workers (Integer. (get-in iniconfig [section "num-workers"] "10"))
-            filesystems (sys/get-filesystems-for-section system section)
-            fsmap (make-standard-fsmap filesystems)
+            filesystem-names (sys/get-filesystems-for-section system section)
+            filesystems (map #(vfs/make-additional-fs-map system %) filesystem-names)
             es-url (-> system :config :es-url)]
         (->ESConnectService rmq-settings
                             rmq-prefix
                             num-workers
-                            fsmap
+                            filesystems
                             es-url
                             (:thread-pool system))))))

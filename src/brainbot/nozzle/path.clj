@@ -10,6 +10,16 @@
       (string/lower-case (subs s idx))
       "")))
 
+
+(defn sanitize-extension
+  "if an extension is not sane, return emtpy string, otherwise return the extension.
+sane means it matches the regular expression [a-z0-9_]{1,6}+$
+"
+  [^String ext]
+  (if (re-find #"\.[a-z0-9_]{1,6}+$" ext)
+    ext
+    ""))
+
 (defn- collapse-consecutive-slash
   [s]
   (string/replace s #"/+" "/"))

@@ -1,4 +1,5 @@
 (ns brainbot.nozzle.vfs
+  (:require [clojure.string :as string])
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.fsfilter :as fsfilter]
@@ -37,6 +38,10 @@
   [s]
   (Integer. s))
 
+(defn bool-from-string
+  [s]
+  (contains? #{"yes" "1" "on" "true"} (string/lower-case (or s "true"))))
+
 (defn make-additional-fs-map [system section-name]
   {:remove-filters (match-entry?-seq-from-value
                     system
@@ -45,6 +50,8 @@
                         (get-in system [:iniconfig section-name "sleep-between-sync"] "3600"))
    :extract-text-size (size-from-string
                        (get-in system [:iniconfig section-name "extract-text-size"] "100000"))
+   :sanitize-extensions (bool-from-string (get-in system [:iniconfig section-name "sanitize-extension"]))
+   :index section-name
    :fsid section-name})
 
 (defn make-filesystem
