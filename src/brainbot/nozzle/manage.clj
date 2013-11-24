@@ -1,4 +1,5 @@
 (ns brainbot.nozzle.manage
+  (:require [clojure.core.async :refer [go thread chan mult put! close! <! <!! >! >!! timeout] :as async])
   (:require [brainbot.nozzle.routing-key :as rk]
             [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.inihelper :as inihelper]
@@ -33,18 +34,6 @@
   (reduce + (map :messages (filter-by-rkmap rkmap (filter-by-vhost vhost queue-state)))))
 
 
-(defn wait-for-zero-messages
-  [get-num-messages]
-  (loop  [zero-count 0]
-    (if (= 0 (get-num-messages))
-      (when (< zero-count 6)
-        (Thread/sleep 500)
-        (recur (inc zero-count)))
-      (do
-        (Thread/sleep 10000)
-        (recur 0)))))
-
-
 (defn start-synchronization
   [rmq-settings id filesystem]
   (let [conn (rmq/connect rmq-settings)
@@ -57,73 +46,48 @@
     (rmq/close ch)
     (rmq/close conn)))
 
-(defn throw-management-api-error
-  "throw a somewhat informative message about missing management rights"
-  []
-  (throw
-   (ex-info
-    "no response from RabbitMQ's management API. make sure you have added the management tag for the user in RabbitMQ"
-    {:endpoint rmqapi/*endpoint*
-     :username rmqapi/*username*})))
-
-(defn list-queues
-  "wrapper around langohr's http/list-queues. this one raises an error
-  instead of returning nil when the user has no management rights for
-  the RabbitMQ management plugin"
-  [& args]
-  (let [qs (apply rmqapi/list-queues args)]
-    (when-not qs
-      (throw-management-api-error))
-    qs))
-
-(defn get-num-messages
-  "return number of messages in the given rabbitmq vhost for the given
-  filesystem and id/prefix"
-  [vhost id filesystem]
-  (num-messages-from-queue-state
-   (list-queues vhost)
-   vhost
-   {:id id
-    :filesystem filesystem}))
-
-(defn manage-filesystem*
-  [rmq-settings id {:keys [fsid sleep-between-sync]}]
-  (let [qname (rk/routing-key-string {:id id :filesystem fsid :command "*"})
-        get-num-messages* #(get-num-messages (:vhost rmq-settings) id fsid)
-        wait-idle #(wait-for-zero-messages get-num-messages*)]
-    (while true
-      (if (zero? (get-num-messages*))
-        (do
-          (logging/info "starting synchronization of" qname)
-          (start-synchronization rmq-settings id fsid))
-        (logging/info "synchronization of" qname "already running"))
-      (Thread/sleep 10000)
-      (wait-idle)
-      (logging/info "synchronization of" qname "finished. restarting in" sleep-between-sync "seconds")
-      (Thread/sleep (* sleep-between-sync 1000)))))
+(defn wait-idle
+  [get-num-messages]
+  (go
+   (loop []
+     (if-let [n (<! (get-num-messages))]
+       (if (zero? n)
+         :idle
+         (recur))))))
 
 (defn manage-filesystem
-  [rmq-settings id fsextra]
-  (try-try-again {:sleep (* 60 1000)
-                  :tries :unlimited
-                  :error-hook (fn [e] (logging/error "error in manage-filesystem" (:fsid fsextra) e))}
-                 #(manage-filesystem* rmq-settings id fsextra)))
+  [rmq-settings id {:keys [fsid sleep-between-sync]} ch]
+  (let [qname (rk/routing-key-string {:id id :filesystem fsid :command "*"})
+        get-num-messages* #(go
+                            (if-let [qstate (<! ch)]
+                              (num-messages-from-queue-state qstate
+                                                             (:vhost rmq-settings)
+                                                             {:id  id :filesystem fsid})))]
+    (go
+     (loop []
+       (when-let [num-messages (<! (get-num-messages*))]
+         (if (zero? num-messages)
+           (do
+             (logging/info "starting synchronization of" qname)
+             (<! (thread (start-synchronization rmq-settings id fsid)))
+             ;; consume the next value since that may have been
+             ;; produced before the thread was started
+             (<! ch))
+           (logging/info "synchronization of" qname "already running"))
+         (<! (wait-idle get-num-messages*))
+         (logging/info "synchronization of" qname "finished. restarting in" sleep-between-sync "seconds")
+         (<! (timeout (* sleep-between-sync 1000)))
+         (recur))))))
 
-(defrecord ManageService [rmq-settings rmq-prefix filesystems]
+
+(defrecord ManageService [rmq-settings rmq-prefix filesystems qwatch-mult]
   worker/Service
   (start [this]
     (doseq [fs filesystems]
-      (future (manage-filesystem rmq-settings rmq-prefix fs)))))
+      (let [ch (chan (async/sliding-buffer 1))]
+        (async/tap qwatch-mult ch)
+        (manage-filesystem rmq-settings rmq-prefix fs ch)))))
 
-(defn http-connect!
-  "initialize langohr.http by calling its connect! method"
-  ([] (http-connect! {}))
-  ([{:keys [api-endpoint username password]
-      :or {api-endpoint "http://localhost:55672"
-           username "guest"
-           password "guest"}}]
-     (logging/info "using rabbitmq api-endpoint" api-endpoint "as user" username)
-     (rmqapi/connect! api-endpoint username password)))
 
 (def runner
   (reify
@@ -132,7 +96,7 @@
     (make-object-from-section [this system section-name]
       (let [rmq-settings (-> system :config :rmq-settings)
             rmq-prefix (-> system :config :rmq-prefix)
+            qwatch-mult (-> system :looping-qwatcher :mult)
             filesystem-names (sys/get-filesystems-for-section system section-name)
             filesystems (map #(vfs/make-additional-fs-map system %) filesystem-names)]
-        (http-connect! rmq-settings)
-        (->ManageService rmq-settings rmq-prefix filesystems)))))
+        (->ManageService rmq-settings rmq-prefix filesystems qwatch-mult)))))
