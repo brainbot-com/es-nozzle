@@ -39,12 +39,18 @@
       (throw-management-api-error))
     qs))
 
+(defn call-and-log-errors
+  [f]
+  (try
+    (f)
+    (catch Throwable err
+      (logging/error "error while calling list-queues" err))))
 
 (defn start-looping-qwatcher
   "periodically call list-queues and put the result on an async/mult"
   [vhost]
   (let [ch (chan)
         m (mult ch)
-        lqfn #(async/thread (list-queues vhost))]
+        lqfn #(async/thread (call-and-log-errors (fn [] (list-queues vhost))))]
     (assoc (async-helper/looping-go 10000 lqfn ch)
       :mult m)))
