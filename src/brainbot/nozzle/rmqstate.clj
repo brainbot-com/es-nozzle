@@ -49,8 +49,6 @@
 (defn start-looping-qwatcher
   "periodically call list-queues and put the result on an async/mult"
   [vhost]
-  (let [ch (chan)
-        m (mult ch)
-        lqfn #(async/thread (call-and-log-errors (fn [] (list-queues vhost))))]
-    (assoc (async-helper/looping-go 10000 lqfn ch)
-      :mult m)))
+  (let [lqfn #(async/thread (call-and-log-errors (fn [] (list-queues vhost))))
+        lp (async-helper/looping-go 10000 lqfn :start false)]
+    (assoc lp :mult (async/mult (:dest-ch lp)))))

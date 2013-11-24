@@ -4,6 +4,7 @@
             [brainbot.nozzle.rmqstate :as rmqstate]
             [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.inihelper :as inihelper]
+            [brainbot.nozzle.async-helper :as async-helper]
             [brainbot.nozzle.meta-runner :as meta-runner])
   (:require [clojure.tools.logging :as logging]
             [clj-logging-config.log4j :as log-config])
@@ -103,9 +104,10 @@
 (defn run-system
   "start running the system by starting a meta-runner with the
   command-sections"
-  [{:keys [iniconfig command-sections] :as system}]
+  [{:keys [iniconfig command-sections looping-qwatcher] :as system}]
   (alter-var-root #'current-system (constantly system))
-  (worker/start (meta-runner/make-meta-runner system command-sections)))
+  (worker/start (meta-runner/make-meta-runner system command-sections))
+  (async-helper/looping-start looping-qwatcher))
 
 (defn- get-filesystems-for-section*
   "get filesystems specified in section and validate them. no fallback"
