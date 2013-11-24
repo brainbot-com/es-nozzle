@@ -10,6 +10,20 @@
      (when-not (or (nil? r) (nil? ch))
        (>! ch r)))))
 
+(defn- looping-go*
+  [ms f ctrl-ch dest-ch]
+  (go
+   (try
+     (when (<! ctrl-ch)
+       (loop []
+         (<! (call-and-put f dest-ch))
+         (async/alt!
+          ctrl-ch ([v] (when-not (nil? v) (recur)))
+          (async/timeout ms) ([v] (recur)))))
+     (finally
+       (when-not (nil? dest-ch)
+         (close! dest-ch))))))
+
 (defn looping-go
   "call f in a loop from a go block. f must return a channel, from
 which we read one message, put the result on dest-ch if given. sleep
@@ -18,17 +32,7 @@ ms milliseconds before calling f again"
   (assert (ifn? f) "f must be a function")
   (let [ctrl-ch (chan)
         dest-ch (chan)]
-    (go
-     (try
-       (when (<! ctrl-ch)
-         (loop []
-           (<! (call-and-put f dest-ch))
-           (async/alt!
-            ctrl-ch ([v] (when-not (nil? v) (recur)))
-            (async/timeout ms) ([v] (recur)))))
-       (finally
-         (when-not (nil? dest-ch)
-           (close! dest-ch)))))
+    (looping-go* ms f ctrl-ch dest-ch)
     (when start
       (put! ctrl-ch true))
     {::ctrl-ch ctrl-ch :dest-ch dest-ch}))
