@@ -2,7 +2,6 @@
   "provide access to rabbitmq queue state via management API"
   (:require [clojure.core.async :refer [go thread chan mult put! close! <! <!! >! >!!] :as async])
   (:require [brainbot.nozzle.routing-key :as rk]
-            [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
             [brainbot.nozzle.worker :as worker]

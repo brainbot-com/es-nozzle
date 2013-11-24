@@ -1,9 +1,16 @@
 (ns brainbot.nozzle.sys
   "system map creation and a bit of iniconfig utils"
   (:require [brainbot.nozzle.worker :as worker]
+            [brainbot.nozzle.rmqstate :as rmqstate]
             [brainbot.nozzle.misc :as misc]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.meta-runner :as meta-runner])
+  (:require [clojure.tools.logging :as logging]
+            [clj-logging-config.log4j :as log-config])
+  (:require [langohr.http :as rmqapi]
+            [langohr.basic :as lb]
+            [langohr.core :as rmq]
+            [langohr.channel :as lch])
   (:import [java.util.concurrent Executors]))
 
 (defn valid-name?
@@ -58,6 +65,18 @@
     (validate-main-section res die)
     res))
 
+
+(defn http-connect!
+  "initialize langohr.http by calling its connect! method"
+  ([] (http-connect! {}))
+  ([{:keys [api-endpoint username password]
+      :or {api-endpoint "http://localhost:55672"
+           username "guest"
+           password "guest"}}]
+     (logging/info "using rabbitmq api-endpoint" api-endpoint "as user" username)
+     (rmqapi/connect! api-endpoint username password)))
+
+
 (defn make-system
   "create a system map. the system map is where we store our
   configuration data and some state. the system map contains the followings keys:
@@ -69,11 +88,14 @@
   :name->obj an atom, mapping section names as specified in the ini
              config to the objects which we created."
   [iniconfig command-sections]
-  {:iniconfig iniconfig
-   :command-sections command-sections
-   :config (parse-main-section iniconfig)
-   :name->obj (atom {})
-   :thread-pool (Executors/newFixedThreadPool 256)})
+  (let [config (parse-main-section iniconfig)]
+    (http-connect! config) ;; need to set this up for rmqstate/start-looping-qwatcher
+    {:iniconfig iniconfig
+     :command-sections command-sections
+     :looping-qwatcher (rmqstate/start-looping-qwatcher (-> config :rmq-settings :vhost))
+     :config config
+     :name->obj (atom {})
+     :thread-pool (Executors/newFixedThreadPool 256)}))
 
 (def ^{:doc "the system map currently running.  only use this for development"}
   current-system nil)
