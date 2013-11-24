@@ -31,7 +31,7 @@
 
 (defn num-messages-from-queue-state
   [queue-state vhost rkmap]
-  (reduce + (map :messages (filter-by-rkmap rkmap (filter-by-vhost vhost queue-state)))))
+  (apply + (map :messages (filter-by-rkmap rkmap (filter-by-vhost vhost queue-state)))))
 
 
 (defn start-synchronization
