@@ -34,6 +34,7 @@ subcommands of the esconnect worker types are implemented here"
   (def mapping-types
     {"doc" {:_all {:enabled false},
             :_source {:enabled true},
+            :_index {:enabled true},
             :properties
             {:parent parent
              :tags {:index "not_analyzed",
