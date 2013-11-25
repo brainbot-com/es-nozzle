@@ -131,3 +131,13 @@ extract workers access the filesystem.
 	  extract_content;
       }
   }
+
+
+
+Alternatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If es-nozzle doesn't work for you, you may want to have a look at
+the `elasticsearch fs river plugin`_ and `Apache ManifoldCF`_.
+
+.. _elasticsearch fs river plugin: http://www.pilato.fr/fsriver/
+.. _Apache ManifoldCF: http://manifoldcf.apache.org/
