@@ -335,10 +335,10 @@ how to update the second directory to match the first one"
                                   (logging/error "error while initializing elasticsearch connection and indexes" es-url err))}
                    #(initialize-elasticsearch es-url filesystems))
 
-    (mqhelper/connect-loop-with-thread-pool
-     rmq-settings
-     (build-handle-connection filesystems num-workers rmq-prefix)
-     thread-pool)))
+    (future (mqhelper/connect-loop-with-thread-pool
+             rmq-settings
+             (build-handle-connection filesystems num-workers rmq-prefix)
+             thread-pool))))
 
 
 (def runner
