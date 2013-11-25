@@ -54,7 +54,7 @@ token fullfilling the filter condition. The **outer** filter expects **both** co
 
 That works?
 --------------
-In basic english, the whole filter phrase could be expressed like this: "Only match documents, where NOT ANY
+In basic English, the whole filter phrase could be expressed like this: "Only match documents, where NOT ANY
 user token matches a term of ``deny_token_document`` AND AT LEAST ONE of the user tokens matches a term of 
 ``allow_token_document``." If you want to see that (and how) it works, have a look at the tests in
 ``brainbot.nozzle.es-filter-test``.
@@ -81,7 +81,7 @@ Here's a list of all predefined configuration sections:
 Flow of messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following graph show the flow of messages betweeen the different
+The following graph show the flow of messages between the different
 components. The rectangular boxes correspond to the different worker
 sections. They contain oval "subcommand" boxes, that each worker needs
 to handle. These subcommand boxes belong to RabbitMQ queues with the
