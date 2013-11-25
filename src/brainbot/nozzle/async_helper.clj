@@ -28,7 +28,7 @@
   "call f in a loop from a go block. f must return a channel, from
 which we read one message, put the result on dest-ch if given. sleep
 ms milliseconds before calling f again"
-  [ms f & {:keys [start]}]
+  [ms f & {:keys [start] :or {start true}}]
   (assert (ifn? f) "f must be a function")
   (let [ctrl-ch (chan)
         dest-ch (chan)]
