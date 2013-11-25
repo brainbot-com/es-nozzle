@@ -4,10 +4,13 @@ Changes between 0.3.1 and 0.3.2-SNAPSHOT
 - update documents if their size has changed
 - index document size
 - make manage worker handle a currently running synchronization
-- make manage worker issue one HTTP request every 10 seconds
-  which is used for all of the filesystems instead of issuing a HTTP
-  request for each filesystem every 10 seconds
+- make manage worker issue one HTTP request every 10 seconds which is
+  used for all of the filesystems instead of issuing a HTTP request
+  for each filesystem every 10 seconds
 - enable the _index field for documents
+- esconnect worker doesn't prevent workers being started after
+  esconnect itself. in previous versions esconnect had to be the last
+  worker being started.
 
 Changes between 0.3.0 and 0.3.1
 ---------------------------------------------
