@@ -1,7 +1,7 @@
 Quickstart
 ====================
-In this section we'll try to to walk you through a quick installation
-of es-nozzle.
+In this section we'll try to walk you through a quick installation of
+es-nozzle.
 
 Basic prerequisites
 ~~~~~~~~~~~~~~~~~~~~~~~~~
