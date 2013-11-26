@@ -12,6 +12,7 @@
   (:require [clojure.tools.logging :as logging])
   (:require [brainbot.nozzle.mqhelper :as mqhelper]
             [brainbot.nozzle.misc :as misc]
+            [brainbot.nozzle.thumbnail :as thumbnail]
             [brainbot.nozzle.sys :as sys]
             [brainbot.nozzle.inihelper :as inihelper]
             [brainbot.nozzle.dynaload :as dynaload]
@@ -26,38 +27,25 @@
     (assoc entry "tika-content" converted)
     entry))
 
-(defn generate-thumbnail?
-  [extract]
-  (let [content-type (or (first (-> extract :tika-content :content-type))
-                         "")]
-    (boolean (re-find #"^image/" content-type))))
-
-(defn base64-png-from-img
+(defn base64-string-from-img
   [img]
-  (let [os (java.io.ByteArrayOutputStream.)]
-    (javax.imageio.ImageIO/write img "png" os)
-    (base64/encode (.toByteArray os))))
-
-
-(defn read-image
-  [fs path]
-  (with-open [in (vfs/get-input-stream fs path)]
-    (javax.imageio.ImageIO/read in)))
-
-(defn make-thumbnail
-  ([img]
-     (let [resize (resize-fn 75 75 ultra-quality)]
-       (-> img
-           resize
-           base64-png-from-img)))
-  ([fs path]
-     (make-thumbnail (read-image fs path))))
-
+  (when img
+    (let [os (java.io.ByteArrayOutputStream.)]
+      (javax.imageio.ImageIO/write img "png" os)
+      (-> os
+          .toByteArray
+          base64/encode
+          String.))))
 
 (defn remove-nil-values
   [m]
   (into {} (remove (comp nil? val) m)))
 
+(defn make-thumbnail
+  [extract fs path]
+  (let [content-type (or (first (-> extract :tika-content :content-type)) "")
+        thumbnail-img (thumbnail/make-thumbnail content-type #(vfs/get-input-stream fs path))]
+    (base64-string-from-img thumbnail-img)))
 
 (defn simple-extract_content
   [fs {directory :directory, {relpath :relpath :as entry} :entry, :as body} {publish :publish}]
@@ -70,9 +58,7 @@
                                     :path path
                                     :fsid (:fsid fs)})
                     nil))
-        thumbnail (when (generate-thumbnail? extract)
-                    (String. (make-thumbnail fs path)))
-
+        thumbnail (make-thumbnail extract fs path)
         new-body (merge body
                         (remove-nil-values {:extract extract
                                             :thumbnail thumbnail}))]

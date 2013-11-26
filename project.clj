@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.async "0.1.256.0-1bf8cf-alpha"]
                  [org.clojure/data.codec "0.1.0"]
+                 [org.jpedal/jpedal-lgpl "4.74b27"]
                  [clj-logging-config "1.9.10"]
                  [org.slf4j/slf4j-log4j12 "1.6.6"]
                  [com.brainbot/iniconfig "0.2.0"]
