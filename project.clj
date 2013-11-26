@@ -5,6 +5,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.async "0.1.256.0-1bf8cf-alpha"]
+                 [org.clojure/data.codec "0.1.0"]
                  [clj-logging-config "1.9.10"]
                  [org.slf4j/slf4j-log4j12 "1.6.6"]
                  [com.brainbot/iniconfig "0.2.0"]
@@ -25,6 +26,7 @@
                  [jcifs "1.3.17"]
                  [clj-time "0.6.0"]
                  [robert/bruce "0.7.1"]
+                 [image-resizer "0.1.6"]
                  [trptcolin/versioneer "0.1.1"]
                  [clojurewerkz/elastisch "1.2.0"]
                  [com.novemberain/langohr "1.0.1"]]

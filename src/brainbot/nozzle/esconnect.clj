@@ -48,6 +48,7 @@ subcommands of the esconnect worker types are implemented here"
              :content_type {:type "string", :store "yes" :index "not_analyzed"},
              :extension {:type "string", :store "yes" :index "not_analyzed"},
              :title   {:type "string", :store "yes"},
+             :thumbnail {:type "binary"},
              :deny_token_document token,
              :allow_token_document token}},
      "dir" {:_all {:enabled false},
@@ -261,6 +262,7 @@ how to update the second directory to match the first one"
              id
              {:parent parent-id
               :content (get-in body [:extract :tika-content :text])
+              :thumbnail (:thumbnail body)
               :extension extension*
               :content_type (strip-mime-type-parameters
                              (or

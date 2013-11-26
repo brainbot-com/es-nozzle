@@ -8,6 +8,7 @@
 
 (defprotocol Filesystem
   "filesystem"
+  (get-input-stream [fs entry] "open file for reading")
   (access-denied-exception? [fs exc] "access denied?")
   (extract-content [fs entry] "extract content from file")
   (get-permissions [fs entry] "get permissions")

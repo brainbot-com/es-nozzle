@@ -102,6 +102,10 @@
 
 (defrecord RealFilesystem [root]
   vfs/Filesystem
+  (get-input-stream [fs entry]
+    (let [fp (string/join "/" [root entry])]
+      (clojure.java.io/input-stream fp)))
+
   (extract-content [fs entry]
     (let [fp (string/join "/" [root entry])]
       {:tika-content (tika/parse fp (:extract-text-size fs))}))
