@@ -58,7 +58,14 @@
                                     :path path
                                     :fsid (:fsid fs)})
                     nil))
-        thumbnail (make-thumbnail extract fs path)
+        thumbnail (try
+                    (make-thumbnail extract fs path)
+                    (catch Throwable err
+                      (logging/error "error in make-thumbnail"
+                                     {:error err
+                                      :path path
+                                      :fsid (:fsid fs)})
+                      nil))
         new-body (merge body
                         (remove-nil-values {:extract extract
                                             :thumbnail thumbnail}))]
