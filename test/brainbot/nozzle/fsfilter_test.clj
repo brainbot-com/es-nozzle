@@ -19,3 +19,12 @@
   (let [has-ext? (make-has-extension? [".c"])]
     (is (true? (has-ext? {:relpath "bla.c" :stat {:type :file}})))
     (is (false? (has-ext? {:relpath "bla.c" :stat {:type :directory}})))))
+
+(deftest test-is-apple-garbage?
+  (is (true? (is-apple-garbage? {:relpath ".AppleDouble"})))
+  (is (true? (is-apple-garbage? {:relpath "__MACOSX"})))
+  (is (true? (is-apple-garbage? {:relpath ".DS_Store"})))
+  (is (true? (is-apple-garbage? {:relpath "._foobar"})))
+  (is (false? (is-apple-garbage? {:relpath "foo-bar-baz"})))
+  (is (false? (is-apple-garbage? {:relpath "a"}))))
+

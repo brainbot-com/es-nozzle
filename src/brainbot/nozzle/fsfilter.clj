@@ -36,7 +36,9 @@
 (let [bad-names #{".DS_Store" ".AppleDouble" "__MACOSX"}]
   (defn is-apple-garbage? [{relpath :relpath}]
     (or (contains? bad-names relpath)
-        (= "._" (subs relpath 0 2)))))
+        (and
+         (>= (count relpath) 2)
+         (= "._" (subs relpath 0 2))))))
 
 (def apple-garbage (reify-simple-filter is-apple-garbage?))
 
