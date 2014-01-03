@@ -36,7 +36,7 @@
 
 (defmethod make-thumbnail :image
   [content-type get-input-stream]
-  (-> get-input-stream read-image thumbnail-from-image))
+  (some-> get-input-stream read-image thumbnail-from-image))
 
 ;; (org.jpedal.fonts.FontMappings/setFontReplacements)
 
