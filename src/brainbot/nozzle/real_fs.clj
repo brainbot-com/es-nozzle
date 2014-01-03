@@ -142,7 +142,7 @@
   (cond
     (= path "~")
       (System/getProperty "user.home")
-    (= "~/" (subs path 0 2))
+    (.startsWith path "~/")
       (str (System/getProperty "user.home") (subs path 1))
     :else
       path))
