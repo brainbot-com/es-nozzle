@@ -24,7 +24,7 @@
                                org.gagravarr/vorbis-java-tika]]
                  [org.gagravarr/vorbis-java-core "0.3-SNAPSHOT"]
                  [org.gagravarr/vorbis-java-tika "0.3-SNAPSHOT"]
-                 [jcifs "1.3.17"]
+                 [com.brainbot/jcifs "1.3.17-enterprise-connector-3.2.2"]
                  [clj-time "0.6.0"]
                  [robert/bruce "0.7.1"]
                  [image-resizer "0.1.6"]
