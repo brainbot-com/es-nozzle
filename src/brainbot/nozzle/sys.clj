@@ -20,11 +20,18 @@
   [s]
   (boolean (re-matches #"^[-a-zA-Z0-9_]+$" s)))
 
+
+(defn- bool-from-config
+  [s]
+  (contains? #{"yes" "on" "1"} s))
+
 (defn- parse-main-section* [iniconfig]
   {:rmq-settings (inihelper/rmq-settings-from-config iniconfig)
    :filesystems (misc/trimmed-lines-from-string
                  (get-in iniconfig [inihelper/main-section-name "filesystems"]))
    :rmq-prefix (get-in iniconfig [inihelper/main-section-name "rmq-prefix"] inihelper/main-section-name)
+   :generate-thumbnails? (bool-from-config
+                          (get-in iniconfig [inihelper/main-section-name "generate-thumbnails"] "no"))
    :es-url (or (get-in iniconfig [inihelper/main-section-name "es-url"])
                "http://localhost:9200")})
 

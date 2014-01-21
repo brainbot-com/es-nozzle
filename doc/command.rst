@@ -66,6 +66,20 @@ of filesystems to work on:
   value is being used as fallback if one the worker sections does not
   specify the list of filesystems.
 
+.. confval:: generate-thumbnails
+
+  ``generate-thumbnails`` can be used to turn on thumbnail generation
+  for certain kinds of documents. Set this to ``yes``, to turn
+  thumbnail generation on. The default is to not generate thumbnails.
+  Thumbnails will be stored inside the elasticsearch index under the
+  field "thumbnail" as binary.
+
+.. code-block:: ini
+
+   [es-nozzle]
+   generate-thumbnails = yes
+
+
 
 Worker sections
 ~~~~~~~~~~~~~~~~~~~~~~~~~

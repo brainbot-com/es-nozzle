@@ -48,7 +48,7 @@
     (base64-string-from-img thumbnail-img)))
 
 (defn simple-extract_content
-  [fs {directory :directory, {relpath :relpath :as entry} :entry, :as body} {publish :publish}]
+  [fs make-thumbnail {directory :directory, {relpath :relpath :as entry} :entry, :as body} {publish :publish}]
   (let [path (vfs/join fs [directory relpath])
         extract (try
                   (vfs/extract-content fs path)
@@ -73,7 +73,7 @@
 
 
 (defn build-handle-connection
-  [filesystems rmq-prefix num-workers]
+  [filesystems rmq-prefix num-workers make-thumbnail]
   (fn [conn]
     (logging/info "initializing connection with" num-workers "workers")
     (dotimes [n num-workers]
@@ -83,15 +83,15 @@
          (fn [ch]
            (let [qname (mqhelper/initialize-rabbitmq-structures ch "extract_content" rmq-prefix fsid)]
              ;; (lb/qos ch 1)
-             (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs))))))))))
+             (lcons/subscribe ch qname (mqhelper/make-handler (partial simple-extract_content fs make-thumbnail))))))))))
 
 
-(defrecord ExtractService [rmq-settings rmq-prefix filesystems num-workers thread-pool]
+(defrecord ExtractService [rmq-settings rmq-prefix filesystems num-workers thread-pool make-thumbnail]
   worker/Service
   (start [this]
     (future (mqhelper/connect-loop-with-thread-pool
              rmq-settings
-             (build-handle-connection filesystems rmq-prefix num-workers)
+             (build-handle-connection filesystems rmq-prefix num-workers make-thumbnail)
              thread-pool))))
 
 (def runner
@@ -101,7 +101,10 @@
     (make-object-from-section [this system section]
       (let [rmq-settings (-> system :config :rmq-settings)
             rmq-prefix (-> system :config :rmq-prefix)
-             num-workers (Integer. (get-in system [:iniconfig section "num-workers"] "10"))
+            make-thumbnail-fun (if (-> system :config :generate-thumbnails?)
+                                 make-thumbnail
+                                 (constantly nil))
+            num-workers (Integer. (get-in system [:iniconfig section "num-workers"] "10"))
             filesystems (map (partial vfs/make-filesystem system)
                              (sys/get-filesystems-for-section system section))]
-        (->ExtractService rmq-settings rmq-prefix filesystems num-workers (:thread-pool system))))))
+        (->ExtractService rmq-settings rmq-prefix filesystems num-workers (:thread-pool system) make-thumbnail-fun)))))
