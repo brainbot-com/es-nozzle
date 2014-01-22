@@ -39,6 +39,6 @@ Please follow this link to view the
 
 ## License
 
-Copyright © 2013 [brainbot technologies AG](http://brainbot.com/)
+Copyright © 2013-2014 [brainbot technologies AG](http://brainbot.com/)
 
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
