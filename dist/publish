@@ -5,6 +5,10 @@ function die {
     exit 10
 }
 
+function ensure-not-released {
+    curl >/dev/null --silent --fail --head $url && die "release already on webserver"
+}
+
 test -e current || die "no current release found"
 
 rel=$(basename $(readlink current))
@@ -18,12 +22,14 @@ echo "=================> publishing $rel"
 if [ $SNAPSHOT = "YES" ]; then
    target=root@brainbot.com:es-nozzle-snapshots/
    url=http://brainbot.com/es-nozzle/snapshots/download/$rel.zip
+   doc=current/doc/
 else
    target=root@brainbot.com:es-nozzle-releases/
    url=http://brainbot.com/es-nozzle/download/$rel.zip
+   doc=current-htmlnav/
 fi
 
-curl >/dev/null --silent --fail --head $url && die "release already on webserver"
+ensure-not-released
 
 rsync -aH dist/$rel.zip $target
-rsync -aH current/doc/ $target/doc
+rsync -aH current-htmlnav/ $target/doc
