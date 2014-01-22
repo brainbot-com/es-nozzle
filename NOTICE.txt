@@ -74,3 +74,30 @@ the following notice:
 Copyright © 2012 Colin Jones
 
 Distributed under the Eclipse Public License, the same as Clojure.
+
+-------------
+This product includes core.async
+(https://github.com/clojure/core.async), which is distributed with the
+following notice:
+
+Copyright © 2013 Rich Hickey and contributors
+
+Distributed under the Eclipse Public License, the same as Clojure.
+
+-------------
+This product includes data.codec
+(https://github.com/clojure/data.codec), which is distributed with the
+following notice:
+
+Copyright © 2011 Alex Taggart
+
+Licensed under the EPL. (See the file epl.html.)
+
+-------------
+This product includes the LGPL'ed version of jpedal
+(http://sourceforge.net/projects/jpedal/)
+
+-------------
+This product includes image-resizer
+(https://github.com/josephwilk/image-resizer), which is released under
+the MIT license.
