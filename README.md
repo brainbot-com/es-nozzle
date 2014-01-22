@@ -2,9 +2,12 @@
 
 # es-nozzle
 
-es-nozzle is a scalable open source *framework for connecting source
-content repositories* like file systems or mail servers to
-*ElasticSearch* clusters.
+es-nozzle can be used to index documents from the local filesystem or
+from network shares. It's similar in purpose to dadoonet's filesystem
+river, but it's not an elasticsearch plugin. Instead es-nozzle takes
+advantage of RabbitMQ in order to provide a fault tolerant and
+scalable system for synchronizing filesystems into an elasticsearch
+cluster.
 
 Please visit http://brainbot.com/es-nozzle/doc/ for detailed documentation.
 
