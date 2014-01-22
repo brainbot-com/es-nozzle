@@ -1,4 +1,4 @@
-Changes between 0.3.1 and 0.4.0-SNAPSHOT
+Changes between 0.3.1 and 0.4.0
 ---------------------------------------------
 - use jcifs from google's enterprise-connector-file-system
 - fix completely broken apple garbage filter
