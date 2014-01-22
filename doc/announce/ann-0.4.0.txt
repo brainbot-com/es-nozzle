@@ -1,0 +1,55 @@
+Subject: [ANN] es-nozzle 0.4.0 - index documents from filesystem
+
+es-nozzle can be used to index documents from the local filesystem or
+from network shares. It's similar in purpose to dadoonet's filesystem
+river, but it's not an elasticsearch plugin. Instead es-nozzle takes
+advantage of RabbitMQ in order to provide a fault tolerant and
+scalable system for synchronizing filesystems into an elasticsearch
+cluster.
+
+This release brings some improvements and bugfixes. One of the
+highlights is support for generating thumbnail previews for images and
+PDF documents.
+
+
+Links
+=====
+documentation:
+  http://brainbot.com/es-nozzle/doc/
+
+prebuilt distribution:
+  http://brainbot.com/es-nozzle/download/es-nozzle-0.4.0.zip
+
+source code:
+  https://github.com/brainbot-com/es-nozzle
+
+Contact:
+  http://brainbot.com / es-nozzle@brainbot.com
+  (or use the elasticsearch mailing list)
+
+
+Changes between 0.3.1 and 0.4.0
+===============================
+- use jcifs from google's enterprise-connector-file-system
+- fix completely broken apple garbage filter
+- generate thumbnails for images and PDF files and store them in
+  elasticsearch
+- sanitize extensions
+- update documents if their size has changed
+- index document size
+- make manage worker handle a currently running synchronization
+- make manage worker issue one HTTP request every 10 seconds which is
+  used for all of the filesystems instead of issuing a HTTP request
+  for each filesystem every 10 seconds
+- enable the _index field for documents
+- esconnect worker doesn't prevent workers being started after
+  esconnect itself. in previous versions esconnect had to be the last
+  worker being started.
+
+We're excited to get feedback about this release, so please give it a
+shot and let us know about your experience.
+
+--
+Cheers
+Ralf
+
